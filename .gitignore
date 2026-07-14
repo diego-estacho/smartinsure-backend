@@ -17,9 +17,12 @@ local.settings.json
 /.specify/
 /specs/
 /memory/
-/.gsd/
-/gsd/
+/.grill/
 /.superpowers/
+# Artefato de instalação de kit (skills universais) e config de agente por-dev.
+/.agents/
+/skills-lock.json
+/.claude/
 
 # Artefatos derivados dos docs versionados (regeneráveis) — binário não se versiona.
 /docs/generated/*.pdf

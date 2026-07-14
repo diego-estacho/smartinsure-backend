@@ -24,7 +24,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 IRMAO = ROOT.parent / "smartinsure-frontend"
-IGNORAR = (".git", ".claude", "node_modules")
+IGNORAR = (".git", ".claude", "node_modules",
+           # artefato de framework (ADR-004): scratch/kit é invisível ao harness —
+           # nem escaneado como doc, nem versionado (espelha PASTAS_FRAMEWORK).
+           ".specify", "specs", "memory", ".grill", ".superpowers", ".agents")
 # arquivos gerados por script (Fase B) — citados antes de existir:
 MD_FUTUROS = {"db-schema.md", "rastreabilidade-rn.md"}
 SECOES_RN = ("Descrição", "Pré-condições", "Critério de aceitação", "Casos limite")
@@ -186,7 +189,7 @@ for f in (ROOT / "docs" / "exec-plans" / "completed").glob("*.md"):
 # 10. pastas de framework de desenvolvimento não podem ser versionadas (ADR-004):
 #     o artefato do kit é scratch; a verdade canônica vive em docs/. A lista é
 #     mantida conforme os kits em uso — adicione a pasta do seu kit aqui e no .gitignore.
-PASTAS_FRAMEWORK = {".specify", "specs", "memory", ".gsd", "gsd", ".superpowers"}
+PASTAS_FRAMEWORK = {".specify", "specs", "memory", ".grill", ".superpowers", ".agents"}
 try:
     tracked = subprocess.run(
         ["git", "ls-files"], cwd=ROOT,
