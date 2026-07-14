@@ -1,0 +1,26 @@
+# CI do smartinsure-backend.
+# Regra inegociável: nenhum step de teste usa continue-on-error / condition que mascare falha.
+
+trigger:
+  branches:
+    include: [master]
+
+pr:
+  branches:
+    include: ['*']
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.12'
+
+  - script: python scripts/check-harness.py
+    displayName: 'Lint do harness (docs íntegros)'
+
+  # Gates ativados no scaffold (exec-plan 0001, Fase B) — sem continue-on-error em nenhuma hipótese:
+  # - dotnet build + dotnet test          (domínio + invariantes NetArchTest; cobertura mínima de 80% reprova o build)
+  # - publicação do contrato OpenAPI como artifact (front gera types e valida drift)
+  # - playwright: E2E das jornadas afetadas (no repo do front, gate de merge de lá)

@@ -1,0 +1,25 @@
+# CODEOWNERS — review humano obrigatório por especialidade (QUALITY_SCORE.md).
+# Quem escreve é o dono da feature (fullstack); quem revisa é o especialista.
+# Substitua os handles @org/... pelos reais na criação do repo na organização;
+# enquanto forem placeholders, o roteamento é intenção documentada, não gate ativo.
+
+# Padrão: qualquer arquivo exige ao menos um review.
+*                                       @org/smartinsure-devs
+
+# Pontos de dinheiro e integração de seguradora → dev de especialidade backend.
+/src/Smart.Api/                         @org/smartinsure-backend
+/src/Smart.Application/Emissao/         @org/smartinsure-backend
+/src/Smart.Infra.Seguradoras/           @org/smartinsure-backend
+
+# Glossário e catálogo de RNs → PO (dona do negócio).
+/docs/product-specs/glossario.md        @org/smartinsure-po
+/docs/product-specs/regras-de-negocio/  @org/smartinsure-po
+
+# Harness (mapa, processo, régua, ADRs) → mantenedor do harness.
+/AGENTS.md                              @org/smartinsure-harness
+/ARCHITECTURE.md                        @org/smartinsure-harness
+/docs/PLANS.md                          @org/smartinsure-harness
+/docs/QUALITY_SCORE.md                  @org/smartinsure-harness
+/docs/adr/                              @org/smartinsure-harness
+/docs/constitution.md                   @org/smartinsure-harness
+/scripts/                               @org/smartinsure-harness
