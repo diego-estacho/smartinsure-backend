@@ -1,0 +1,52 @@
+# Ambiente local de desenvolvimento: SQL Server + Azure Functions (+ Azurite,
+# storage exigido pelo runtime do Functions). A API roda no host (dotnet run).
+# Senha do SA é default de dev local — sobrescreva com a variável MSSQL_SA_PASSWORD.
+name: smartinsure
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-SmartInsure@Dev123}
+      MSSQL_PID: Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q 'SELECT 1' -b"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+
+  functions:
+    build:
+      context: .
+      dockerfile: src/SmartInsure.Functions/Dockerfile
+    ports:
+      - "7071:80"
+    environment:
+      FUNCTIONS_WORKER_RUNTIME: dotnet-isolated
+      # Conta de desenvolvimento padrão do Azurite (chave pública documentada, não é secret).
+      AzureWebJobsStorage: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1"
+      ConnectionStrings__SqlServer: "Server=mssql,1433;Database=SmartInsure;User Id=sa;Password=${MSSQL_SA_PASSWORD:-SmartInsure@Dev123};TrustServerCertificate=True"
+    depends_on:
+      mssql:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+
+volumes:
+  mssql-data:
+  azurite-data:
