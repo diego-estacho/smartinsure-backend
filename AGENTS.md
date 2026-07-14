@@ -7,14 +7,14 @@ Este arquivo é o mapa do harness. Todo agente (e todo dev) lê este arquivo ant
 1. [docs/product-specs/glossario.md](docs/product-specs/glossario.md) — vocabulário canônico. Nenhum nome de entidade, rota, tela ou status nasce fora dele.
 2. [docs/product-specs/regras-de-negocio/](docs/product-specs/regras-de-negocio/README.md) — catálogo de RNs com IDs estáveis (fonte única de regra de negócio).
 3. [docs/product-specs/open-decisions.md](docs/product-specs/open-decisions.md) — decisões pendentes com dono. O que está aberto aqui NÃO é implementável.
-4. [ARCHITECTURE.md](ARCHITECTURE.md) — a definir; arquitetura do backend está fora do escopo do harness por enquanto (dono: arquitetura).
+4. [ARCHITECTURE.md](ARCHITECTURE.md) — arquitetura do backend: camadas, módulos, estrutura de pastas, pipeline e testes (dono: arquitetura).
 5. [docs/PRODUCT_SENSE.md](docs/PRODUCT_SENSE.md) — como pensar o produto nas decisões do dia a dia.
 6. [docs/PLANS.md](docs/PLANS.md) — processo de trabalho, fluxo de feature e exec-plans.
 7. [docs/QUALITY_SCORE.md](docs/QUALITY_SCORE.md) — régua de qualidade: testes, cobertura e gates de CI.
 8. [docs/RELIABILITY.md](docs/RELIABILITY.md) — a definir; confiabilidade operacional está fora do escopo do harness por enquanto (dono: arquitetura).
-9. [docs/BACKEND.md](docs/BACKEND.md) — a definir; convenções do backend (.NET) estão fora do escopo do harness por enquanto (dono: arquitetura).
+9. [docs/BACKEND.md](docs/BACKEND.md) — convenções do backend (.NET): inventário de stack e padrões, fonte da verdade da stack (dono: arquitetura).
 10. [docs/SECURITY.md](docs/SECURITY.md) — regras obrigatórias de segurança e dados.
-11. [docs/constitution.md](docs/constitution.md) — a constituição do harness; os ADRs vivem em [docs/adr/](docs/adr/). Decisão registrada só muda com novo ADR.
+11. [docs/constitution.md](docs/constitution.md) — a constituição do harness; os ADRs vivem em [docs/adr/](docs/adr/) (índice em [docs/adr/index.md](docs/adr/index.md)). Decisão registrada só muda com novo ADR.
 12. [docs/exec-plans/](docs/exec-plans/) — planos de execução do trabalho em andamento.
 
 Conflito entre chat, memória e arquivos: **prevalecem os arquivos versionados**. Arquivo ambíguo ou regra inexistente: **pare e registre a pergunta em open-decisions.md** com dono sugerido. Nunca invente regra de negócio.
