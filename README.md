@@ -7,8 +7,8 @@ Este é o repositório do backend do SmartInsure e carrega o harness IA-first do
 ## Conteúdo do repositório
 
 - `AGENTS.md` — o mapa que todo agente e todo dev lê primeiro (~100 linhas, nunca mais que 150 — o lint garante).
-- `ARCHITECTURE.md` — stub: arquitetura do backend está fora do escopo do harness por enquanto (dono: arquitetura); nasce depois, seguindo o padrão de ADR/doc daqui.
-- `docs/` — fonte de verdade: sentido de produto (`PRODUCT_SENSE.md`), processo e exec-plans (`PLANS.md`), régua de qualidade (`QUALITY_SCORE.md`), confiabilidade (`RELIABILITY.md`, stub), **convenções do backend (`BACKEND.md`, stub — fora do escopo do harness por enquanto)**, segurança, `product-specs/` (glossário, RNs, decisões abertas), `constitution.md` (a constituição), `adr/` (ADRs), `generated/` (documentação derivada por script).
+- `ARCHITECTURE.md` — arquitetura do backend: camadas, módulos, estrutura de pastas, pipeline e testes (dono: arquitetura); as decisões individuais estão formalizadas nos ADRs.
+- `docs/` — fonte de verdade: sentido de produto (`PRODUCT_SENSE.md`), processo e exec-plans (`PLANS.md`), régua de qualidade (`QUALITY_SCORE.md`), confiabilidade (`RELIABILITY.md`, stub), **convenções do backend (`BACKEND.md` — inventário de stack e padrões, fonte da verdade da stack)**, segurança, `product-specs/` (glossário, RNs, decisões abertas), `constitution.md` (a constituição), `adr/` (ADRs, índice em `adr/index.md`), `generated/` (documentação derivada por script).
 - Sem skills/frameworks vendorados no repo: o harness é agnóstico (ADR-003) — cada dev usa a ferramenta que preferir no próprio ambiente; o repo cobra o resultado, não a ferramenta.
 - `scripts/check-harness.py` — o **componente central**: lint mecânico do próprio harness (links quebrados; referências a arquivos e IDs `ADR`/`OPEN`/`RN` em prosa; índices desatualizados; ADR sem status; decisão aberta sem dono; formato de RN; AGENTS.md acima do limite; exec-plan sem evidência). Roda no CI. É este script que diferencia o harness de documentação estática sem verificação.
 - `scripts/doctor.py` — valida o ambiente local e o layout de workspace (repos irmãos lado a lado). Advisório, para o primeiro dia.
@@ -23,7 +23,7 @@ Código de aplicação (entra na Fase B, depois da ratificação do harness), or
 
 1. Leia o [AGENTS.md](AGENTS.md) de ponta a ponta (5 minutos).
 2. Rode `python scripts/check-harness.py` — deve passar. Quebre um link em qualquer doc e execute novamente — a verificação deve falhar. Esse é o comportamento esperado.
-3. Leia os ADRs em [docs/adr/](docs/adr/) — cada um com Status `Proposto`: são **propostas para o time ratificar**, não decisões tomadas.
+3. Leia os ADRs em [docs/adr/](docs/adr/) (índice em [docs/adr/index.md](docs/adr/index.md)) — os de harness (001–004) têm Status `Proposto` e são **propostas para o time ratificar**; os de arquitetura do backend (005–057) vêm do planejamento com Status `Aceito`.
 4. Leia [docs/product-specs/open-decisions.md](docs/product-specs/open-decisions.md) — o que está bloqueado aguardando decisão humana (a maioria sob responsabilidade da PO).
 
 ## Topologia
