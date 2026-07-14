@@ -1,6 +1,9 @@
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+using SmartInsure.Api.Extensions;
 
-app.MapGet("/", () => "Hello World!");
+var builder = WebApplication.CreateBuilder(args);
+builder.AddApiServices();
+
+var app = builder.Build();
+app.UseApiPipeline();
 
 app.Run();

@@ -1,0 +1,10 @@
+namespace SmartInsure.Core.Abstractions.Services;
+
+/// <summary>
+/// Accessor de identidade corrente (ADR-014, ADR-035). Registrado apenas na borda HTTP;
+/// resolução nula significa execução de sistema (Functions/jobs), auditada como usuário-sistema.
+/// </summary>
+public interface ICurrentUserAccessor
+{
+    string? UserIdentifier { get; }
+}

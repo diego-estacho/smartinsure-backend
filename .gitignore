@@ -6,6 +6,7 @@ node_modules/
 bin/
 obj/
 *.user
+.vs/
 
 # Secrets locais — nunca versionados (SECURITY.md)
 appsettings.*.Local.json
