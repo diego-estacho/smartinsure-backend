@@ -7,6 +7,10 @@ bin/
 obj/
 *.user
 
+# Secrets locais — nunca versionados (SECURITY.md)
+appsettings.*.Local.json
+local.settings.json
+
 # Pastas de trabalho de frameworks de desenvolvimento (ADR-004) — scratch, não produto.
 # O resultado é aterrissado em docs/; a pasta do kit nunca é versionada.
 /.specify/

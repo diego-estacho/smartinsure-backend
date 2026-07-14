@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SmartInsure.Api/SmartInsure.Api.csproj" />
+    <Project Path="src/SmartInsure.Application.UseCase/SmartInsure.Application.UseCase.csproj" />
+    <Project Path="src/SmartInsure.Core/SmartInsure.Core.csproj" />
+    <Project Path="src/SmartInsure.Functions/SmartInsure.Functions.csproj" />
+    <Project Path="src/SmartInsure.Infra.BackgroundServices/SmartInsure.Infra.BackgroundServices.csproj" />
+    <Project Path="src/SmartInsure.Infra.CrossCutting/SmartInsure.Infra.CrossCutting.csproj" />
+    <Project Path="src/SmartInsure.Infra.Data/SmartInsure.Infra.Data.csproj" />
+    <Project Path="src/SmartInsure.Integration/SmartInsure.Integration.csproj" />
+    <Project Path="src/SmartInsure.MailServices/SmartInsure.MailServices.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SmartInsure.Tests/SmartInsure.Tests.csproj" />
+  </Folder>
+</Solution>
