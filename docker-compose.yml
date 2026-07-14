@@ -21,6 +21,36 @@ services:
       retries: 10
       start_period: 20s
 
+  # Cria o database se não existir — o Flyway migra dentro do database, não o cria.
+  mssql-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    entrypoint: ["/bin/bash", "-c", "/opt/mssql-tools18/bin/sqlcmd -C -S mssql -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"IF DB_ID('SmartInsure') IS NULL CREATE DATABASE SmartInsure;\" -b"]
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-SmartInsure@Dev123}
+    depends_on:
+      mssql:
+        condition: service_healthy
+
+  # Aplica as migrations do repo dedicado (ADR-041) no banco local.
+  # Requer o repo smartinsure-dbmigration clonado como irmão (ADR-001).
+  # Uso: docker compose --profile migrations up -d
+  flyway:
+    image: redgate/flyway
+    profiles: [migrations]
+    command: migrate
+    environment:
+      FLYWAY_URL: "jdbc:sqlserver://mssql:1433;databaseName=SmartInsure;encrypt=true;trustServerCertificate=true"
+      FLYWAY_USER: sa
+      FLYWAY_PASSWORD: ${MSSQL_SA_PASSWORD:-SmartInsure@Dev123}
+      # ADR-042: outOfOrder desabilitado também aqui, não só no flyway.conf do repo.
+      FLYWAY_OUT_OF_ORDER: "false"
+      FLYWAY_VALIDATE_MIGRATION_NAMING: "true"
+    volumes:
+      - ../smartinsure-dbmigration/migrations:/flyway/sql:ro
+    depends_on:
+      mssql-init:
+        condition: service_completed_successfully
+
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
     ports:
