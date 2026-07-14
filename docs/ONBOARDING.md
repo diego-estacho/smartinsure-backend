@@ -25,12 +25,12 @@ Se o `check-harness.py` reprovar, algum doc está inconsistente — conserte ant
 
 ## 3. Como o trabalho flui
 
-O processo completo está no [`PLANS.md`](PLANS.md). Ao pegar uma atividade, a primeira pergunta é: **toca comportamento de negócio?**
+O processo completo está no [`PLANS.md`](PLANS.md). Ao pegar uma atividade, faça a **triagem**: toca comportamento de negócio (dinheiro, status, permissão, cálculo, regra) ou precisa de contrato novo/alterado?
 
-- **Sim** (ex.: gerenciar usuários, cotar, emitir) → começa pela **RN** (seção 4).
-- **Não** (ex.: trocar a cor de um botão, ajuste de layout) → vai direto para implementar + evidência, mantendo o vocabulário do glossário.
+- **Sim** (ex.: gerenciar usuários, cotar, emitir) → é **cross-repo**: começa pela **RN** aqui no backend (seção 4), antes do código; o front consome. Os PRs dos dois repos são linkados pelo mesmo `AB#NNNNN`.
+- **Não** (ex.: componente novo, página sem backend, ajuste de layout) → é **front-only**: não passa por aqui — é implementada no `smartinsure-frontend`, mantendo o vocabulário do glossário.
 
-Trabalho de mais de ~1 dia ganha um **exec-plan** (ver [`docs/exec-plans/`](exec-plans/)).
+Trabalho de mais de ~1 dia ganha um **exec-plan**: no backend ([`docs/exec-plans/`](exec-plans/)) quando é cross-repo; no próprio front (`docs/exec-plans/` de lá) quando é front-only.
 
 ## 4. Sua primeira tarefa de negócio, passo a passo
 
