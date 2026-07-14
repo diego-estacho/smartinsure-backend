@@ -34,8 +34,12 @@ Conflito entre chat, memória e arquivos: **prevalecem os arquivos versionados**
 
 ## Fluxo por tarefa
 
+**Passo 0 — triagem.** A tarefa toca comportamento de negócio (dinheiro, status, permissão, cálculo, regra) ou precisa de contrato novo/alterado?
+- **Sim → cross-repo:** começa aqui, pela RN/contrato antes do código; o front consome. PRs dos dois repos linkados pelo mesmo `AB#NNNNN` (ADR-001).
+- **Não → front-only** (layout, componente, ajuste de UI): não começa aqui — vai direto para o `smartinsure-frontend`, com exec-plan próprio lá.
+
 1. Ler este arquivo + os docs relevantes ao tema; confirmar que nenhuma dependência está aberta em open-decisions.md.
-2. **Se a atividade toca comportamento de negócio, o primeiro passo é a RN** — levantar/refinar a regra junto com a PO e catalogá-la (aprovada) antes de escrever código (processo em [regras-de-negocio](docs/product-specs/regras-de-negocio/README.md); ferramenta de entrevista livre — ADR-003, resultado obrigatório). Ajuste sem regra de negócio (ex.: layout, cor, texto já no glossário) pula os passos 2–3 e vai direto ao passo 4 — mantendo o vocabulário do glossário e a evidência no PR.
+2. **Se a atividade toca comportamento de negócio, o primeiro passo é a RN** — levantar/refinar a regra junto com a PO e catalogá-la (aprovada) antes de escrever código (processo em [regras-de-negocio](docs/product-specs/regras-de-negocio/README.md); ferramenta de entrevista livre — ADR-003, resultado obrigatório).
 3. Decisão difícil de reverter vira ADR no mesmo passo.
 4. Implementar o menor incremento vertical.
 5. Rodar lint, typecheck, testes e build.

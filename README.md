@@ -1,6 +1,6 @@
-# SmartInsure — Harness IA-First
+# SmartInsure Backend
 
-Este é o repositório do backend do SmartInsure e carrega o harness IA-first do produto: a fundação documental e mecânica sobre a qual o produto é construído. Os princípios: docs versionados como fonte de verdade, `AGENTS.md` como mapa (não enciclopédia), entrevista antes de código, decisões registradas como ADRs em `docs/adr/` e verificação mecânica em vez de regra em prosa.
+Repositório do **backend** do SmartInsure. Hoje ele carrega o **harness IA-first** do produto (camada de produto + verificação mecânica) e o código .NET entra no scaffold (Fase B). O harness é uma camada do repo, não a identidade dele. Os princípios: docs versionados como fonte de verdade, `AGENTS.md` como mapa (não enciclopédia), entrevista antes de código, decisões registradas como ADRs em `docs/adr/` e verificação mecânica em vez de regra em prosa.
 
 **Novo no time?** Comece pelo [manual de trabalho](docs/ONBOARDING.md) — o guia do primeiro dia.
 
