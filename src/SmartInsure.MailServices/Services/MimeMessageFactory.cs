@@ -1,3 +1,4 @@
+using System;
 using MimeKit;
 using SmartInsure.Core.Abstractions.Services.Dtos;
 using SmartInsure.MailServices.Options;
@@ -20,7 +21,14 @@ internal static class MimeMessageFactory
 
         if (!string.IsNullOrWhiteSpace(message.ReplyTo))
         {
-            mime.ReplyTo.Add(MailboxAddress.Parse(message.ReplyTo));
+            try
+            {
+                mime.ReplyTo.Add(MailboxAddress.Parse(message.ReplyTo));
+            }
+            catch (ParseException)
+            {
+                throw new ArgumentException($"Endereço de e-mail inválido: {message.ReplyTo}", nameof(message));
+            }
         }
 
         mime.Subject = message.Subject;
@@ -44,7 +52,14 @@ internal static class MimeMessageFactory
     {
         foreach (var address in addresses)
         {
-            list.Add(MailboxAddress.Parse(address));
+            try
+            {
+                list.Add(MailboxAddress.Parse(address));
+            }
+            catch (ParseException)
+            {
+                throw new ArgumentException($"Endereço de e-mail inválido: {address}", nameof(addresses));
+            }
         }
     }
 }
