@@ -1,4 +1,7 @@
 using Microsoft.Extensions.Logging;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
+using Refit;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Abstractions.Services.Dtos;
 using SmartInsure.Core.Enumerators;
@@ -37,10 +40,16 @@ public sealed class BureauProvider(
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            // Cancelamento pedido pelo chamador não é falha do bureau — propaga.
+            // Cancelamento pedido pelo chamador não é falha do birô — propaga.
             throw;
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception
+            is ApiException
+            or HttpRequestException
+            or TimeoutException
+            or OperationCanceledException
+            or TimeoutRejectedException
+            or BrokenCircuitException)
         {
             // RN-004: indisponibilidade (incluindo tempo de resposta excedido) não bloqueia o fluxo.
             logger.LogError(exception,
