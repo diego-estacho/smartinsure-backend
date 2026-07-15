@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Integration.Casdoor.Interfaces;
@@ -11,11 +12,34 @@ namespace SmartInsure.Integration.Casdoor.Services;
 /// A identidade nasce com a senha inicial padrão e NeedUpdatePassword, cumprindo a
 /// troca obrigatória no primeiro acesso (RN-001).
 /// </summary>
-public sealed class CasdoorIdentityProvider(
+public sealed partial class CasdoorIdentityProvider(
     ICasdoorApi api,
     IOptions<CasdoorOptions> options) : IIdentityProvider
 {
+    private const int MaxUsernameLength = 39;
+
     private readonly CasdoorOptions _options = options.Value;
+
+    [GeneratedRegex("[^a-zA-Z0-9]")]
+    private static partial Regex NonAlphanumericRegex();
+
+    /// <summary>
+    /// Username aceito pelo Casdoor (só alfanumérico/underline): prefixo de ambiente +
+    /// e-mail com não-alfanuméricos como underline, limitado a 39 chars, sem underline
+    /// final, em minúsculas. Mesma derivação usada no InsurePoint legado.
+    /// </summary>
+    internal static string GetUsername(string environmentPrefix, string email)
+    {
+        var username = $"{environmentPrefix}_{NonAlphanumericRegex().Replace(email, "_")}";
+        username = username.Length > MaxUsernameLength ? username[..MaxUsernameLength] : username;
+
+        if (username.EndsWith('_'))
+        {
+            username = $"{username[..^1]}0";
+        }
+
+        return username.ToLowerInvariant();
+    }
 
     public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken)
     {
@@ -29,7 +53,7 @@ public sealed class CasdoorIdentityProvider(
         var user = new CasdoorUser
         {
             Owner = _options.OrganizationName,
-            Name = email,
+            Name = GetUsername(_options.EnviromentUserCasdoor, email),
             DisplayName = name,
             Email = email,
             Password = _options.DefaultPassword,

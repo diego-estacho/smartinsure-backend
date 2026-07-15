@@ -28,4 +28,11 @@ public sealed class CasdoorOptions
     /// <summary>Senha inicial padrão da RN-001, com troca obrigatória no primeiro acesso.</summary>
     [Required]
     public string DefaultPassword { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Prefixo de ambiente do username no Casdoor (ex.: dev_insp). Nome da chave mantém a
+    /// grafia da configuração legada compartilhada com o InsurePoint.
+    /// </summary>
+    [Required]
+    public string EnviromentUserCasdoor { get; init; } = string.Empty;
 }

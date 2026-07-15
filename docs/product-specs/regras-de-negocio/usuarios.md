@@ -8,7 +8,9 @@
 
 **Critério de aceitação.** Ao criar um Usuário com nome e e-mail válidos, ele passa a existir na plataforma guardando a referência ao identificador da sua identidade no provedor de identidade, na situação Pendente, com a senha inicial padrão e a troca de senha exigida no primeiro acesso. Em nenhum momento existe Usuário na plataforma sem identidade correspondente no provedor de identidade.
 
-**Casos limite.** Nome ou e-mail ausentes ou inválidos: criação recusada. E-mail já cadastrado na plataforma: criação recusada. E-mail já existente no provedor de identidade: criação recusada — a identidade preexistente não é adotada nem alterada. Falha ao registrar o Usuário na plataforma após a identidade ter sido criada no provedor: a identidade recém-criada é desfeita e a criação é recusada, sem deixar identidade órfã.
+**Nome de usuário no provedor de identidade.** A identidade nasce com nome de usuário derivado do e-mail, no formato aceito pelo provedor (apenas letras, números e underline): prefixo do ambiente (ex.: `dev_insp`) seguido de underline e do e-mail com todo caractere não alfanumérico substituído por underline; o resultado é limitado a 39 caracteres, não termina em underline (underline final vira `0`) e fica em minúsculas. O e-mail permanece o identificador de negócio; o nome de usuário é detalhe de integração e não é exibido na plataforma. Mesma derivação usada no InsurePoint legado.
+
+**Casos limite.** Nome ou e-mail ausentes ou inválidos: criação recusada. E-mail já cadastrado na plataforma: criação recusada. E-mail já existente no provedor de identidade: criação recusada — a identidade preexistente não é adotada nem alterada. Falha ao registrar o Usuário na plataforma após a identidade ter sido criada no provedor: a identidade recém-criada é desfeita e a criação é recusada, sem deixar identidade órfã. E-mails distintos podem colidir no nome de usuário após o corte de 39 caracteres: o provedor exige nome de usuário único e recusa a criação — a criação é recusada sem identidade órfã, como em qualquer recusa do provedor.
 
 ## RN-002 — Ativação do Usuário no primeiro acesso
 
