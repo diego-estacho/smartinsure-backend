@@ -1,8 +1,12 @@
 using Carter;
 using FluentValidation;
 using SmartInsure.Api.Handlers.Base;
-using SmartInsure.Application.UseCase.UseCases.Users.ActivateUser;
-using SmartInsure.Application.UseCase.UseCases.Users.CreateUser;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser.Requests;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser.Responses;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Requests;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Responses;
 using SmartInsure.Core.Abstractions.Services;
 
 namespace SmartInsure.Api.Endpoints;

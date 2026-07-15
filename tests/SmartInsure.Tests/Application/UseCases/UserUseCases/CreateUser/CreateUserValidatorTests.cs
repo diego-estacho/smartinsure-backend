@@ -1,7 +1,8 @@
 using FluentAssertions;
-using SmartInsure.Application.UseCase.UseCases.Users.CreateUser;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Requests;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Validators;
 
-namespace SmartInsure.Tests.Application.UseCases.Users;
+namespace SmartInsure.Tests.Application.UseCases.UserUseCases.CreateUser;
 
 /// <summary>RN-001 — casos limite de dados obrigatórios e inválidos.</summary>
 [Trait("RuleId", "RN-001")]

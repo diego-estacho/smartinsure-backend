@@ -1,9 +1,12 @@
 using FluentValidation;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Requests;
 
-namespace SmartInsure.Application.UseCase.UseCases.Users.CreateUser;
+namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Validators;
 
+/// <summary>Validador de regras de negócio para criação de usuário.</summary>
 public sealed class CreateUserValidator : AbstractValidator<CreateUserRequest>
 {
+    /// <summary>Inicializa o validador com as regras de negócio para criação de usuário.</summary>
     public CreateUserValidator()
     {
         RuleFor(request => request.Name)

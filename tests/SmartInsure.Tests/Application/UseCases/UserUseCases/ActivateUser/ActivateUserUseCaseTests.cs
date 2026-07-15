@@ -1,6 +1,7 @@
 using FluentAssertions;
 using NSubstitute;
-using SmartInsure.Application.UseCase.UseCases.Users.ActivateUser;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser.Requests;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
@@ -8,7 +9,7 @@ using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
 
-namespace SmartInsure.Tests.Application.UseCases.Users;
+namespace SmartInsure.Tests.Application.UseCases.UserUseCases.ActivateUser;
 
 /// <summary>RN-002 — Ativação do Usuário no primeiro acesso.</summary>
 [Trait("RuleId", "RN-002")]

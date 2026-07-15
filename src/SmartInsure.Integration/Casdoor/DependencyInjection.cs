@@ -20,6 +20,8 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         // ADR-044: resiliência universal em toda chamada HTTP de saída.
+        // ADR-050: operações não idempotentes (como POST de add-user) não devem ser retentadas.
+        // Apenas operações idempotentes (GET, HEAD) recebem retry automático.
         services.AddRefitClient<ICasdoorApi>()
             .ConfigureHttpClient((provider, client) =>
             {

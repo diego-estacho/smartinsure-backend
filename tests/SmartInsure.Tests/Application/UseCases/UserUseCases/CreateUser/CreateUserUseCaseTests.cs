@@ -1,14 +1,17 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using SmartInsure.Application.UseCase.UseCases.Users.CreateUser;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Requests;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Exceptions;
 
-namespace SmartInsure.Tests.Application.UseCases.Users;
+namespace SmartInsure.Tests.Application.UseCases.UserUseCases.CreateUser;
 
 /// <summary>RN-001 — Criação de Usuário.</summary>
 [Trait("RuleId", "RN-001")]
@@ -17,10 +20,11 @@ public class CreateUserUseCaseTests
     private readonly IUserRepository _repository = Substitute.For<IUserRepository>();
     private readonly IIdentityProvider _identityProvider = Substitute.For<IIdentityProvider>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
+    private readonly ILogger<CreateUserUseCase> _logger = Substitute.For<ILogger<CreateUserUseCase>>();
     private readonly CreateUserUseCase _useCase;
 
     public CreateUserUseCaseTests()
-        => _useCase = new CreateUserUseCase(_repository, _identityProvider, _unitOfWork);
+        => _useCase = new CreateUserUseCase(_repository, _identityProvider, _unitOfWork, _logger);
 
     private static CreateUserRequest Request()
         => new("Maria Silva", "maria.silva@corretora.com.br");

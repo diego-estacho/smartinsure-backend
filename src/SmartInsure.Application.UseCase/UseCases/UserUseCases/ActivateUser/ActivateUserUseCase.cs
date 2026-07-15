@@ -1,17 +1,14 @@
 using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser.Requests;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser.Responses;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
 
-namespace SmartInsure.Application.UseCase.UseCases.Users.ActivateUser;
-
-public sealed record ActivateUserRequest(string ExternalIdentity);
-
-public sealed record ActivateUserResponse(Guid Id, string Status);
-
-public interface IActivateUserUseCase : IUseCase<ActivateUserRequest, ActivateUserResponse>;
+namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser;
 
 /// <summary>
 /// RN-002 — Ativação do Usuário no primeiro acesso: Pendente → Ativo somente após a
@@ -22,6 +19,7 @@ public sealed class ActivateUserUseCase(
     IIdentityProvider identityProvider,
     IUnitOfWork unitOfWork) : IActivateUserUseCase
 {
+    /// <summary>Executa o caso de uso de ativação de usuário.</summary>
     public async Task<ActivateUserResponse> ExecuteAsync(
         ActivateUserRequest request,
         CancellationToken cancellationToken)

@@ -1,13 +1,15 @@
+using Microsoft.Extensions.Logging;
 using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Requests;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Responses;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Exceptions;
 
-namespace SmartInsure.Application.UseCase.UseCases.Users.CreateUser;
-
-public interface ICreateUserUseCase : IUseCase<CreateUserRequest, CreateUserResponse>;
+namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser;
 
 /// <summary>
 /// RN-001 — Criação de Usuário: identidade criada primeiro no provedor de identidade;
@@ -17,8 +19,12 @@ public interface ICreateUserUseCase : IUseCase<CreateUserRequest, CreateUserResp
 public sealed class CreateUserUseCase(
     IUserRepository userRepository,
     IIdentityProvider identityProvider,
-    IUnitOfWork unitOfWork) : ICreateUserUseCase
+    IUnitOfWork unitOfWork,
+    ILogger<CreateUserUseCase> logger) : ICreateUserUseCase
 {
+    /// <summary>
+    /// Executa o caso de uso de criação de usuário com compensação de identidade em caso de falha.
+    /// </summary>
     public async Task<CreateUserResponse> ExecuteAsync(
         CreateUserRequest request,
         CancellationToken cancellationToken)
@@ -50,7 +56,18 @@ public sealed class CreateUserUseCase(
         }
         catch
         {
-            await identityProvider.RemoveIdentityAsync(externalIdentity, CancellationToken.None);
+            try
+            {
+                await identityProvider.RemoveIdentityAsync(externalIdentity, CancellationToken.None);
+            }
+            catch (Exception compensationException)
+            {
+                logger.LogError(
+                    compensationException,
+                    "Falha ao remover identidade órfã no provedor de identidade. ExternalIdentity: {ExternalIdentity}",
+                    externalIdentity);
+            }
+
             throw;
         }
     }

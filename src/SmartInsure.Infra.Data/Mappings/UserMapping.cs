@@ -32,7 +32,9 @@ public sealed class UserMapping : IEntityTypeConfiguration<User>
             .HasMaxLength(20)
             .IsRequired();
 
-        builder.Property(user => user.CreatedBy).HasMaxLength(100);
+        // Alinhado 1:1 com a migration V20260715114410 (evitar drift de constraint).
+        builder.Property(user => user.CreatedAt).IsRequired();
+        builder.Property(user => user.CreatedBy).HasMaxLength(100).IsRequired();
         builder.Property(user => user.UpdatedBy).HasMaxLength(100);
     }
 }
