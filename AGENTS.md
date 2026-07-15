@@ -50,7 +50,7 @@ Conflito entre chat, memória e arquivos: **prevalecem os arquivos versionados**
 
 - Branch: `ab-NNNNN-slug-curto` — sem `#` (MAX_PATH no Windows, ADR-002). O vínculo com o PBI vai no commit/PR como `AB#NNNNN` (integração Azure Boards).
 - Worktrees nativas do git em raiz curta, com os repos como irmãos sob a pasta da atividade para os ponteiros de workspace resolverem: `git worktree add C:\wt\ab-NNNNN\smartinsure-backend` (e o análogo no front). ADR-002.
-- Idioma: termos de domínio em pt-BR (idênticos ao glossário); código utilitário em inglês; UI, mensagens e commits em pt-BR (Conventional Commits).
+- Idioma (ADR-058): todo artefato de código em inglês, com nome técnico mapeado 1:1 no glossário; documentação, UI, mensagens e commits em pt-BR (Conventional Commits).
 - Workspace: repos clonados lado a lado (`C:\src\smart\smartinsure-backend` e `C:\src\smart\smartinsure-frontend`); o front referencia a camada de produto via `../smartinsure-backend/docs/` (ADR-001).
 - Ferramenta de IA: o harness é agnóstico (ADR-003). O ponto de entrada é este AGENTS.md; `CLAUDE.md` e equivalentes são apenas ponteiros para ele.
 - PR pequeno, um assunto. Mudança cross-repo: backend primeiro (contrato publicado), depois front — PRs linkados pelo mesmo `AB#NNNNN` (ADR-001).

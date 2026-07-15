@@ -61,3 +61,4 @@
 | [ADR-055](055-opentelemetry.md) | OpenTelemetry com correlação ponta a ponta | accepted | operacao | OTel → Azure Monitor; correlationId propagado e exposto; redação de dados sensíveis |
 | [ADR-056](056-testes-unitarios-stack.md) | Stack e convenções de teste unitário | accepted | testes | xUnit + NSubstitute + FluentAssertions; espelha src; fakes só em fronteiras; TDD |
 | [ADR-057](057-politica-cobertura.md) | Política de cobertura e escopo da suíte | accepted | testes | Cobertura prioriza usecases/domínio; repositórios sem teste; integração adiada com risco registrado |
+| [ADR-058](058-artefatos-ingles-docs-ptbr.md) | Nomes de artefatos em inglês; documentação e UI em pt-BR | accepted | dominio, api, plataforma | Artefatos de código em inglês com mapa 1:1 no glossário; docs, UI, mensagens e commits em pt-BR |
