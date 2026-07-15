@@ -14,6 +14,7 @@ using SmartInsure.Infra.BackgroundServices;
 using SmartInsure.Infra.CrossCutting.IoC;
 using SmartInsure.Infra.CrossCutting.Options;
 using SmartInsure.Infra.Data;
+using SmartInsure.Integration.Casdoor;
 
 namespace SmartInsure.Api.Extensions;
 
@@ -38,6 +39,7 @@ public static class BuilderExtensions
         builder.Services.AddCrossCutting();
         builder.Services.AddInfraData(builder.Configuration);
         builder.Services.AddApplicationUseCases();
+        builder.Services.AddCasdoorIntegration();
         builder.Services.AddBackgroundServices();
 
         builder.Services.AddCarter();

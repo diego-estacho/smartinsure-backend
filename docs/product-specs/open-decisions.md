@@ -13,3 +13,9 @@ Dono: time + empresa (verificar se o grupo já tem política formalizada)
 Bloqueia: uso de dados reais em fixtures, prompts e ambientes de teste
 Status: aberta
 Contexto: hoje não existe política formal. Até existir, vale o [SECURITY.md](../SECURITY.md): prod read-only pela credencial no servidor, dados sintéticos em teste.
+
+## OPEN-03 — Vínculo entre Usuário e Corretora
+Dono: PO (gerente de projeto)
+Bloqueia: isolamento multi-tenant por corretora (query filters, ADR-035) e claims de corretora na identidade (ADR-014); restrição de quem pode criar usuário por perfil
+Status: aberta
+Contexto: a criação de Usuário (RN-001) nasce sem vínculo com Corretora e sem perfis, por decisão do negócio nesta fase. Falta decidir quando e como o Usuário passa a pertencer a uma Corretora e quais perfis restringem a criação — hoje qualquer usuário autenticado cria.

@@ -4,18 +4,20 @@ Status: **proposta** — aguardando ratificação da PO ([OPEN-01](open-decision
 
 Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de entidade, tabela, rota, tela, evento ou status nasce fora daqui.
 
-**Regra estrutural:** no código, as entidades de domínio usam exatamente estes termos em pt-BR (`Oferta`, `Cotacao`, `Proposta`, `Apolice`) — sem tradução para inglês no domínio. A tradução de termo de negócio é onde nasce inversão de vocabulário; eliminando a tradução, eliminamos a classe inteira do bug.
+**Regra estrutural (ADR-058):** todo artefato de código usa o **nome técnico em inglês** mapeado 1:1 nesta tabela; UI, documentação e mensagens usam exclusivamente o termo pt-BR. A tradução é por decreto — só existe aqui; nome técnico ad hoc é inversão de vocabulário e reprova em review.
 
 ## Termos
 
-| Termo | Definição | Cardinalidade | O que NUNCA chamar assim |
-|---|---|---|---|
-| **Oferta** | O pedido/estudo que o corretor cria no wizard (tomador, modalidade, valores, vigência) | 1 por jornada | o retorno de uma seguradora |
-| **Cotação** | O retorno de UMA seguradora para uma oferta: prêmio, condições, prazo | N por oferta (uma por seguradora) | o pedido do corretor |
-| **Proposta** | A cotação aceita pelo corretor, em processamento na seguradora até a emissão | 0..1 por oferta | qualquer coisa antes do aceite |
-| **Apólice** | O documento emitido pela seguradora | 0..1 por proposta | — |
-| **Seguradora** | Quem precifica e emite. A OnPoint é um *hub* de seguradoras, não uma seguradora | — | — |
-| **Corretora / Corretor** | A empresa cliente da plataforma / o usuário dela | — | — |
+| Termo | Nome técnico (código) | Definição | Cardinalidade | O que NUNCA chamar assim |
+|---|---|---|---|---|
+| **Oferta** | `Offer` | O pedido/estudo que o corretor cria no wizard (tomador, modalidade, valores, vigência) | 1 por jornada | o retorno de uma seguradora |
+| **Cotação** | `Quote` | O retorno de UMA seguradora para uma oferta: prêmio, condições, prazo | N por oferta (uma por seguradora) | o pedido do corretor |
+| **Proposta** | `Proposal` | A cotação aceita pelo corretor, em processamento na seguradora até a emissão | 0..1 por oferta | qualquer coisa antes do aceite |
+| **Apólice** | `Policy` | O documento emitido pela seguradora | 0..1 por proposta | — |
+| **Seguradora** | `Insurer` | Quem precifica e emite. A OnPoint é um *hub* de seguradoras, não uma seguradora | — | — |
+| **Corretora / Corretor** | `Brokerage` / `Broker` | A empresa cliente da plataforma / o usuário dela | — | — |
+| **Usuário** | `User` | Pessoa que acessa a plataforma, com identidade mantida no provedor de identidade (ratificado pela PO em 2026-07-15) | — | a Corretora (empresa) |
+| **Provedor de identidade** | `IdentityProvider` | Serviço externo que guarda credenciais e autentica os Usuários da plataforma (ratificado pela PO em 2026-07-15) | — | — |
 
 Origem: ontologia definida pelo negócio em 2026-05-22 ("Oferta (singular) → Cotações, uma por seguradora"). Se a PO decidir termos diferentes, este arquivo muda ANTES de qualquer código de domínio existir.
 
@@ -26,3 +28,10 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 - Status é exposto na API **por nome estável**, nunca por número ordinal.
 - Status de seguradora não aparece na UI nem no domínio — somente a tradução dele, feita na integração daquela seguradora.
 - Cada status novo exige: entrada aqui, transições permitidas documentadas, e teste de transição no módulo dono.
+
+### Usuário (ratificado pela PO em 2026-07-15)
+
+| Status | Nome estável (API) | Significado | Transições permitidas |
+|---|---|---|---|
+| **Pendente** | `Pending` | Usuário criado que ainda não concluiu o primeiro acesso | Pendente → Ativo (RN-002) |
+| **Ativo** | `Active` | Usuário que concluiu o primeiro acesso com senha própria definida | — (inativação ainda não definida) |
