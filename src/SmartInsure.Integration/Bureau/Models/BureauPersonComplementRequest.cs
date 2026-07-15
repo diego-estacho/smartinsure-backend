@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace SmartInsure.Integration.Bureau.Models;
 
-/// <summary>Corpo do POST GetPersonComplement no gateway de Bureau.</summary>
+/// <summary>Corpo do POST GetPersonComplement no gateway de Birô.</summary>
 public sealed record BureauPersonComplementRequest
 {
     [JsonPropertyName("cpfCnpj")]

@@ -1,7 +1,7 @@
 namespace SmartInsure.Core.Abstractions.Services.Dtos;
 
 /// <summary>
-/// Dados cadastrais retornados pelo Bureau (glossário) para um CPF/CNPJ.
+/// Dados cadastrais retornados pelo Birô (glossário) para um CPF/CNPJ.
 /// O uso de negócio destes dados está em aberto (OPEN-04); o DTO expõe o
 /// retorno sem aplicar qualquer efeito automático.
 /// </summary>

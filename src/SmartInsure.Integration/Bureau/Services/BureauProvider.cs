@@ -8,7 +8,7 @@ using SmartInsure.Integration.Bureau.Models;
 namespace SmartInsure.Integration.Bureau.Services;
 
 /// <summary>
-/// Implementação do Bureau sobre o gateway InsurePoint.
+/// Implementação do Birô sobre o gateway InsurePoint.
 /// RN-003: cada chamada consulta a fonte; resposta com status diferente de OK é
 /// consulta sem dado. RN-004: falha de comunicação vira null logado, nunca exceção.
 /// </summary>
@@ -44,7 +44,7 @@ public sealed class BureauProvider(
         {
             // RN-004: indisponibilidade (incluindo tempo de resposta excedido) não bloqueia o fluxo.
             logger.LogError(exception,
-                "Falha na consulta ao bureau {Bureau} para o documento {CpfCnpj}", bureau, cpfCnpj);
+                "Falha na consulta ao birô {Bureau} para o documento {CpfCnpj}", bureau, cpfCnpj);
 
             return null;
         }

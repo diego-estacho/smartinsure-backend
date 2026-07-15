@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace SmartInsure.Integration.Bureau.Options;
 
 /// <summary>
-/// Configuração do gateway de Bureau (seção BureauApi). Password vive em
+/// Configuração do gateway de Birô (seção BureauApi). Password vive em
 /// appsettings.*.Local.json / secret store — nunca versionada (SECURITY.md).
 /// </summary>
 public sealed class BureauOptions

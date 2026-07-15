@@ -4,7 +4,7 @@ using SmartInsure.Integration.Bureau.Models;
 namespace SmartInsure.Integration.Bureau.Interfaces;
 
 /// <summary>
-/// Gateway de Bureau; autenticação Basic userName:password e headers
+/// Gateway de Birô; autenticação Basic userName:password e headers
 /// InsuranceCompanyId/Product no handler do HttpClient.
 /// </summary>
 public interface IBureauApi

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace SmartInsure.Integration.Bureau.Models;
 
 /// <summary>
-/// Resposta do gateway de Bureau (formato ReceitaWS). Somente resposta com
+/// Resposta do gateway de Birô (formato ReceitaWS). Somente resposta com
 /// Status "OK" é dado cadastral válido (RN-003).
 /// </summary>
 public sealed record BureauPersonComplementResponse
