@@ -14,6 +14,7 @@ using SmartInsure.Infra.BackgroundServices;
 using SmartInsure.Infra.CrossCutting.IoC;
 using SmartInsure.Infra.CrossCutting.Options;
 using SmartInsure.Infra.Data;
+using SmartInsure.Integration.Bureau;
 using SmartInsure.Integration.Casdoor;
 using SmartInsure.MailServices;
 
@@ -41,6 +42,7 @@ public static class BuilderExtensions
         builder.Services.AddInfraData(builder.Configuration);
         builder.Services.AddApplicationUseCases();
         builder.Services.AddCasdoorIntegration();
+        builder.Services.AddBureauIntegration();
         builder.Services.AddMailServices();
         builder.Services.AddBackgroundServices();
 
