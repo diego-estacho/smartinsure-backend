@@ -39,7 +39,7 @@ public class GetInsurerUseCaseTests
     }
 
     [Fact]
-    public async Task Execute_DeveThrowNotFound_QuandoSeguradoreNaoExiste()
+    public async Task Execute_DeveLancarNotFound_QuandoSeguradoraInexistente()
     {
         var insurerId = Guid.NewGuid();
 
