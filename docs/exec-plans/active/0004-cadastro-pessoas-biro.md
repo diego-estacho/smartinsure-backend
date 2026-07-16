@@ -17,7 +17,7 @@ Fatia vertical da jornada Cadastro de Pessoas: busca de Pessoa Jurídica por nom
 - [x] Infra.Data: mappings (alinhados 1:1 com as migrations), `LegalEntityRepository`, `LegalNatureRepository`, DbSets e DI.
 - [x] Api: `LegalEntitiesEndpoint` (GET /legal-entities?term&role — autenticado).
 - [x] Testes com rastreabilidade `[Trait("RuleId", "RN-013".."RN-016")]`.
-- [ ] Validar migrations localmente (`docker compose --profile migrations up -d`).
+- [x] Validar migrations localmente (`docker compose --profile migrations up -d`).
 - [ ] OPEN-04: registrar decisão parcial (gatilho busca-por-documento + preenchimento de cadastro) após ratificação da PO.
 - [ ] Contrato `openapi.json` publicado; front consome depois (mesmo `AB#NNNNN`, ainda sem PBI).
 - [ ] PRs: dbmigration (→ develop) antes/junto do backend (→ main).
@@ -31,4 +31,6 @@ Fatia vertical da jornada Cadastro de Pessoas: busca de Pessoa Jurídica por nom
 
 ## Evidências
 
-- (preencher ao concluir)
+- Backend: `dotnet test` — 173/173 aprovados (inclui 18 testes novos RN-013..RN-016); `dotnet build` sem erros; `check-harness.py` → `harness ok`.
+- Migrations: Flyway local aplicou `criar-tabela-legal-natures` e `criar-tabelas-legal-entities` com sucesso (v20260716154100); seed conferido no SQL Server local — 94 naturezas, 35 do setor público.
+- Pendências registradas nas tarefas: ratificação da PO (termos e RNs), contrato openapi/front, PBI/PRs.
