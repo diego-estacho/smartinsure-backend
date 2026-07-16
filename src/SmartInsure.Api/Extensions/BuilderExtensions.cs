@@ -105,6 +105,30 @@ public static class BuilderExtensions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
                     RoleClaimType = jwt.RoleClaimType,
                 };
+
+                // RN-006: acesso encerrado (denylist) é recusado mesmo com assinatura e
+                // lifetime válidos — sessão é da plataforma, não só do token.
+                bearer.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var tokenId = context.Principal?.FindFirst("jti")?.Value;
+
+                        if (string.IsNullOrEmpty(tokenId))
+                        {
+                            return;
+                        }
+
+                        var revocationStore = context.HttpContext.RequestServices
+                            .GetRequiredService<IAccessTokenRevocationStore>();
+
+                        if (await revocationStore.IsRevokedAsync(
+                            tokenId, context.HttpContext.RequestAborted))
+                        {
+                            context.Fail("Acesso encerrado.");
+                        }
+                    },
+                };
             });
     }
 }
