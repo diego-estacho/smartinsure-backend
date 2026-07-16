@@ -10,12 +10,12 @@ Fatia vertical da jornada Cadastro de Pessoas: busca de Pessoa Jurídica por nom
 ## Tarefas
 
 - [x] RN-013..RN-016 catalogadas em `pessoas.md`; glossário com os termos novos (propostos, aguardando ratificação da PO).
-- [x] Migrations no `smartinsure-dbmigration` (branch `rn-013-cadastro-pessoas`): `V20260716153951__criar-tabela-legal-natures.sql` (tabela + seed CONCLA, 94 códigos) e `V20260716154100__criar-tabelas-legal-entities.sql` (LegalEntities + LegalEntityAddresses).
-- [x] Core: `LegalEntity`, `LegalEntityAddress`, `LegalNature` (entidades ricas), `ELegalEntityRole`, `ILegalEntityRepository`, `ILegalNatureRepository`.
+- [x] Migrations no `smartinsure-dbmigration` (branch `rn-013-cadastro-pessoas`): `V20260716153951__criar-tabela-legal-natures.sql` (tabela + seed CONCLA, 94 códigos) e `V20260716154100__criar-tabelas-persons.sql` (Persons + PersonAddresses).
+- [x] Core: `Person`, `PersonAddress`, `LegalNature` (entidades ricas), `EPersonRole`, `IPersonRepository`, `ILegalNatureRepository`.
 - [x] CrossCutting: `CnpjValidator.IsHeadquarters`/`HeadquartersOf` (resolução da matriz com DVs recalculados).
-- [x] Application: `SearchLegalEntitiesUseCase` (busca → importação Birô → matriz para tomador), validator.
-- [x] Infra.Data: mappings (alinhados 1:1 com as migrations), `LegalEntityRepository`, `LegalNatureRepository`, DbSets e DI.
-- [x] Api: `LegalEntitiesEndpoint` (GET /legal-entities?term&role — autenticado).
+- [x] Application: `SearchPersonsUseCase` (busca → importação Birô → matriz para tomador), validator.
+- [x] Infra.Data: mappings (alinhados 1:1 com as migrations), `PersonRepository`, `LegalNatureRepository`, DbSets e DI.
+- [x] Api: `PersonsEndpoint` (GET /persons?term&role — autenticado).
 - [x] Testes com rastreabilidade `[Trait("RuleId", "RN-013".."RN-016")]`.
 - [x] Validar migrations localmente (`docker compose --profile migrations up -d`).
 - [ ] OPEN-04: registrar decisão parcial (gatilho busca-por-documento + preenchimento de cadastro) após ratificação da PO.
@@ -32,5 +32,5 @@ Fatia vertical da jornada Cadastro de Pessoas: busca de Pessoa Jurídica por nom
 ## Evidências
 
 - Backend: `dotnet test` — 173/173 aprovados (inclui 18 testes novos RN-013..RN-016); `dotnet build` sem erros; `check-harness.py` → `harness ok`.
-- Migrations: Flyway local aplicou `criar-tabela-legal-natures` e `criar-tabelas-legal-entities` com sucesso (v20260716154100); seed conferido no SQL Server local — 94 naturezas, 35 do setor público.
+- Migrations: Flyway local aplicou `criar-tabela-legal-natures` e `criar-tabelas-persons` com sucesso (v20260716154100); seed conferido no SQL Server local — 94 naturezas, 35 do setor público.
 - Pendências registradas nas tarefas: ratificação da PO (termos e RNs), contrato openapi/front, PBI/PRs.

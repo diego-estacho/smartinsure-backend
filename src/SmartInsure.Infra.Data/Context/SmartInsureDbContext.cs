@@ -13,7 +13,7 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 {
     public DbSet<Insurer> Insurers => Set<Insurer>();
 
-    public DbSet<LegalEntity> LegalEntities => Set<LegalEntity>();
+    public DbSet<Person> Persons => Set<Person>();
 
     public DbSet<LegalNature> LegalNatures => Set<LegalNature>();
 

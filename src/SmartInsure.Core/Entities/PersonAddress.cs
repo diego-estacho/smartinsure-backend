@@ -1,16 +1,16 @@
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Endereço da Pessoa Jurídica (RN-014): o endereço retornado pelo Birô entra como
+/// Endereço da Pessoa (RN-014): o endereço retornado pelo Birô entra como
 /// principal; campos ausentes na fonte permanecem nulos.
 /// </summary>
-public sealed class LegalEntityAddress : EntityBase
+public sealed class PersonAddress : EntityBase
 {
-    private LegalEntityAddress()
+    private PersonAddress()
     {
     }
 
-    public Guid LegalEntityId { get; private set; }
+    public Guid PersonId { get; private set; }
 
     public string? ZipCode { get; private set; }
 
@@ -28,8 +28,8 @@ public sealed class LegalEntityAddress : EntityBase
 
     public bool IsMain { get; private set; }
 
-    internal static LegalEntityAddress CreateMain(
-        Guid legalEntityId,
+    internal static PersonAddress CreateMain(
+        Guid personId,
         string? zipCode,
         string? street,
         string? number,
@@ -39,7 +39,7 @@ public sealed class LegalEntityAddress : EntityBase
         string? state)
         => new()
         {
-            LegalEntityId = legalEntityId,
+            PersonId = personId,
             ZipCode = Clean(zipCode, digitsOnly: true),
             Street = Clean(street),
             Number = Clean(number),

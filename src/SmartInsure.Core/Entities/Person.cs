@@ -3,15 +3,15 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Pessoa Jurídica (glossário): única por CNPJ, cadastrada uma vez e reaproveitada pelos
+/// Pessoa (glossário): única por CNPJ, cadastrada uma vez e reaproveitada pelos
 /// papéis que a referenciam (RN-013/RN-014). Importada do Birô com endereço principal;
 /// os dados não são atualizados pelo fluxo de busca (RN-014).
 /// </summary>
-public sealed class LegalEntity : EntityBase
+public sealed class Person : EntityBase
 {
-    private readonly List<LegalEntityAddress> _addresses = [];
+    private readonly List<PersonAddress> _addresses = [];
 
-    private LegalEntity()
+    private Person()
     {
     }
 
@@ -25,9 +25,9 @@ public sealed class LegalEntity : EntityBase
 
     public LegalNature? LegalNature { get; private set; }
 
-    public IReadOnlyCollection<LegalEntityAddress> Addresses => _addresses.AsReadOnly();
+    public IReadOnlyCollection<PersonAddress> Addresses => _addresses.AsReadOnly();
 
-    public static LegalEntity Create(
+    public static Person Create(
         string cnpj,
         string corporateName,
         string? tradeName,
@@ -37,15 +37,15 @@ public sealed class LegalEntity : EntityBase
 
         if (digits.Length != 14)
         {
-            throw new BusinessRuleException("O CNPJ da pessoa jurídica deve ter 14 dígitos.");
+            throw new BusinessRuleException("O CNPJ da pessoa deve ter 14 dígitos.");
         }
 
         if (string.IsNullOrWhiteSpace(corporateName))
         {
-            throw new BusinessRuleException("A razão social da pessoa jurídica é obrigatória.");
+            throw new BusinessRuleException("A razão social da pessoa é obrigatória.");
         }
 
-        return new LegalEntity
+        return new Person
         {
             Cnpj = digits,
             CorporateName = corporateName.Trim(),
@@ -68,11 +68,11 @@ public sealed class LegalEntity : EntityBase
         {
             if (address.IsMain)
             {
-                throw new ConflictException("A pessoa jurídica já possui endereço principal.");
+                throw new ConflictException("A pessoa já possui endereço principal.");
             }
         }
 
-        _addresses.Add(LegalEntityAddress.CreateMain(
+        _addresses.Add(PersonAddress.CreateMain(
             Id, zipCode, street, number, complement, neighborhood, city, state));
     }
 

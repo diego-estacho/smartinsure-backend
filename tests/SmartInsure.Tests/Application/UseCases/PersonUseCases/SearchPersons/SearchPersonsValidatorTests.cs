@@ -1,14 +1,14 @@
 using FluentAssertions;
-using SmartInsure.Application.UseCase.UseCases.LegalEntityUseCases.SearchLegalEntities.Requests;
-using SmartInsure.Application.UseCase.UseCases.LegalEntityUseCases.SearchLegalEntities.Validators;
+using SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons.Requests;
+using SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons.Validators;
 
-namespace SmartInsure.Tests.Application.UseCases.LegalEntityUseCases.SearchLegalEntities;
+namespace SmartInsure.Tests.Application.UseCases.PersonUseCases.SearchPersons;
 
 /// <summary>RN-013 — a busca exige termo e papel de contexto válidos.</summary>
 [Trait("RuleId", "RN-013")]
-public class SearchLegalEntitiesValidatorTests
+public class SearchPersonsValidatorTests
 {
-    private readonly SearchLegalEntitiesValidator _validator = new();
+    private readonly SearchPersonsValidator _validator = new();
 
     [Theory]
     [InlineData("Alfa", "Insured", true)]
@@ -18,7 +18,7 @@ public class SearchLegalEntitiesValidatorTests
     [InlineData("Alfa", "Corretora", false)]
     public void Validate_DeveAceitarSomenteTermoEPapelValidos(string term, string role, bool expected)
     {
-        var result = _validator.Validate(new SearchLegalEntitiesRequest(term, role));
+        var result = _validator.Validate(new SearchPersonsRequest(term, role));
 
         result.IsValid.Should().Be(expected);
     }

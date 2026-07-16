@@ -1,7 +1,7 @@
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Natureza Jurídica (glossário): código oficial CONCLA que classifica a Pessoa Jurídica
+/// Natureza Jurídica (glossário): código oficial CONCLA que classifica a Pessoa
 /// como setor público ou privado (RN-015). Dado de referência mantido por migration —
 /// a plataforma só lê.
 /// </summary>

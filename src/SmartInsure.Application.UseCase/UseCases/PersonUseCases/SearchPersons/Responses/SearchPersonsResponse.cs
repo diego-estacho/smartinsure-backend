@@ -1,27 +1,27 @@
-namespace SmartInsure.Application.UseCase.UseCases.LegalEntityUseCases.SearchLegalEntities.Responses;
+namespace SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons.Responses;
 
 /// <summary>
 /// Resultado da busca (RN-013): sempre uma lista. <see cref="Notice"/> comunica consulta
 /// sem dado na fonte (RN-004/RN-014) — não é erro, o fluxo solicitante conclui normalmente.
 /// </summary>
-public sealed record SearchLegalEntitiesResponse(
-    IReadOnlyList<LegalEntitySearchItemResponse> Items,
+public sealed record SearchPersonsResponse(
+    IReadOnlyList<PersonSearchItemResponse> Items,
     string? Notice = null);
 
 /// <summary>
-/// Pessoa Jurídica no resultado, com a classificação da Natureza Jurídica (RN-015) e,
+/// Pessoa no resultado, com a classificação da Natureza Jurídica (RN-015) e,
 /// no contexto de tomador com CNPJ de filial, a filial pré-selecionada (RN-016).
 /// </summary>
-public sealed record LegalEntitySearchItemResponse(
+public sealed record PersonSearchItemResponse(
     Guid Id,
     string Cnpj,
     string CorporateName,
     string? TradeName,
     bool IsPrivateSector,
-    LegalEntityAddressResponse? MainAddress,
+    PersonAddressResponse? MainAddress,
     string? PreSelectedBranchCnpj = null);
 
-public sealed record LegalEntityAddressResponse(
+public sealed record PersonAddressResponse(
     string? ZipCode,
     string? Street,
     string? Number,

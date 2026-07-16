@@ -4,14 +4,14 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-014/RN-016 — Pessoa Jurídica com CNPJ canônico e endereço principal único.</summary>
-public class LegalEntityTests
+/// <summary>RN-014/RN-016 — Pessoa com CNPJ canônico e endereço principal único.</summary>
+public class PersonTests
 {
     [Fact]
     [Trait("RuleId", "RN-014")]
     public void Create_DeveNormalizarCnpjENomes_QuandoDadosValidos()
     {
-        var entity = LegalEntity.Create(
+        var entity = Person.Create(
             "11.444.777/0001-61", "  Alfa Ltda  ", "  ", Guid.NewGuid());
 
         entity.Cnpj.Should().Be("11444777000161");
@@ -25,7 +25,7 @@ public class LegalEntityTests
     [Trait("RuleId", "RN-014")]
     public void Create_DeveRecusar_QuandoCnpjSemQuatorzeDigitos(string cnpj)
     {
-        var action = () => LegalEntity.Create(cnpj, "Alfa Ltda", null, Guid.NewGuid());
+        var action = () => Person.Create(cnpj, "Alfa Ltda", null, Guid.NewGuid());
 
         action.Should().Throw<BusinessRuleException>();
     }
@@ -34,7 +34,7 @@ public class LegalEntityTests
     [Trait("RuleId", "RN-014")]
     public void Create_DeveRecusar_QuandoRazaoSocialAusente()
     {
-        var action = () => LegalEntity.Create("11444777000161", " ", null, Guid.NewGuid());
+        var action = () => Person.Create("11444777000161", " ", null, Guid.NewGuid());
 
         action.Should().Throw<BusinessRuleException>();
     }
@@ -43,7 +43,7 @@ public class LegalEntityTests
     [Trait("RuleId", "RN-014")]
     public void AddMainAddress_DeveRecusarSegundoPrincipal_QuandoJaExiste()
     {
-        var entity = LegalEntity.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid());
+        var entity = Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid());
         entity.AddMainAddress("01310100", "Avenida Paulista", "1000", null, "Bela Vista", "São Paulo", "sp");
 
         var action = () => entity.AddMainAddress(null, null, null, null, null, null, null);
@@ -58,7 +58,7 @@ public class LegalEntityTests
     [Trait("RuleId", "RN-016")]
     public void IsHeadquarters_DeveIdentificarMatrizPelaOrdemDoCnpj(string cnpj, bool expected)
     {
-        var entity = LegalEntity.Create(cnpj, "Alfa Ltda", null, Guid.NewGuid());
+        var entity = Person.Create(cnpj, "Alfa Ltda", null, Guid.NewGuid());
 
         entity.IsHeadquarters.Should().Be(expected);
     }

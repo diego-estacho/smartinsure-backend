@@ -6,10 +6,10 @@ using SmartInsure.Infra.Data.Context;
 
 namespace SmartInsure.Infra.Data.Repositories;
 
-public sealed class LegalEntityRepository(SmartInsureDbContext context)
-    : Repository<LegalEntity>(context), ILegalEntityRepository
+public sealed class PersonRepository(SmartInsureDbContext context)
+    : Repository<Person>(context), IPersonRepository
 {
-    public async Task<IReadOnlyList<LegalEntitySearchItemDto>> SearchByNameOrCnpjAsync(
+    public async Task<IReadOnlyList<PersonSearchItemDto>> SearchByNameOrCnpjAsync(
         string nameTerm,
         string? cnpj,
         bool headquartersOnly,
@@ -31,13 +31,13 @@ public sealed class LegalEntityRepository(SmartInsureDbContext context)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<LegalEntitySearchItemDto?> GetByCnpjAsync(
+    public async Task<PersonSearchItemDto?> GetByCnpjAsync(
         string cnpj, CancellationToken cancellationToken)
         => await ProjectItems(Set.AsNoTracking().Where(entity => entity.Cnpj == cnpj))
             .FirstOrDefaultAsync(cancellationToken);
 
-    private static IQueryable<LegalEntitySearchItemDto> ProjectItems(IQueryable<LegalEntity> query)
-        => query.Select(entity => new LegalEntitySearchItemDto(
+    private static IQueryable<PersonSearchItemDto> ProjectItems(IQueryable<Person> query)
+        => query.Select(entity => new PersonSearchItemDto(
             entity.Id,
             entity.Cnpj,
             entity.CorporateName,
@@ -45,7 +45,7 @@ public sealed class LegalEntityRepository(SmartInsureDbContext context)
             entity.LegalNature!.IsPrivate,
             entity.Addresses
                 .Where(address => address.IsMain)
-                .Select(address => new LegalEntityMainAddressDto(
+                .Select(address => new PersonMainAddressDto(
                     address.ZipCode,
                     address.Street,
                     address.Number,

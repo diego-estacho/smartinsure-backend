@@ -4,15 +4,15 @@ using SmartInsure.Core.Entities;
 
 namespace SmartInsure.Infra.Data.Mappings;
 
-public sealed class LegalEntityAddressMapping : IEntityTypeConfiguration<LegalEntityAddress>
+public sealed class PersonAddressMapping : IEntityTypeConfiguration<PersonAddress>
 {
-    public void Configure(EntityTypeBuilder<LegalEntityAddress> builder)
+    public void Configure(EntityTypeBuilder<PersonAddress> builder)
     {
-        builder.ToTable("LegalEntityAddresses");
+        builder.ToTable("PersonAddresses");
 
         builder.HasKey(address => address.Id);
 
-        builder.HasIndex(address => address.LegalEntityId);
+        builder.HasIndex(address => address.PersonId);
 
         builder.Property(address => address.ZipCode).HasMaxLength(8);
         builder.Property(address => address.Street).HasMaxLength(200);
@@ -23,7 +23,7 @@ public sealed class LegalEntityAddressMapping : IEntityTypeConfiguration<LegalEn
         builder.Property(address => address.State).HasMaxLength(2);
         builder.Property(address => address.IsMain).IsRequired();
 
-        // Alinhado 1:1 com a migration criar-tabelas-legal-entities (evitar drift de constraint).
+        // Alinhado 1:1 com a migration criar-tabelas-persons (evitar drift de constraint).
         builder.Property(address => address.CreatedAt).IsRequired();
         builder.Property(address => address.CreatedBy).HasMaxLength(100).IsRequired();
         builder.Property(address => address.UpdatedBy).HasMaxLength(100);

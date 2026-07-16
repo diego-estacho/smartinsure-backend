@@ -4,11 +4,11 @@ using SmartInsure.Core.Entities;
 
 namespace SmartInsure.Infra.Data.Mappings;
 
-public sealed class LegalEntityMapping : IEntityTypeConfiguration<LegalEntity>
+public sealed class PersonMapping : IEntityTypeConfiguration<Person>
 {
-    public void Configure(EntityTypeBuilder<LegalEntity> builder)
+    public void Configure(EntityTypeBuilder<Person> builder)
     {
-        builder.ToTable("LegalEntities");
+        builder.ToTable("Persons");
 
         builder.HasKey(entity => entity.Id);
 
@@ -16,7 +16,7 @@ public sealed class LegalEntityMapping : IEntityTypeConfiguration<LegalEntity>
             .HasMaxLength(14)
             .IsRequired();
 
-        // RN-013/RN-014: uma Pessoa Jurídica por CNPJ.
+        // RN-013/RN-014: uma Pessoa por CNPJ.
         builder.HasIndex(entity => entity.Cnpj).IsUnique();
 
         builder.Property(entity => entity.CorporateName)
@@ -35,13 +35,13 @@ public sealed class LegalEntityMapping : IEntityTypeConfiguration<LegalEntity>
 
         builder.HasMany(entity => entity.Addresses)
             .WithOne()
-            .HasForeignKey(address => address.LegalEntityId)
+            .HasForeignKey(address => address.PersonId)
             .IsRequired();
 
         builder.Navigation(entity => entity.Addresses)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        // Alinhado 1:1 com a migration criar-tabelas-legal-entities (evitar drift de constraint).
+        // Alinhado 1:1 com a migration criar-tabelas-persons (evitar drift de constraint).
         builder.Property(entity => entity.CreatedAt).IsRequired();
         builder.Property(entity => entity.CreatedBy).HasMaxLength(100).IsRequired();
         builder.Property(entity => entity.UpdatedBy).HasMaxLength(100);
