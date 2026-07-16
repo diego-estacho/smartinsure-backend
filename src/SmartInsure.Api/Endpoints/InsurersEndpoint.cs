@@ -22,7 +22,7 @@ using SmartInsure.Core.Constants;
 namespace SmartInsure.Api.Endpoints;
 
 /// <summary>
-/// Jornada Seguradoras (RN-005..RN-009): escrita exclusiva do Administrador do Sistema
+/// Jornada Seguradoras (RN-007..RN-011): escrita exclusiva do Administrador do Sistema
 /// (policy fail-closed); leitura para qualquer autenticado.
 /// </summary>
 public sealed class InsurersEndpoint : CarterModule
@@ -92,7 +92,7 @@ public sealed class InsurersEndpoint : CarterModule
             new ChangeInsurerStatusRequest(id, body.Status),
             validator);
 
-    /// <summary>RN-008: visão completa só surte efeito para o Administrador do Sistema.</summary>
+    /// <summary>RN-010: visão completa só surte efeito para o Administrador do Sistema.</summary>
     private static async Task<IResult> ListAsync(
         HttpContext httpContext,
         RequestHandler handler,

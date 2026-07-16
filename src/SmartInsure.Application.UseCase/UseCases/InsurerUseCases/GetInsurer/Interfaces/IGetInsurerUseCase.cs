@@ -4,7 +4,7 @@ using SmartInsure.Application.UseCase.UseCases.InsurerUseCases.GetInsurer.Respon
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.GetInsurer.Interfaces;
 
-/// <summary>Consulta de detalhe de Seguradora do catálogo (RN-008).</summary>
+/// <summary>Consulta de detalhe de Seguradora do catálogo (RN-010).</summary>
 public interface IGetInsurerUseCase : IUseCase<GetInsurerRequest, GetInsurerResponse>
 {
 }

@@ -8,7 +8,7 @@ using SmartInsure.Infra.CrossCutting.Validators;
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.UpdateInsurer;
 
-/// <summary>RN-006 — Alteração cadastral mantém CNPJ único/válido e razão social; situação intacta.</summary>
+/// <summary>RN-008 — Alteração cadastral mantém CNPJ único/válido e razão social; situação intacta.</summary>
 public sealed class UpdateInsurerUseCase(
     IInsurerRepository insurerRepository,
     IUnitOfWork unitOfWork) : IUpdateInsurerUseCase

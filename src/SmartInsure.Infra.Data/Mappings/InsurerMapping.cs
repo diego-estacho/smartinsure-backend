@@ -16,7 +16,7 @@ public sealed class InsurerMapping : IEntityTypeConfiguration<Insurer>
             .HasMaxLength(14)
             .IsRequired();
 
-        // RN-005/RN-006: CNPJ único no catálogo.
+        // RN-007/RN-008: CNPJ único no catálogo.
         builder.HasIndex(insurer => insurer.Cnpj).IsUnique();
 
         builder.Property(insurer => insurer.CorporateName)

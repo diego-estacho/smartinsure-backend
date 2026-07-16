@@ -32,7 +32,7 @@ public sealed class UserMapping : IEntityTypeConfiguration<User>
             .HasMaxLength(20)
             .IsRequired();
 
-        // RN-010: Perfil opcional persistido como string (ADR-031).
+        // RN-012: Perfil opcional persistido como string (ADR-031).
         builder.Property(user => user.Profile)
             .HasMaxLength(30);
 

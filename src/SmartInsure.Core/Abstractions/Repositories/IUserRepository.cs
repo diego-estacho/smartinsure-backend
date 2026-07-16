@@ -9,6 +9,8 @@ public interface IUserRepository : IRepository<User>
 
     Task<User?> GetByExternalIdentityAsync(string externalIdentity, CancellationToken cancellationToken);
 
-    /// <summary>RN-010: a plataforma nunca fica sem Administrador do Sistema.</summary>
+    Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken);
+
+    /// <summary>RN-012: a plataforma nunca fica sem Administrador do Sistema.</summary>
     Task<int> CountByProfileAsync(EUserProfile profile, CancellationToken cancellationToken);
 }

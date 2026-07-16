@@ -10,8 +10,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.InsurerUseCases.UpdateInsurer;
 
-/// <summary>RN-006 — Alteração de dados cadastrais da Seguradora.</summary>
-[Trait("RuleId", "RN-006")]
+/// <summary>RN-008 — Alteração de dados cadastrais da Seguradora.</summary>
+[Trait("RuleId", "RN-008")]
 public class UpdateInsurerUseCaseTests
 {
     private readonly IInsurerRepository _repository = Substitute.For<IInsurerRepository>();

@@ -1,9 +1,9 @@
 namespace SmartInsure.Infra.CrossCutting.Validators;
 
-/// <summary>Validação de CNPJ por dígitos verificadores (RN-005/RN-006).</summary>
+/// <summary>Validação de CNPJ por dígitos verificadores (RN-007/RN-008).</summary>
 public static class CnpjValidator
 {
-    /// <summary>Normaliza o CNPJ para somente dígitos — forma canônica persistida (RN-005).</summary>
+    /// <summary>Normaliza o CNPJ para somente dígitos — forma canônica persistida (RN-007).</summary>
     public static string Normalize(string cnpj)
         => new([.. cnpj.Where(char.IsDigit)]);
 

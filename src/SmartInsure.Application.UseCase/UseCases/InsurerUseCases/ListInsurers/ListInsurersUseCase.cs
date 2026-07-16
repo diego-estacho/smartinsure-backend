@@ -6,7 +6,7 @@ using SmartInsure.Core.Abstractions.Repositories;
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.ListInsurers;
 
-/// <summary>RN-008 — consulta padrão retorna somente Ativas.</summary>
+/// <summary>RN-010 — consulta padrão retorna somente Ativas.</summary>
 public sealed class ListInsurersUseCase(IInsurerRepository insurerRepository) : IListInsurersUseCase
 {
     public async Task<PagedResponse<InsurerListItemResponse>> ExecuteAsync(

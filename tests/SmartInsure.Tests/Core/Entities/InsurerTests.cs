@@ -5,14 +5,14 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-005/RN-007 — criação e transições de situação da Seguradora.</summary>
+/// <summary>RN-007/RN-009 — criação e transições de situação da Seguradora.</summary>
 public class InsurerTests
 {
     private static Insurer NewInsurer(EInsurerStatus status = EInsurerStatus.Active)
         => Insurer.Create("12.345.678/0001-95", " Seguradora Alfa S.A. ", null, null, status);
 
     [Fact]
-    [Trait("RuleId", "RN-005")]
+    [Trait("RuleId", "RN-007")]
     public void Create_DeveNormalizarCnpjEDados_QuandoDadosValidos()
     {
         var insurer = Insurer.Create(
@@ -26,7 +26,7 @@ public class InsurerTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-005")]
+    [Trait("RuleId", "RN-007")]
     public void Create_DeveAceitarOpcionaisAusentes_QuandoNomeFantasiaELogoNulos()
     {
         var insurer = NewInsurer();
@@ -36,7 +36,7 @@ public class InsurerTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-007")]
+    [Trait("RuleId", "RN-009")]
     public void Deactivate_DeveTornarInativa_QuandoAtiva()
     {
         var insurer = NewInsurer();
@@ -47,7 +47,7 @@ public class InsurerTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-007")]
+    [Trait("RuleId", "RN-009")]
     public void Activate_DeveTornarAtiva_QuandoInativa()
     {
         var insurer = NewInsurer(EInsurerStatus.Inactive);
@@ -58,7 +58,7 @@ public class InsurerTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-007")]
+    [Trait("RuleId", "RN-009")]
     public void Activate_DeveRecusar_QuandoJaAtiva()
     {
         var insurer = NewInsurer();
@@ -69,7 +69,7 @@ public class InsurerTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-007")]
+    [Trait("RuleId", "RN-009")]
     public void Deactivate_DeveRecusar_QuandoJaInativa()
     {
         var insurer = NewInsurer(EInsurerStatus.Inactive);

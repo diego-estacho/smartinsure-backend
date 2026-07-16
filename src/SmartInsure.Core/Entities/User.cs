@@ -4,9 +4,9 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Usuário da plataforma (RN-001, RN-002, RN-010): nasce Pendente, sempre com identidade
+/// Usuário da plataforma (RN-001, RN-002, RN-012): nasce Pendente, sempre com identidade
 /// correspondente no provedor de identidade referenciada por <see cref="ExternalIdentity"/>.
-/// Perfil é opcional (RN-010).
+/// Perfil é opcional (RN-012).
 /// </summary>
 public sealed class User : EntityBase
 {
@@ -47,7 +47,7 @@ public sealed class User : EntityBase
         Status = EUserStatus.Active;
     }
 
-    /// <summary>RN-010: concessão do Perfil (conceder o mesmo Perfil de novo é conflito).</summary>
+    /// <summary>RN-012: concessão do Perfil (conceder o mesmo Perfil de novo é conflito).</summary>
     public void GrantProfile(EUserProfile profile)
     {
         if (Profile == profile)
@@ -58,7 +58,7 @@ public sealed class User : EntityBase
         Profile = profile;
     }
 
-    /// <summary>RN-010: revogação do Perfil (revogar de quem não tem é conflito).</summary>
+    /// <summary>RN-012: revogação do Perfil (revogar de quem não tem é conflito).</summary>
     public void RevokeProfile()
     {
         if (Profile is null)

@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
+using Refit;
 using SmartInsure.Core.Abstractions.Services;
+using SmartInsure.Core.Exceptions;
 using SmartInsure.Integration.Casdoor.Interfaces;
 using SmartInsure.Integration.Casdoor.Models;
 using SmartInsure.Integration.Casdoor.Options;
@@ -93,5 +95,47 @@ public sealed partial class CasdoorIdentityProvider(
         var user = await api.GetUserAsync(externalIdentity, cancellationToken);
 
         return user.Data?.NeedUpdatePassword ?? true;
+    }
+
+    /// <summary>
+    /// RN-005: credenciais validadas exclusivamente aqui. O login do Casdoor usa o username
+    /// derivado do e-mail (RN-001), então a identidade é localizada pelo e-mail antes do grant.
+    /// </summary>
+    public async Task<bool> ValidateCredentialsAsync(
+        string email, string password, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await api.GetUserByEmailAsync(email, cancellationToken);
+
+            if (user.Data is null)
+            {
+                return false;
+            }
+
+            var token = await api.RequestTokenAsync(
+                new Dictionary<string, string>
+                {
+                    ["grant_type"] = "password",
+                    ["client_id"] = _options.ClientId,
+                    ["client_secret"] = _options.Secret,
+                    ["username"] = user.Data.Name,
+                    ["password"] = password,
+                },
+                cancellationToken);
+
+            return !string.IsNullOrEmpty(token.AccessToken) && token.Error is null;
+        }
+        catch (ApiException apiException)
+            when ((int)apiException.StatusCode is >= 400 and < 500)
+        {
+            return false;
+        }
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested
+            && exception is HttpRequestException or TaskCanceledException or ApiException)
+        {
+            throw new IdentityProviderUnavailableException(
+                "Provedor de identidade indisponível.", exception);
+        }
     }
 }

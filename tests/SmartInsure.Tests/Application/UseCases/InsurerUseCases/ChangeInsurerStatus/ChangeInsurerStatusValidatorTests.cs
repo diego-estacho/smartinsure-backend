@@ -4,8 +4,8 @@ using SmartInsure.Application.UseCase.UseCases.InsurerUseCases.ChangeInsurerStat
 
 namespace SmartInsure.Tests.Application.UseCases.InsurerUseCases.ChangeInsurerStatus;
 
-/// <summary>RN-007 — validação de forma da alteração de situação de Seguradora.</summary>
-[Trait("RuleId", "RN-007")]
+/// <summary>RN-009 — validação de forma da alteração de situação de Seguradora.</summary>
+[Trait("RuleId", "RN-009")]
 public class ChangeInsurerStatusValidatorTests
 {
     private readonly ChangeInsurerStatusValidator _validator = new();

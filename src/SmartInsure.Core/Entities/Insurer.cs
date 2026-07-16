@@ -4,8 +4,8 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Seguradora do catálogo (RN-005..RN-008): mantida somente pelo Administrador do Sistema;
-/// nunca excluída — Inativa significa fora de operação (RN-007).
+/// Seguradora do catálogo (RN-007..RN-010): mantida somente pelo Administrador do Sistema;
+/// nunca excluída — Inativa significa fora de operação (RN-009).
 /// </summary>
 public sealed class Insurer : EntityBase
 {
@@ -35,11 +35,11 @@ public sealed class Insurer : EntityBase
         return insurer;
     }
 
-    /// <summary>RN-006: alteração cadastral mantém as exigências do cadastro; situação não muda aqui.</summary>
+    /// <summary>RN-008: alteração cadastral mantém as exigências do cadastro; situação não muda aqui.</summary>
     public void UpdateDetails(string cnpj, string corporateName, string? tradeName, string? logoUrl)
         => SetDetails(cnpj, corporateName, tradeName, logoUrl);
 
-    /// <summary>RN-007: Inativa → Ativa; ativar quem já está Ativa é conflito de estado.</summary>
+    /// <summary>RN-009: Inativa → Ativa; ativar quem já está Ativa é conflito de estado.</summary>
     public void Activate()
     {
         if (Status == EInsurerStatus.Active)
@@ -50,7 +50,7 @@ public sealed class Insurer : EntityBase
         Status = EInsurerStatus.Active;
     }
 
-    /// <summary>RN-007: Ativa → Inativa (fora de operação, nunca excluída).</summary>
+    /// <summary>RN-009: Ativa → Inativa (fora de operação, nunca excluída).</summary>
     public void Deactivate()
     {
         if (Status == EInsurerStatus.Inactive)

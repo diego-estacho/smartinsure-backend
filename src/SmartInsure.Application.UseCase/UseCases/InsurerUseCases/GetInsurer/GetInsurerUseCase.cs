@@ -6,7 +6,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.GetInsurer;
 
-/// <summary>Detalhe de Seguradora do catálogo (leitura, RN-008).</summary>
+/// <summary>Detalhe de Seguradora do catálogo (leitura, RN-010).</summary>
 public sealed class GetInsurerUseCase(IInsurerRepository insurerRepository) : IGetInsurerUseCase
 {
     public async Task<GetInsurerResponse> ExecuteAsync(

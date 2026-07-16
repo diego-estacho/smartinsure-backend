@@ -3,8 +3,8 @@ using SmartInsure.Infra.CrossCutting.Validators;
 
 namespace SmartInsure.Tests.Infra.CrossCutting.Validators;
 
-/// <summary>RN-005 — CNPJ com dígitos verificadores válidos.</summary>
-[Trait("RuleId", "RN-005")]
+/// <summary>RN-007 — CNPJ com dígitos verificadores válidos.</summary>
+[Trait("RuleId", "RN-007")]
 public class CnpjValidatorTests
 {
     [Theory]

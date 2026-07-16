@@ -4,7 +4,7 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.ChangeInsurerStatus.Validators;
 
-/// <summary>RN-007 — validação de forma da alteração de situação de Seguradora.</summary>
+/// <summary>RN-009 — validação de forma da alteração de situação de Seguradora.</summary>
 public sealed class ChangeInsurerStatusValidator : AbstractValidator<ChangeInsurerStatusRequest>
 {
     public ChangeInsurerStatusValidator()

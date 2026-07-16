@@ -7,8 +7,8 @@ using SmartInsure.Core.Abstractions.Repositories.Dtos;
 
 namespace SmartInsure.Tests.Application.UseCases.InsurerUseCases.ListInsurers;
 
-/// <summary>RN-008 — consulta operacional exclui Inativas; visão completa é do Administrador do Sistema.</summary>
-[Trait("RuleId", "RN-008")]
+/// <summary>RN-010 — consulta operacional exclui Inativas; visão completa é do Administrador do Sistema.</summary>
+[Trait("RuleId", "RN-010")]
 public class ListInsurersUseCaseTests
 {
     private readonly IInsurerRepository _repository = Substitute.For<IInsurerRepository>();

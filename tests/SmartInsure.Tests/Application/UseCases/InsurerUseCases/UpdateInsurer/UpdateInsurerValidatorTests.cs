@@ -4,8 +4,8 @@ using SmartInsure.Application.UseCase.UseCases.InsurerUseCases.UpdateInsurer.Val
 
 namespace SmartInsure.Tests.Application.UseCases.InsurerUseCases.UpdateInsurer;
 
-/// <summary>RN-006 — validação de forma da alteração cadastral de Seguradora.</summary>
-[Trait("RuleId", "RN-006")]
+/// <summary>RN-008 — validação de forma da alteração cadastral de Seguradora.</summary>
+[Trait("RuleId", "RN-008")]
 public class UpdateInsurerValidatorTests
 {
     private readonly UpdateInsurerValidator _validator = new();

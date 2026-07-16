@@ -10,8 +10,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.InsurerUseCases.ChangeInsurerStatus;
 
-/// <summary>RN-007 — Ativação e desativação de Seguradora.</summary>
-[Trait("RuleId", "RN-007")]
+/// <summary>RN-009 — Ativação e desativação de Seguradora.</summary>
+[Trait("RuleId", "RN-009")]
 public class ChangeInsurerStatusUseCaseTests
 {
     private readonly IInsurerRepository _repository = Substitute.For<IInsurerRepository>();

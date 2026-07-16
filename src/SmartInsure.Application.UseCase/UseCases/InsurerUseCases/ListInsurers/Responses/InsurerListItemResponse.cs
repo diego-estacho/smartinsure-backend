@@ -1,6 +1,6 @@
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.ListInsurers.Responses;
 
-/// <summary>Item de listagem do catálogo de Seguradoras (RN-008).</summary>
+/// <summary>Item de listagem do catálogo de Seguradoras (RN-010).</summary>
 public sealed record InsurerListItemResponse(
     Guid Id,
     string Cnpj,

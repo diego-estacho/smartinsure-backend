@@ -4,7 +4,7 @@ using SmartInsure.Infra.CrossCutting.Validators;
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.UpdateInsurer.Validators;
 
-/// <summary>RN-006 — validação de forma da alteração cadastral de Seguradora.</summary>
+/// <summary>RN-008 — validação de forma da alteração cadastral de Seguradora.</summary>
 public sealed class UpdateInsurerValidator : AbstractValidator<UpdateInsurerRequest>
 {
     public UpdateInsurerValidator()

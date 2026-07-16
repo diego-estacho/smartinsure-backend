@@ -63,7 +63,7 @@ public sealed class UsersEndpoint : CarterModule
             useCase,
             new ActivateUserRequest(currentUser.UserIdentifier ?? string.Empty));
 
-    /// <summary>RN-010: somente Administrador do Sistema concede/revoga Perfil.</summary>
+    /// <summary>RN-012: somente Administrador do Sistema concede/revoga Perfil.</summary>
     private static async Task<IResult> SetProfileAsync(
         HttpContext httpContext,
         RequestHandler handler,

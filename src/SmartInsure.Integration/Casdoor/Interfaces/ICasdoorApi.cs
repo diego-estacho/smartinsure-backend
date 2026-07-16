@@ -25,4 +25,13 @@ public interface ICasdoorApi
     Task<CasdoorResponse<object>> DeleteUserAsync(
         [Body] CasdoorUser user,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-005: validação de credenciais via grant password do OAuth do Casdoor.
+    /// O token retornado não é repassado ao cliente — a plataforma emite o próprio acesso.
+    /// </summary>
+    [Post("/api/login/oauth/access_token")]
+    Task<CasdoorTokenResponse> RequestTokenAsync(
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> form,
+        CancellationToken cancellationToken);
 }

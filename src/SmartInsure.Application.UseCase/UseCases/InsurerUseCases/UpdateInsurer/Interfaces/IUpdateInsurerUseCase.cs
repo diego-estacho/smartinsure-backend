@@ -4,5 +4,5 @@ using SmartInsure.Application.UseCase.UseCases.InsurerUseCases.UpdateInsurer.Res
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.UpdateInsurer.Interfaces;
 
-/// <summary>Contrato para alteração cadastral de Seguradora (RN-006).</summary>
+/// <summary>Contrato para alteração cadastral de Seguradora (RN-008).</summary>
 public interface IUpdateInsurerUseCase : IUseCase<UpdateInsurerRequest, UpdateInsurerResponse>;

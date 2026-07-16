@@ -5,7 +5,7 @@ using SmartInsure.Infra.CrossCutting.Validators;
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.CreateInsurer.Validators;
 
-/// <summary>RN-005 — validação de forma do cadastro de Seguradora.</summary>
+/// <summary>RN-007 — validação de forma do cadastro de Seguradora.</summary>
 public sealed class CreateInsurerValidator : AbstractValidator<CreateInsurerRequest>
 {
     public CreateInsurerValidator()

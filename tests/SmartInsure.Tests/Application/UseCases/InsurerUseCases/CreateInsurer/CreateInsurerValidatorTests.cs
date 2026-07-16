@@ -4,8 +4,8 @@ using SmartInsure.Application.UseCase.UseCases.InsurerUseCases.CreateInsurer.Val
 
 namespace SmartInsure.Tests.Application.UseCases.InsurerUseCases.CreateInsurer;
 
-/// <summary>RN-005 — validação de forma do cadastro de Seguradora.</summary>
-[Trait("RuleId", "RN-005")]
+/// <summary>RN-007 — validação de forma do cadastro de Seguradora.</summary>
+[Trait("RuleId", "RN-007")]
 public class CreateInsurerValidatorTests
 {
     private readonly CreateInsurerValidator _validator = new();

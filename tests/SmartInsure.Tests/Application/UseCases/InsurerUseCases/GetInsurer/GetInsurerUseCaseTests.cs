@@ -9,8 +9,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.InsurerUseCases.GetInsurer;
 
-/// <summary>RN-008 — detalhe de Seguradora do catálogo (leitura).</summary>
-[Trait("RuleId", "RN-008")]
+/// <summary>RN-010 — detalhe de Seguradora do catálogo (leitura).</summary>
+[Trait("RuleId", "RN-010")]
 public class GetInsurerUseCaseTests
 {
     private readonly IInsurerRepository _repository = Substitute.For<IInsurerRepository>();

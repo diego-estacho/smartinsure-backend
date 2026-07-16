@@ -8,7 +8,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.ChangeInsurerStatus;
 
-/// <summary>RN-007 — transição Ativa ↔ Inativa; mesma situação é conflito de estado.</summary>
+/// <summary>RN-009 — transição Ativa ↔ Inativa; mesma situação é conflito de estado.</summary>
 public sealed class ChangeInsurerStatusUseCase(
     IInsurerRepository insurerRepository,
     IUnitOfWork unitOfWork) : IChangeInsurerStatusUseCase

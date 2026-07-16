@@ -43,5 +43,5 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 
 | Status | Nome estável (API) | Significado | Transições permitidas |
 |---|---|---|---|
-| **Ativa** | `Active` | Seguradora em operação no catálogo, visível aos fluxos operacionais | Ativa → Inativa (RN-007) |
-| **Inativa** | `Inactive` | Seguradora fora de operação — permanece no catálogo, fora da visão operacional (nunca excluída) | Inativa → Ativa (RN-007) |
+| **Ativa** | `Active` | Seguradora em operação no catálogo, visível aos fluxos operacionais | Ativa → Inativa (RN-009) |
+| **Inativa** | `Inactive` | Seguradora fora de operação — permanece no catálogo, fora da visão operacional (nunca excluída) | Inativa → Ativa (RN-009) |

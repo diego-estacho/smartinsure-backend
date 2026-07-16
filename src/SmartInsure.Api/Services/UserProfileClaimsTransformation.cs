@@ -8,7 +8,7 @@ using SmartInsure.Core.Enumerators;
 namespace SmartInsure.Api.Services;
 
 /// <summary>
-/// Enriquecimento de claims com o Perfil do Usuário (ADR-014, RN-009/RN-010): perfil lido
+/// Enriquecimento de claims com o Perfil do Usuário (ADR-014, RN-011/RN-012): perfil lido
 /// da plataforma (com cache curto, invalidado na concessão/revogação) e exposto como role.
 /// </summary>
 public sealed class UserProfileClaimsTransformation(

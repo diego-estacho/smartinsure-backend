@@ -10,8 +10,8 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Api.Services;
 
-/// <summary>RN-009 — o Perfil do Usuário vira role nas claims; sem perfil, nenhuma role.</summary>
-[Trait("RuleId", "RN-009")]
+/// <summary>RN-011 — o Perfil do Usuário vira role nas claims; sem perfil, nenhuma role.</summary>
+[Trait("RuleId", "RN-011")]
 public class UserProfileClaimsTransformationTests
 {
     private readonly IUserRepository _repository = Substitute.For<IUserRepository>();

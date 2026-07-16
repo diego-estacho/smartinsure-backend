@@ -10,7 +10,7 @@ using SmartInsure.Infra.CrossCutting.Validators;
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.CreateInsurer;
 
-/// <summary>RN-005 — Criação de Seguradora no catálogo: CNPJ único, dados manuais (sem Birô).</summary>
+/// <summary>RN-007 — Criação de Seguradora no catálogo: CNPJ único, dados manuais (sem Birô).</summary>
 public sealed class CreateInsurerUseCase(
     IInsurerRepository insurerRepository,
     IUnitOfWork unitOfWork) : ICreateInsurerUseCase

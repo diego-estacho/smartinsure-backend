@@ -1,6 +1,6 @@
 namespace SmartInsure.Core.Abstractions.Repositories.Dtos;
 
-/// <summary>Read-model da listagem do catálogo (RN-008) — status por nome estável.</summary>
+/// <summary>Read-model da listagem do catálogo (RN-010) — status por nome estável.</summary>
 public sealed record InsurerListItemDto(
     Guid Id,
     string Cnpj,

@@ -5,7 +5,7 @@ using SmartInsure.Application.UseCase.UseCases.InsurerUseCases.ListInsurers.Resp
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.ListInsurers.Interfaces;
 
-/// <summary>Consulta paginada do catálogo de Seguradoras (RN-008).</summary>
+/// <summary>Consulta paginada do catálogo de Seguradoras (RN-010).</summary>
 public interface IListInsurersUseCase : IUseCase<ListInsurersRequest, PagedResponse<InsurerListItemResponse>>
 {
 }

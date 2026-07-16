@@ -1,6 +1,6 @@
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.UpdateInsurer.Requests;
 
-/// <summary>Dados de entrada para alterar cadastro de uma Seguradora (RN-006).</summary>
+/// <summary>Dados de entrada para alterar cadastro de uma Seguradora (RN-008).</summary>
 /// <param name="InsurerId">Identificador único da seguradora.</param>
 /// <param name="Cnpj">CNPJ da seguradora (com ou sem máscara).</param>
 /// <param name="CorporateName">Razão social.</param>

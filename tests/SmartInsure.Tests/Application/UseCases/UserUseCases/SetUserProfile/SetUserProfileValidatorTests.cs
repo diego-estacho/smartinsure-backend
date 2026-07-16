@@ -4,8 +4,8 @@ using SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile.Valid
 
 namespace SmartInsure.Tests.Application.UseCases.UserUseCases.SetUserProfile;
 
-/// <summary>RN-010 — validação de forma da concessão/revogação de perfil de usuário.</summary>
-[Trait("RuleId", "RN-010")]
+/// <summary>RN-012 — validação de forma da concessão/revogação de perfil de usuário.</summary>
+[Trait("RuleId", "RN-012")]
 public class SetUserProfileValidatorTests
 {
     private readonly SetUserProfileValidator _validator = new();

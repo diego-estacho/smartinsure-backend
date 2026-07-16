@@ -27,7 +27,7 @@ public class UserTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-010")]
+    [Trait("RuleId", "RN-012")]
     public void GrantProfile_DeveConcederPerfil_QuandoUsuarioSemPerfil()
     {
         var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
@@ -38,7 +38,7 @@ public class UserTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-010")]
+    [Trait("RuleId", "RN-012")]
     public void GrantProfile_DeveRecusar_QuandoUsuarioJaTemOPerfil()
     {
         var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
@@ -50,7 +50,7 @@ public class UserTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-010")]
+    [Trait("RuleId", "RN-012")]
     public void RevokeProfile_DeveRemoverPerfil_QuandoUsuarioTemPerfil()
     {
         var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
@@ -62,7 +62,7 @@ public class UserTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-010")]
+    [Trait("RuleId", "RN-012")]
     public void RevokeProfile_DeveRecusar_QuandoUsuarioSemPerfil()
     {
         var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
