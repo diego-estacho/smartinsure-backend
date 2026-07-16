@@ -7,7 +7,11 @@ using SmartInsure.Application.UseCase.UseCases.UserUseCases.ActivateUser.Respons
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Requests;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Responses;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile.Requests;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile.Responses;
 using SmartInsure.Core.Abstractions.Services;
+using SmartInsure.Core.Constants;
 
 namespace SmartInsure.Api.Endpoints;
 
@@ -26,6 +30,10 @@ public sealed class UsersEndpoint : CarterModule
 
         app.MapPost("/activation", ActivateAsync)
             .Produces<ActivateUserResponse>(StatusCodes.Status200OK);
+
+        app.MapPut("/{id:guid}/profile", SetProfileAsync)
+            .RequireAuthorization(Policies.SystemAdministrator)
+            .Produces<SetUserProfileResponse>(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> CreateAsync(
@@ -54,4 +62,20 @@ public sealed class UsersEndpoint : CarterModule
             httpContext,
             useCase,
             new ActivateUserRequest(currentUser.UserIdentifier ?? string.Empty));
+
+    /// <summary>RN-010: somente Administrador do Sistema concede/revoga Perfil.</summary>
+    private static async Task<IResult> SetProfileAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        ISetUserProfileUseCase useCase,
+        IValidator<SetUserProfileRequest> validator,
+        Guid id,
+        SetUserProfileBody body)
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new SetUserProfileRequest(id, body.Profile),
+            validator);
 }
+
+public sealed record SetUserProfileBody(string? Profile);
