@@ -37,7 +37,7 @@ public class SearchPersonsUseCaseTests
             _personRepository, _legalNatureRepository, _bureauProvider, _unitOfWork);
 
     private static PersonSearchItemDto Item(
-        string documentNumber, string name = "Alfa Ltda", string type = "Legal", bool? isPrivate = true)
+        string documentNumber, string name = "Alfa Ltda", string type = "J", bool? isPrivate = true)
         => new(Guid.NewGuid(), documentNumber, name, null, type, isPrivate, null);
 
     private static BureauPersonComplement Complement(string name = "Alfa Ltda")
@@ -103,13 +103,13 @@ public class SearchPersonsUseCaseTests
     [Trait("RuleId", "RN-013")]
     public async Task Execute_DeveRetornarPessoaFisicaDaBase_QuandoCpfJaCadastrado()
     {
-        SearchReturns(Item(Cpf, "Maria Silva", "Natural", isPrivate: null));
+        SearchReturns(Item(Cpf, "Maria Silva", "F", isPrivate: null));
 
         var response = await _useCase.ExecuteAsync(
             new SearchPersonsRequest(Cpf, "Insured"), CancellationToken.None);
 
         response.Items.Should().ContainSingle(item => item.DocumentNumber == Cpf);
-        response.Items[0].Type.Should().Be("Natural");
+        response.Items[0].Type.Should().Be("F");
         response.Items[0].IsPrivateSector.Should().BeNull();
         await _personRepository.Received(1).SearchByNameOrDocumentAsync(
             Cpf, Cpf, false, Arg.Any<CancellationToken>());
@@ -144,13 +144,13 @@ public class SearchPersonsUseCaseTests
 
         response.Items.Should().ContainSingle();
         response.Items[0].DocumentNumber.Should().Be(HeadquartersCnpj);
-        response.Items[0].Type.Should().Be("Legal");
+        response.Items[0].Type.Should().Be("J");
         response.Items[0].MainAddress.Should().NotBeNull();
         response.Items[0].MainAddress!.City.Should().Be("São Paulo");
         await _personRepository.Received(1)
             .AddAsync(
                 Arg.Is<Person>(person => person.DocumentNumber == HeadquartersCnpj
-                    && person.Type == EPersonType.Legal),
+                    && person.Type == EPersonType.J),
                 Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }

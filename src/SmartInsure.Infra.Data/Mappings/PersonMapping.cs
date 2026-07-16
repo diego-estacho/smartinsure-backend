@@ -29,7 +29,7 @@ public sealed class PersonMapping : IEntityTypeConfiguration<Person>
             .HasMaxLength(200);
 
         builder.Property(entity => entity.Type)
-            .HasMaxLength(20)
+            .HasMaxLength(1)
             .IsRequired();
 
         // RN-015: Natureza Jurídica só existe para pessoa jurídica.

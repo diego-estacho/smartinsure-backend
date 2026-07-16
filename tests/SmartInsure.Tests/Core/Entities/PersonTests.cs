@@ -18,7 +18,7 @@ public class PersonTests
         person.DocumentNumber.Should().Be("11444777000161");
         person.Name.Should().Be("Alfa Ltda");
         person.SocialName.Should().BeNull();
-        person.Type.Should().Be(EPersonType.Legal);
+        person.Type.Should().Be(EPersonType.J);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class PersonTests
         var person = Person.Create("529.982.247-25", "Maria Silva", null, null);
 
         person.DocumentNumber.Should().Be("52998224725");
-        person.Type.Should().Be(EPersonType.Natural);
+        person.Type.Should().Be(EPersonType.F);
         person.LegalNatureId.Should().BeNull();
     }
 

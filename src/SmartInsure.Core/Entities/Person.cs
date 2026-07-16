@@ -41,8 +41,8 @@ public sealed class Person : EntityBase
 
         var type = digits.Length switch
         {
-            11 => EPersonType.Natural,
-            14 => EPersonType.Legal,
+            11 => EPersonType.F,
+            14 => EPersonType.J,
             _ => throw new BusinessRuleException(
                 "O documento da pessoa deve ser um CPF (11 dígitos) ou um CNPJ (14 dígitos)."),
         };
@@ -52,12 +52,12 @@ public sealed class Person : EntityBase
             throw new BusinessRuleException("O nome da pessoa é obrigatório.");
         }
 
-        if (type == EPersonType.Legal && legalNatureId is null)
+        if (type == EPersonType.J && legalNatureId is null)
         {
             throw new BusinessRuleException("A pessoa jurídica exige natureza jurídica catalogada.");
         }
 
-        if (type == EPersonType.Natural && legalNatureId is not null)
+        if (type == EPersonType.F && legalNatureId is not null)
         {
             throw new BusinessRuleException("A pessoa física não possui natureza jurídica.");
         }
@@ -96,5 +96,5 @@ public sealed class Person : EntityBase
 
     /// <summary>RN-016: matriz é o estabelecimento de ordem /0001 do CNPJ (só pessoa jurídica).</summary>
     public bool IsHeadquarters
-        => Type == EPersonType.Legal && DocumentNumber[8..12] == "0001";
+        => Type == EPersonType.J && DocumentNumber[8..12] == "0001";
 }

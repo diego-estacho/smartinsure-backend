@@ -24,7 +24,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
         if (headquartersOnly)
         {
             // RN-016: tomador é sempre a matriz (pessoa jurídica de ordem /0001).
-            query = query.Where(person => person.Type == EPersonType.Legal
+            query = query.Where(person => person.Type == EPersonType.J
                 && person.DocumentNumber.Substring(8, 4) == "0001");
         }
 
