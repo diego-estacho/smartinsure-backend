@@ -41,3 +41,13 @@
 **Critério de aceitação.** Após o encerramento, qualquer chamada à plataforma com o mesmo acesso é recusada como não autenticada. Encerrar uma sessão já encerrada não tem efeito adicional (idempotente).
 
 **Casos limite.** Acesso já expirado no momento do encerramento: sem efeito — a recusa já decorre da expiração. O encerramento vale só para aquele acesso: outros acessos do mesmo Usuário permanecem válidos até expirar ou serem encerrados. O provedor de identidade não participa do encerramento — a sessão é da plataforma.
+
+## RN-012 — Perfil Administrador do Sistema
+
+**Descrição.** O Usuário pode ter o Perfil Administrador do Sistema, que autoriza as operações internas da plataforma (como manter o catálogo de Seguradoras). Usuário sem Perfil é usuário comum. Somente um Administrador do Sistema concede ou revoga o Perfil de outro Usuário; o primeiro Administrador do Sistema nasce por operação interna da equipe SmartInsure.
+
+**Pré-condições.** Concedente autenticado com o perfil Administrador do Sistema; Usuário destinatário existente na plataforma.
+
+**Critério de aceitação.** Ao conceder o Perfil a um Usuário, ele passa a poder executar as operações exclusivas do Perfil; ao revogar, deixa de poder executá-las imediatamente. Concessão ou revogação solicitada por Usuário sem o Perfil é recusada por falta de permissão.
+
+**Casos limite.** Conceder o Perfil a quem já o tem, ou revogar de quem não o tem: solicitação recusada com indicação clara de que o Usuário já está na condição pedida. Revogação que deixaria a plataforma sem nenhum Administrador do Sistema: recusada. Usuário destinatário inexistente: recusada com indicação clara.

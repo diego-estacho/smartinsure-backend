@@ -19,6 +19,8 @@ Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de enti
 | **Usuário** | `User` | Pessoa que acessa a plataforma, com identidade mantida no provedor de identidade (ratificado pela PO em 2026-07-15) | — | a Corretora (empresa) |
 | **Provedor de identidade** | `IdentityProvider` | Serviço externo que guarda credenciais e autentica os Usuários da plataforma (ratificado pela PO em 2026-07-15) | — | — |
 | **Birô** | `Bureau` | Serviço externo que fornece dados cadastrais públicos de pessoa ou empresa a partir do CPF/CNPJ (ratificado pela PO em 2026-07-15) | — | fonte interna de dados; a seguradora |
+| **Perfil** | `Profile` | Papel atribuído a um Usuário que autoriza operações restritas da plataforma; Usuário sem Perfil é usuário comum (proposto em 2026-07-16 — aguardando ratificação da PO) | 0..1 por Usuário nesta fase | cargo na Corretora |
+| **Administrador do Sistema** | `SystemAdministrator` | Perfil da equipe SmartInsure que autoriza operações internas da plataforma, como manter o catálogo de Seguradoras (proposto em 2026-07-16 — aguardando ratificação da PO) | — | usuário de Corretora |
 
 Origem: ontologia definida pelo negócio em 2026-05-22 ("Oferta (singular) → Cotações, uma por seguradora"). Se a PO decidir termos diferentes, este arquivo muda ANTES de qualquer código de domínio existir.
 
@@ -36,3 +38,10 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 |---|---|---|---|
 | **Pendente** | `Pending` | Usuário criado que ainda não concluiu o primeiro acesso | Pendente → Ativo (RN-002) |
 | **Ativo** | `Active` | Usuário que concluiu o primeiro acesso com senha própria definida | — (inativação ainda não definida) |
+
+### Seguradora (proposto em 2026-07-16 — aguardando ratificação da PO)
+
+| Status | Nome estável (API) | Significado | Transições permitidas |
+|---|---|---|---|
+| **Ativa** | `Active` | Seguradora em operação no catálogo, visível aos fluxos operacionais | Ativa → Inativa (RN-009) |
+| **Inativa** | `Inactive` | Seguradora fora de operação — permanece no catálogo, fora da visão operacional (nunca excluída) | Inativa → Ativa (RN-009) |
