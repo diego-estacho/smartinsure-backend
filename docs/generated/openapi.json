@@ -6,10 +6,39 @@
   },
   "servers": [
     {
-      "url": "http://127.0.0.1:5199/"
+      "url": "http://localhost:5599/"
     }
   ],
   "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "AuthenticationEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticateUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/users": {
       "post": {
         "tags": [
@@ -77,6 +106,37 @@
           }
         }
       },
+      "AuthenticateUserRequest": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthenticateUserResponse": {
+        "required": [
+          "accessToken",
+          "expiresAtUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "CreateUserRequest": {
         "required": [
           "name",
@@ -119,6 +179,9 @@
     }
   },
   "tags": [
+    {
+      "name": "AuthenticationEndpoint"
+    },
     {
       "name": "UsersEndpoint"
     }
