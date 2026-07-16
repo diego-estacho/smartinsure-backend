@@ -37,9 +37,11 @@ public sealed class AuthenticateUserUseCase(
         }
 
         // RN-005: Pendente não se autentica — primeiro acesso é pelo fluxo de convite (OPEN-06).
+        // Credencial já validada: a recusa é regra de negócio (422), não falha de autenticação
+        // (ADR-012). A situação só é revelada a quem provou conhecer a senha.
         if (user.Status != EUserStatus.Active)
         {
-            throw new UnauthorizedException(
+            throw new BusinessRuleException(
                 "Usuário pendente do primeiro acesso. Conclua o primeiro acesso para entrar na plataforma.");
         }
 

@@ -104,7 +104,23 @@ public class AuthenticateUserUseCaseTests
         var act = () => _useCase.ExecuteAsync(
             new AuthenticateUserRequest(Email, Password), CancellationToken.None);
 
-        await act.Should().ThrowAsync<UnauthorizedException>();
+        await act.Should().ThrowAsync<BusinessRuleException>();
+        _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>());
+    }
+
+    [Fact]
+    public async Task Execute_DeveRecusarComMensagemGenerica_QuandoUsuarioPendenteComSenhaIncorreta()
+    {
+        var user = User.Create("Maria Silva", Email, "casdoor-id-123");
+        _repository.GetByEmailAsync(Email, Arg.Any<CancellationToken>()).Returns(user);
+        _identityProvider.ValidateCredentialsAsync(Email, Password, Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        var act = () => _useCase.ExecuteAsync(
+            new AuthenticateUserRequest(Email, Password), CancellationToken.None);
+
+        (await act.Should().ThrowAsync<UnauthorizedException>())
+            .WithMessage(AuthenticateUserUseCase.InvalidCredentialsMessage);
         _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>());
     }
 
