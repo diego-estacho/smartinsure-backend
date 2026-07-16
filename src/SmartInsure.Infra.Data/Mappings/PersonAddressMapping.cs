@@ -14,6 +14,12 @@ public sealed class PersonAddressMapping : IEntityTypeConfiguration<PersonAddres
 
         builder.HasIndex(address => address.PersonId);
 
+        // RN-014: no máximo um endereço principal por Pessoa (espelha UX_PersonAddresses_MainAddress).
+        builder.HasIndex(address => address.PersonId)
+            .HasDatabaseName("UX_PersonAddresses_MainAddress")
+            .HasFilter("[IsMain] = 1")
+            .IsUnique();
+
         builder.Property(address => address.ZipCode).HasMaxLength(8);
         builder.Property(address => address.Street).HasMaxLength(200);
         builder.Property(address => address.Number).HasMaxLength(20);
