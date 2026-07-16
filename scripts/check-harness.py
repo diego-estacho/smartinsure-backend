@@ -12,6 +12,7 @@ Valida que a base de conhecimento está íntegra:
   8. Exec-plan ativo tem seção 'Evidências'; exec-plan concluído a tem preenchida.
   9. Cada ADR em docs/adr/ tem título '# ADR-NNN' e seção '## Status'.
  10. Nenhuma pasta de framework de desenvolvimento está versionada (ADR-004).
+ 11. Código de produto (src/) alterado tem exec-plan ativo OU dispensa em commit (ADR-059).
 
 .git/, .claude/ e node_modules/ ficam fora do lint — não são documentação do projeto.
 
@@ -202,6 +203,37 @@ try:
                       f"aterrisse o resultado em docs/.")
 except (OSError, subprocess.CalledProcessError):
     warnings.append("git indisponível — checagem de pasta de framework (ADR-004) pulada")
+
+# 11. Gate de exec-plan (ADR-059): código de produto (src/) alterado exige uma decisão de
+#     triagem registrada — OU um exec-plan ativo, OU uma dispensa declarada em commit (trailer
+#     'Exec-plan:'). Não força documentação para o trivial; força a DECISÃO a existir e ficar
+#     auditável (ADR-003). Base indeterminada vira aviso — não trava dev local nem CI de repo só.
+PRODUTO_DIRS = ("src/",)
+EXEC_TRAILER_RE = re.compile(r"^Exec-plan:\s*\S", re.M | re.I)
+try:
+    base = None
+    for ref in ("origin/main", "origin/master", "main", "master"):
+        r = subprocess.run(["git", "merge-base", "HEAD", ref], cwd=ROOT,
+                           capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            base = r.stdout.strip()
+            break
+    if base is None:
+        warnings.append("gate de exec-plan (ADR-059) não verificado — branch base indeterminada")
+    else:
+        changed = subprocess.run(["git", "diff", "--name-only", base, "HEAD"], cwd=ROOT,
+                                 capture_output=True, text=True, check=True).stdout.splitlines()
+        if any(c.startswith(PRODUTO_DIRS) for c in changed):
+            plano_ativo = any((ROOT / "docs" / "exec-plans" / "active").glob("*.md"))
+            msgs = subprocess.run(["git", "log", "--format=%B", f"{base}..HEAD"], cwd=ROOT,
+                                  capture_output=True, text=True, check=True).stdout
+            if not plano_ativo and not EXEC_TRAILER_RE.search(msgs):
+                errors.append("código de produto (src/) alterado sem exec-plan ativo nem "
+                              "declaração 'Exec-plan:' em commit — abra o plano em "
+                              "docs/exec-plans/active/ ou dispense com motivo no commit "
+                              "('Exec-plan: dispensado — <motivo>'). Ver AGENTS.md / ADR-059.")
+except (OSError, subprocess.CalledProcessError):
+    warnings.append("git indisponível — gate de exec-plan (ADR-059) pulado")
 
 for w in warnings:
     print(f"aviso: {w}")

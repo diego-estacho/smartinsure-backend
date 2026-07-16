@@ -49,7 +49,7 @@ Conflito entre chat, memória e arquivos: **prevalecem os arquivos versionados**
 ## Convenções
 
 - Branch: `ab-NNNNN-slug-curto` — sem `#` (MAX_PATH no Windows, ADR-002). O vínculo com o PBI vai no commit/PR como `AB#NNNNN` (integração Azure Boards).
-- Worktrees nativas do git em raiz curta, com os repos como irmãos sob a pasta da atividade para os ponteiros de workspace resolverem: `git worktree add C:\wt\ab-NNNNN\smartinsure-backend` (e o análogo no front). ADR-002.
+- Toda tarefa começa numa worktree (nunca na checkout principal) do(s) repo(s) da triagem — permite atividades paralelas isoladas em terminais separados. Worktrees nativas do git em raiz curta, com os repos como irmãos sob a pasta da atividade para os ponteiros de workspace resolverem: `git worktree add C:\wt\ab-NNNNN\smartinsure-backend` (e o análogo no front). Após o merge, `python scripts/worktree-gc.py` remove a worktree. **Provisório até o AB#:** o `<slug>` da tarefa faz o papel de `ab-NNNNN` (branch e pasta-pai das irmãs). ADR-002.
 - Idioma (ADR-058): todo artefato de código em inglês, com nome técnico mapeado 1:1 no glossário; documentação, UI, mensagens e commits em pt-BR (Conventional Commits).
 - Workspace: repos clonados lado a lado (`C:\src\smart\smartinsure-backend` e `C:\src\smart\smartinsure-frontend`); o front referencia a camada de produto via `../smartinsure-backend/docs/` (ADR-001).
 - Ferramenta de IA: o harness é agnóstico (ADR-003). O ponto de entrada é este AGENTS.md; `CLAUDE.md` e equivalentes são apenas ponteiros para ele.
@@ -62,4 +62,5 @@ Preenchidos no scaffold (Fase B do exec-plan 0001) — até lá, não assumir sc
 ```
 python scripts/doctor.py          # valida o ambiente e o layout de workspace
 python scripts/check-harness.py   # lint do próprio harness
+python scripts/worktree-gc.py     # remove worktrees de branches já mergeadas (ADR-002)
 ```
