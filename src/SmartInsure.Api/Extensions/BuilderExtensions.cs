@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Carter;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +11,7 @@ using SmartInsure.Api.Handlers.Base;
 using SmartInsure.Api.Services;
 using SmartInsure.Application.UseCase.IoC;
 using SmartInsure.Core.Abstractions.Services;
+using SmartInsure.Core.Constants;
 using SmartInsure.Infra.BackgroundServices;
 using SmartInsure.Infra.CrossCutting.IoC;
 using SmartInsure.Infra.CrossCutting.Options;
@@ -49,7 +51,13 @@ public static class BuilderExtensions
         builder.Services.AddCarter();
 
         builder.AddJwtAuthentication();
-        builder.Services.AddAuthorization();
+
+        // RN-011: escrita no catálogo é fail-closed — exige o perfil Administrador do Sistema.
+        builder.Services.AddAuthorization(options =>
+            options.AddPolicy(Policies.SystemAdministrator, policy =>
+                policy.RequireRole(Roles.SystemAdministrator)));
+
+        builder.Services.AddScoped<IClaimsTransformation, UserProfileClaimsTransformation>();
 
         // ADR-016: política única aberta; restrição de origem é do gateway.
         builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
@@ -104,6 +112,30 @@ public static class BuilderExtensions
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
                     RoleClaimType = jwt.RoleClaimType,
+                };
+
+                // RN-006: acesso encerrado (denylist) é recusado mesmo com assinatura e
+                // lifetime válidos — sessão é da plataforma, não só do token.
+                bearer.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var tokenId = context.Principal?.FindFirst("jti")?.Value;
+
+                        if (string.IsNullOrEmpty(tokenId))
+                        {
+                            return;
+                        }
+
+                        var revocationStore = context.HttpContext.RequestServices
+                            .GetRequiredService<IAccessTokenRevocationStore>();
+
+                        if (await revocationStore.IsRevokedAsync(
+                            tokenId, context.HttpContext.RequestAborted))
+                        {
+                            context.Fail("Acesso encerrado.");
+                        }
+                    },
                 };
             });
     }

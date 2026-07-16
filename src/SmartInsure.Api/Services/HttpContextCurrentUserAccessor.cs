@@ -20,4 +20,19 @@ public sealed class HttpContextCurrentUserAccessor(IHttpContextAccessor httpCont
                 ?? user?.FindFirstValue("sub");
         }
     }
+
+    public string? SessionTokenId
+        => httpContextAccessor.HttpContext?.User.FindFirstValue("jti");
+
+    public DateTime? SessionExpiresAtUtc
+    {
+        get
+        {
+            var exp = httpContextAccessor.HttpContext?.User.FindFirstValue("exp");
+
+            return long.TryParse(exp, out var unixSeconds)
+                ? DateTimeOffset.FromUnixTimeSeconds(unixSeconds).UtcDateTime
+                : null;
+        }
+    }
 }

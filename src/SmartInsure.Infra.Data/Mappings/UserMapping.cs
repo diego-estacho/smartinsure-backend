@@ -32,6 +32,10 @@ public sealed class UserMapping : IEntityTypeConfiguration<User>
             .HasMaxLength(20)
             .IsRequired();
 
+        // RN-012: Perfil opcional persistido como string (ADR-031).
+        builder.Property(user => user.Profile)
+            .HasMaxLength(30);
+
         // Alinhado 1:1 com a migration V20260715114410 (evitar drift de constraint).
         builder.Property(user => user.CreatedAt).IsRequired();
         builder.Property(user => user.CreatedBy).HasMaxLength(100).IsRequired();

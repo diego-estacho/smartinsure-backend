@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SmartInsure.Core.Entities;
 
 namespace SmartInsure.Infra.Data.Context;
 
@@ -10,6 +11,8 @@ namespace SmartInsure.Infra.Data.Context;
 public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> options)
     : DbContext(options)
 {
+    public DbSet<Insurer> Insurers => Set<Insurer>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartInsureDbContext).Assembly);

@@ -6,10 +6,238 @@
   },
   "servers": [
     {
-      "url": "http://127.0.0.1:5199/"
+      "url": "http://localhost:5158/"
     }
   ],
   "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "AuthenticationEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticateUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "AuthenticationEndpoint"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/insurers": {
+      "post": {
+        "tags": [
+          "InsurersEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInsurerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateInsurerResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "InsurersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfInsurerListItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/insurers/{id}": {
+      "put": {
+        "tags": [
+          "InsurersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInsurerBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateInsurerResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "InsurersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetInsurerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/insurers/{id}/status": {
+      "patch": {
+        "tags": [
+          "InsurersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeInsurerStatusBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeInsurerStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/users": {
       "post": {
         "tags": [
@@ -57,6 +285,46 @@
           }
         }
       }
+    },
+    "/api/v1/users/{id}/profile": {
+      "put": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserProfileBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetUserProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -71,6 +339,135 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthenticateUserRequest": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthenticateUserResponse": {
+        "required": [
+          "accessToken",
+          "expiresAtUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ChangeInsurerStatusBody": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeInsurerStatusResponse": {
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateInsurerRequest": {
+        "required": [
+          "cnpj",
+          "corporateName",
+          "tradeName",
+          "logoUrl",
+          "initialStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "cnpj": {
+            "type": "string"
+          },
+          "corporateName": {
+            "type": "string"
+          },
+          "tradeName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "initialStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateInsurerResponse": {
+        "required": [
+          "id",
+          "cnpj",
+          "corporateName",
+          "tradeName",
+          "logoUrl",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cnpj": {
+            "type": "string"
+          },
+          "corporateName": {
+            "type": "string"
+          },
+          "tradeName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "status": {
             "type": "string"
@@ -115,10 +512,241 @@
             "type": "string"
           }
         }
+      },
+      "GetInsurerResponse": {
+        "required": [
+          "id",
+          "cnpj",
+          "corporateName",
+          "tradeName",
+          "logoUrl",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cnpj": {
+            "type": "string"
+          },
+          "corporateName": {
+            "type": "string"
+          },
+          "tradeName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "InsurerListItemResponse": {
+        "required": [
+          "id",
+          "cnpj",
+          "corporateName",
+          "tradeName",
+          "logoUrl",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cnpj": {
+            "type": "string"
+          },
+          "corporateName": {
+            "type": "string"
+          },
+          "tradeName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "PagedResponseOfInsurerListItemResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InsurerListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "SetUserProfileBody": {
+        "required": [
+          "profile"
+        ],
+        "type": "object",
+        "properties": {
+          "profile": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "SetUserProfileResponse": {
+        "required": [
+          "id",
+          "profile"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profile": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "UpdateInsurerBody": {
+        "required": [
+          "cnpj",
+          "corporateName",
+          "tradeName",
+          "logoUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "cnpj": {
+            "type": "string"
+          },
+          "corporateName": {
+            "type": "string"
+          },
+          "tradeName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "UpdateInsurerResponse": {
+        "required": [
+          "id",
+          "cnpj",
+          "corporateName",
+          "tradeName",
+          "logoUrl",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cnpj": {
+            "type": "string"
+          },
+          "corporateName": {
+            "type": "string"
+          },
+          "tradeName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
       }
     }
   },
   "tags": [
+    {
+      "name": "AuthenticationEndpoint"
+    },
+    {
+      "name": "InsurersEndpoint"
+    },
     {
       "name": "UsersEndpoint"
     }

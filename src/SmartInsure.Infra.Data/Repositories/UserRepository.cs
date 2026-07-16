@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Entities;
+using SmartInsure.Core.Enumerators;
 using SmartInsure.Infra.Data.Context;
 
 namespace SmartInsure.Infra.Data.Repositories;
@@ -16,4 +17,13 @@ public sealed class UserRepository(SmartInsureDbContext context)
         string externalIdentity, CancellationToken cancellationToken)
         => await Set.FirstOrDefaultAsync(
             user => user.ExternalIdentity == externalIdentity, cancellationToken);
+
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .FirstOrDefaultAsync(user => user.Email == email, cancellationToken);
+
+    public async Task<int> CountByProfileAsync(
+        EUserProfile profile, CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .CountAsync(user => user.Profile == profile, cancellationToken);
 }

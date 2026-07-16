@@ -21,6 +21,14 @@ public sealed class ExceptionResultResolver(
         BusinessRuleException businessRule => problemFactory.Problem(
             httpContext, StatusCodes.Status422UnprocessableEntity, "Regra de negócio impede a operação.", businessRule.Message),
 
+        UnauthorizedException unauthorized => problemFactory.Problem(
+            httpContext, StatusCodes.Status401Unauthorized, "Falha de autenticação.", unauthorized.Message),
+
+        // RN-005: indisponibilidade do provedor tem mensagem distinta de credencial inválida.
+        IdentityProviderUnavailableException => problemFactory.Problem(
+            httpContext, StatusCodes.Status503ServiceUnavailable, "Serviço indisponível.",
+            "O serviço de autenticação está indisponível. Tente novamente em instantes."),
+
         _ => Unexpected(httpContext, exception),
     };
 
