@@ -6,6 +6,7 @@ using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
+using SmartInsure.Infra.CrossCutting.Validators;
 
 namespace SmartInsure.Application.UseCase.UseCases.InsurerUseCases.CreateInsurer;
 
@@ -18,7 +19,7 @@ public sealed class CreateInsurerUseCase(
         CreateInsurerRequest request,
         CancellationToken cancellationToken)
     {
-        var cnpj = new string([.. request.Cnpj.Where(char.IsDigit)]);
+        var cnpj = CnpjValidator.Normalize(request.Cnpj);
 
         if (await insurerRepository.CnpjExistsAsync(cnpj, null, cancellationToken))
         {

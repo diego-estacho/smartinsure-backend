@@ -3,6 +3,10 @@ namespace SmartInsure.Infra.CrossCutting.Validators;
 /// <summary>Validação de CNPJ por dígitos verificadores (RN-005/RN-006).</summary>
 public static class CnpjValidator
 {
+    /// <summary>Normaliza o CNPJ para somente dígitos — forma canônica persistida (RN-005).</summary>
+    public static string Normalize(string cnpj)
+        => new([.. cnpj.Where(char.IsDigit)]);
+
     public static bool IsValid(string? cnpj)
     {
         if (string.IsNullOrWhiteSpace(cnpj))
@@ -10,7 +14,7 @@ public static class CnpjValidator
             return false;
         }
 
-        var digits = new string([.. cnpj.Where(char.IsDigit)]);
+        var digits = Normalize(cnpj);
 
         if (digits.Length != 14 || digits.Distinct().Count() == 1)
         {
