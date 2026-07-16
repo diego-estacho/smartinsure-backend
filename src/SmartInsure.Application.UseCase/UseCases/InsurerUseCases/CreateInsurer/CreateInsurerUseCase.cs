@@ -26,7 +26,10 @@ public sealed class CreateInsurerUseCase(
             throw new ConflictException("Já existe uma seguradora com este CNPJ no catálogo.");
         }
 
-        var initialStatus = Enum.Parse<EInsurerStatus>(request.InitialStatus, ignoreCase: true);
+        if (!Enum.TryParse<EInsurerStatus>(request.InitialStatus, ignoreCase: true, out var initialStatus))
+        {
+            throw new BusinessRuleException("A situação inicial deve ser Active ou Inactive.");
+        }
         var insurer = Insurer.Create(
             cnpj, request.CorporateName, request.TradeName, request.LogoUrl, initialStatus);
 

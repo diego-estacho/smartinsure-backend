@@ -74,4 +74,16 @@ public class ChangeInsurerStatusUseCaseTests
 
         await act.Should().ThrowAsync<NotFoundException>();
     }
+
+    [Fact]
+    public async Task Execute_DeveRecusar_QuandoSituacaoDesconhecida()
+    {
+        var insurer = ExistingInsurer(EInsurerStatus.Active);
+
+        var act = () => _useCase.ExecuteAsync(
+            new ChangeInsurerStatusRequest(insurer.Id, "Suspensa"), CancellationToken.None);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
+    }
 }

@@ -20,7 +20,10 @@ public sealed class ChangeInsurerStatusUseCase(
         var insurer = await insurerRepository.GetByIdAsync(request.InsurerId, cancellationToken)
             ?? throw new NotFoundException("Seguradora não encontrada no catálogo.");
 
-        var target = Enum.Parse<EInsurerStatus>(request.Status, ignoreCase: true);
+        if (!Enum.TryParse<EInsurerStatus>(request.Status, ignoreCase: true, out var target))
+        {
+            throw new BusinessRuleException("A situação deve ser Active ou Inactive.");
+        }
 
         if (target == EInsurerStatus.Active)
         {

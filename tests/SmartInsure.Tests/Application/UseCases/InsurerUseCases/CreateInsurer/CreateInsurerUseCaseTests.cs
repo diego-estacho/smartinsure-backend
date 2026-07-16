@@ -48,4 +48,17 @@ public class CreateInsurerUseCaseTests
         await act.Should().ThrowAsync<ConflictException>();
         await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
     }
+
+    [Fact]
+    public async Task Execute_DeveRecusar_QuandoSituacaoInicialDesconhecida()
+    {
+        _repository.CnpjExistsAsync("12345678000195", null, Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        var request = new CreateInsurerRequest("12.345.678/0001-95", "Seguradora Alfa S.A.", "Alfa", "https://cdn.alfa.com/logo.png", "Suspensa");
+        var act = () => _useCase.ExecuteAsync(request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
+    }
 }
