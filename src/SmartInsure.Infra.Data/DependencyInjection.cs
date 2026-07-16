@@ -30,6 +30,8 @@ public static class DependencyInjection
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IInsurerRepository, InsurerRepository>();
+        services.AddScoped<IPersonRepository, PersonRepository>();
+        services.AddScoped<ILegalNatureRepository, LegalNatureRepository>();
 
         services.AddOptions<MongoOptions>()
             .BindConfiguration(MongoOptions.SectionName)

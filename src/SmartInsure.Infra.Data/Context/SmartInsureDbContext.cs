@@ -13,6 +13,10 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 {
     public DbSet<Insurer> Insurers => Set<Insurer>();
 
+    public DbSet<Person> Persons => Set<Person>();
+
+    public DbSet<LegalNature> LegalNatures => Set<LegalNature>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartInsureDbContext).Assembly);
