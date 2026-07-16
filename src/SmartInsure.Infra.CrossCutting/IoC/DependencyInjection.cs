@@ -18,6 +18,9 @@ public static class DependencyInjection
         // RN-005: emissão do acesso autenticado com a mesma chave simétrica da validação (ADR-015).
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
 
+        // RN-006: denylist de acessos encerrados sobre o cache distribuído (ADR-040).
+        services.AddSingleton<IAccessTokenRevocationStore, CacheAccessTokenRevocationStore>();
+
         return services;
     }
 }

@@ -30,4 +30,14 @@
 
 **Critério de aceitação.** Ao informar e-mail e senha reconhecidos pelo provedor de identidade, o Usuário Ativo obtém acesso autenticado à plataforma, válido por 8 horas; vencido esse prazo, um novo acesso exige nova autenticação. A validação da senha ocorre somente no provedor de identidade.
 
-**Casos limite.** E-mail ou senha incorretos: acesso recusado com uma única mensagem que não revela se o e-mail está cadastrado. Usuário na situação Pendente: acesso recusado — o primeiro acesso acontece pelo fluxo de convite ([OPEN-06](../open-decisions.md)). Credenciais aceitas pelo provedor de identidade, mas sem Usuário correspondente na plataforma: acesso recusado com a mesma mensagem de credenciais incorretas. Provedor de identidade indisponível: acesso recusado com mensagem de indisponibilidade, distinta da de credenciais incorretas; acessos autenticados já concedidos permanecem válidos até o fim das suas 8 horas. Bloqueio por tentativas repetidas de acesso: não há nesta fase ([OPEN-05](../open-decisions.md)).
+**Casos limite.** E-mail ou senha incorretos: acesso recusado com uma única mensagem que não revela se o e-mail está cadastrado. Usuário na situação Pendente: acesso recusado — o primeiro acesso acontece pelo fluxo de convite ([OPEN-06](../open-decisions.md)). Credenciais aceitas pelo provedor de identidade, mas sem Usuário correspondente na plataforma: acesso recusado com a mesma mensagem de credenciais incorretas. Provedor de identidade indisponível: acesso recusado com mensagem de indisponibilidade, distinta da de credenciais incorretas; acessos autenticados já concedidos permanecem válidos até o fim das suas 8 horas (salvo encerramento pelo próprio Usuário — RN-006). Bloqueio por tentativas repetidas de acesso: não há nesta fase ([OPEN-05](../open-decisions.md)).
+
+## RN-006 — Encerramento de sessão
+
+**Descrição.** O Usuário autenticado pode encerrar sua sessão a qualquer momento. A partir do encerramento, aquele acesso autenticado deixa de ser aceito pela plataforma imediatamente, mesmo antes do fim das 8 horas de validade (RN-005).
+
+**Pré-condições.** Usuário portador de um acesso autenticado válido (RN-005).
+
+**Critério de aceitação.** Após o encerramento, qualquer chamada à plataforma com o mesmo acesso é recusada como não autenticada. Encerrar uma sessão já encerrada não tem efeito adicional (idempotente).
+
+**Casos limite.** Acesso já expirado no momento do encerramento: sem efeito — a recusa já decorre da expiração. O encerramento vale só para aquele acesso: outros acessos do mesmo Usuário permanecem válidos até expirar ou serem encerrados. O provedor de identidade não participa do encerramento — a sessão é da plataforma.
