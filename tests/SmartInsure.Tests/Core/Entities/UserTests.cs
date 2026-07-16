@@ -25,4 +25,50 @@ public class UserTests
 
         act.Should().Throw<BusinessRuleException>();
     }
+
+    [Fact]
+    [Trait("RuleId", "RN-010")]
+    public void GrantProfile_DeveConcederPerfil_QuandoUsuarioSemPerfil()
+    {
+        var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
+
+        user.GrantProfile(EUserProfile.SystemAdministrator);
+
+        user.Profile.Should().Be(EUserProfile.SystemAdministrator);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-010")]
+    public void GrantProfile_DeveRecusar_QuandoUsuarioJaTemOPerfil()
+    {
+        var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
+        user.GrantProfile(EUserProfile.SystemAdministrator);
+
+        var act = () => user.GrantProfile(EUserProfile.SystemAdministrator);
+
+        act.Should().Throw<ConflictException>();
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-010")]
+    public void RevokeProfile_DeveRemoverPerfil_QuandoUsuarioTemPerfil()
+    {
+        var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
+        user.GrantProfile(EUserProfile.SystemAdministrator);
+
+        user.RevokeProfile();
+
+        user.Profile.Should().BeNull();
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-010")]
+    public void RevokeProfile_DeveRecusar_QuandoUsuarioSemPerfil()
+    {
+        var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
+
+        var act = user.RevokeProfile;
+
+        act.Should().Throw<ConflictException>();
+    }
 }
