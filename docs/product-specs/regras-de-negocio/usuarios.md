@@ -21,3 +21,13 @@
 **Critério de aceitação.** Ao autenticar-se pela primeira vez e concluir a troca obrigatória de senha, a situação do Usuário passa de Pendente para Ativo. Enquanto a troca de senha não for concluída, o Usuário permanece Pendente.
 
 **Casos limite.** Nova senha igual à senha inicial padrão: troca recusada e Usuário permanece Pendente. Autenticação realizada sem conclusão da troca de senha: o Usuário não acessa as funcionalidades da plataforma e permanece Pendente.
+
+## RN-005 — Autenticação de Usuário com e-mail e senha
+
+**Descrição.** O Usuário na situação Ativo acessa a plataforma informando e-mail e senha. As credenciais são validadas exclusivamente no provedor de identidade — a plataforma não guarda nem valida senhas — e, quando válidas, o Usuário recebe acesso autenticado com validade de 8 horas.
+
+**Pré-condições.** Usuário na situação Ativo, existente na plataforma e com identidade correspondente no provedor de identidade.
+
+**Critério de aceitação.** Ao informar e-mail e senha reconhecidos pelo provedor de identidade, o Usuário Ativo obtém acesso autenticado à plataforma, válido por 8 horas; vencido esse prazo, um novo acesso exige nova autenticação. A validação da senha ocorre somente no provedor de identidade.
+
+**Casos limite.** E-mail ou senha incorretos: acesso recusado com uma única mensagem que não revela se o e-mail está cadastrado. Usuário na situação Pendente: acesso recusado — o primeiro acesso acontece pelo fluxo de convite ([OPEN-06](../open-decisions.md)). Credenciais aceitas pelo provedor de identidade, mas sem Usuário correspondente na plataforma: acesso recusado com a mesma mensagem de credenciais incorretas. Provedor de identidade indisponível: acesso recusado com mensagem de indisponibilidade, distinta da de credenciais incorretas; acessos autenticados já concedidos permanecem válidos até o fim das suas 8 horas. Bloqueio por tentativas repetidas de acesso: não há nesta fase ([OPEN-05](../open-decisions.md)).

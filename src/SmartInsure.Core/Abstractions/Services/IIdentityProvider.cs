@@ -17,4 +17,11 @@ public interface IIdentityProvider
 
     /// <summary>RN-002: indica se a senha inicial padrão ainda está pendente de troca.</summary>
     Task<bool> IsInitialPasswordPendingAsync(string externalIdentity, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-005: valida e-mail e senha exclusivamente no provedor de identidade — a plataforma
+    /// não guarda nem valida senhas. Provedor fora do ar lança
+    /// <see cref="Exceptions.IdentityProviderUnavailableException"/>.
+    /// </summary>
+    Task<bool> ValidateCredentialsAsync(string email, string password, CancellationToken cancellationToken);
 }

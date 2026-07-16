@@ -25,3 +25,15 @@ Dono: PO (gerente de projeto)
 Bloqueia: qualquer efeito automático dos dados do Birô (preencher cadastro, bloquear ou alertar por situação cadastral) e os gatilhos de negócio que disparam a consulta
 Status: aberta
 Contexto: a consulta ao Birô existe como serviço reutilizável (RN-003, RN-004), mas o negócio ainda não definiu o que a plataforma faz com o retorno (situação cadastral, endereço, atividade econômica) nem em quais momentos da jornada a consulta dispara. Cada consulta tem custo por chamada e hoje não há reuso de respostas — se o volume crescer, a decisão de reuso/validade também é da PO.
+
+## OPEN-05 — Bloqueio por tentativas repetidas de login
+Dono: PO (gerente de projeto)
+Bloqueia: qualquer mecanismo de bloqueio/atraso após falhas de autenticação (RN-005 nasce sem ele)
+Status: aberta
+Contexto: a RN-005 recusa credenciais incorretas com mensagem genérica, mas não define limite de tentativas nem tempo de bloqueio. Falta a PO decidir se haverá bloqueio, com quais limites, e se o mecanismo nativo do provedor de identidade atende.
+
+## OPEN-06 — Primeiro acesso via convite (substitui a senha inicial padrão)
+Dono: PO (gerente de projeto) — endereçada pela futura funcionalidade de convite
+Bloqueia: revisão de RN-001 (fim da senha inicial padrão) e de RN-002 (ativação passa a ocorrer pelo link de convite, sem autenticação prévia)
+Status: aberta
+Contexto: decidido em 2026-07-16 que o Usuário Pendente não se autentica (RN-005); a primeira senha será definida pelo próprio Usuário através de link de convite enviado por e-mail — uso único, com prazo de validade (proposta: 7 dias) e reenviável enquanto o Usuário for Pendente. O envio de e-mail ainda não existe e será implementado na funcionalidade de convite, quando RN-001 e RN-002 serão revisadas. Decidido em 2026-07-16: o login recusa o Usuário Pendente sempre (RN-005 literal) — usuário novo permanece sem acesso até a funcionalidade de convite existir; a ativação (RN-002) fica inoperante nesse intervalo por decisão consciente do negócio.
