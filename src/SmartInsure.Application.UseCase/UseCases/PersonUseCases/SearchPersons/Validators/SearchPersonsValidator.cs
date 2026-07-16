@@ -13,6 +13,6 @@ public sealed class SearchPersonsValidator : AbstractValidator<SearchPersonsRequ
 
         RuleFor(request => request.Role)
             .Must(role => Enum.TryParse<EPersonRole>(role, ignoreCase: false, out _))
-            .WithMessage("O papel da busca deve ser Insured ou PolicyHolder.");
+            .WithMessage("O papel da busca deve ser Insured, Broker ou PolicyHolder.");
     }
 }

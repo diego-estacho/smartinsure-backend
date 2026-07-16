@@ -13,6 +13,7 @@ public class SearchPersonsValidatorTests
     [Theory]
     [InlineData("Alfa", "Insured", true)]
     [InlineData("11444777000161", "PolicyHolder", true)]
+    [InlineData("52998224725", "Broker", true)]
     [InlineData("", "Insured", false)]
     [InlineData("Alfa", "", false)]
     [InlineData("Alfa", "Corretora", false)]

@@ -12,26 +12,30 @@ public sealed class PersonMapping : IEntityTypeConfiguration<Person>
 
         builder.HasKey(entity => entity.Id);
 
-        builder.Property(entity => entity.Cnpj)
+        builder.Property(entity => entity.DocumentNumber)
             .HasMaxLength(14)
             .IsRequired();
 
-        // RN-013/RN-014: uma Pessoa por CNPJ.
-        builder.HasIndex(entity => entity.Cnpj).IsUnique();
+        // RN-013/RN-014: uma Pessoa por documento (CPF/CNPJ).
+        builder.HasIndex(entity => entity.DocumentNumber).IsUnique();
 
-        builder.Property(entity => entity.CorporateName)
+        builder.Property(entity => entity.Name)
             .HasMaxLength(200)
             .IsRequired();
 
-        builder.HasIndex(entity => entity.CorporateName);
+        builder.HasIndex(entity => entity.Name);
 
-        builder.Property(entity => entity.TradeName)
+        builder.Property(entity => entity.SocialName)
             .HasMaxLength(200);
 
+        builder.Property(entity => entity.Type)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        // RN-015: Natureza Jurídica só existe para pessoa jurídica.
         builder.HasOne(entity => entity.LegalNature)
             .WithMany()
-            .HasForeignKey(entity => entity.LegalNatureId)
-            .IsRequired();
+            .HasForeignKey(entity => entity.LegalNatureId);
 
         builder.HasMany(entity => entity.Addresses)
             .WithOne()

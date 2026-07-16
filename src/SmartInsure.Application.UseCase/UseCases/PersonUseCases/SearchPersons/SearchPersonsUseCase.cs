@@ -14,10 +14,10 @@ using SmartInsure.Infra.CrossCutting.Validators;
 namespace SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons;
 
 /// <summary>
-/// RN-013: busca por trecho de nome (razão social/fantasia) ou CNPJ; pessoa já cadastrada
-/// vem da base, sem Birô e sem atualização. RN-014: CNPJ não cadastrado é importado do
-/// Birô uma única vez. RN-016: no contexto de tomador só matriz; CNPJ de filial resolve a
-/// matriz com a filial pré-selecionada.
+/// RN-013: busca por trecho de nome (nome/nome social) ou documento; pessoa já
+/// cadastrada vem da base, sem Birô e sem atualização. RN-014: CNPJ não cadastrado é
+/// importado do Birô uma única vez. RN-016: no contexto de tomador só matriz; CNPJ de
+/// filial resolve a matriz com a filial pré-selecionada.
 /// </summary>
 public sealed class SearchPersonsUseCase(
     IPersonRepository personRepository,
@@ -35,17 +35,18 @@ public sealed class SearchPersonsUseCase(
         var headquartersOnly = role == EPersonRole.PolicyHolder;
 
         var digits = CnpjValidator.Normalize(request.Term);
+        var documentNumber = digits.Length is 11 or 14 ? digits : null;
         var cnpj = digits.Length == 14 ? digits : null;
 
-        var found = await personRepository.SearchByNameOrCnpjAsync(
-            request.Term.Trim(), cnpj, headquartersOnly, cancellationToken);
+        var found = await personRepository.SearchByNameOrDocumentAsync(
+            request.Term.Trim(), documentNumber, headquartersOnly, cancellationToken);
 
         if (found.Count > 0)
         {
             return new SearchPersonsResponse([.. found.Select(item => MapItem(item))]);
         }
 
-        // RN-013: termo que não é CNPJ e sem correspondência não vai ao Birô.
+        // RN-013: termo que não é CNPJ (inclusive CPF) e sem correspondência não vai ao Birô.
         if (cnpj is null)
         {
             return new SearchPersonsResponse([]);
@@ -71,7 +72,8 @@ public sealed class SearchPersonsUseCase(
     {
         var headquartersCnpj = CnpjValidator.HeadquartersOf(branchCnpj);
 
-        var existing = await personRepository.GetByCnpjAsync(headquartersCnpj, cancellationToken);
+        var existing = await personRepository.GetByDocumentNumberAsync(
+            headquartersCnpj, cancellationToken);
 
         if (existing is not null)
         {
@@ -90,7 +92,12 @@ public sealed class SearchPersonsUseCase(
         EPersonRole role,
         CancellationToken cancellationToken)
     {
-        var personType = role == EPersonRole.Insured ? "Segurado" : "Tomador";
+        var personType = role switch
+        {
+            EPersonRole.Insured => "Segurado",
+            EPersonRole.Broker => "Corretor",
+            _ => "Tomador",
+        };
 
         var complement = await bureauProvider.GetPersonComplementAsync(
             cnpj, personType, EBureau.ReceitaWS, cancellationToken);
@@ -122,9 +129,10 @@ public sealed class SearchPersonsUseCase(
 
         return new PersonSearchItemDto(
             person.Id,
-            person.Cnpj,
-            person.CorporateName,
-            person.TradeName,
+            person.DocumentNumber,
+            person.Name,
+            person.SocialName,
+            person.Type.ToString(),
             legalNature.IsPrivate,
             new PersonMainAddressDto(
                 mainAddress.ZipCode,
@@ -154,12 +162,13 @@ public sealed class SearchPersonsUseCase(
 
     private static PersonSearchItemResponse MapItem(
         PersonSearchItemDto item,
-        string? preSelectedBranchCnpj = null)
+        string? preSelectedBranchDocumentNumber = null)
         => new(
             item.Id,
-            item.Cnpj,
-            item.CorporateName,
-            item.TradeName,
+            item.DocumentNumber,
+            item.Name,
+            item.SocialName,
+            item.Type,
             item.IsPrivateSector,
             item.MainAddress is null
                 ? null
@@ -171,5 +180,5 @@ public sealed class SearchPersonsUseCase(
                     item.MainAddress.Neighborhood,
                     item.MainAddress.City,
                     item.MainAddress.State),
-            preSelectedBranchCnpj);
+            preSelectedBranchDocumentNumber);
 }

@@ -1,11 +1,13 @@
+using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Pessoa (glossário): única por CNPJ, cadastrada uma vez e reaproveitada pelos
-/// papéis que a referenciam (RN-013/RN-014). Importada do Birô com endereço principal;
-/// os dados não são atualizados pelo fluxo de busca (RN-014).
+/// Pessoa (glossário): física (CPF) ou jurídica (CNPJ), única por documento,
+/// cadastrada uma vez e reaproveitada pelos papéis que a referenciam (RN-013/RN-014).
+/// Natureza Jurídica só existe para a jurídica (RN-015); os dados não são
+/// atualizados pelo fluxo de busca (RN-014).
 /// </summary>
 public sealed class Person : EntityBase
 {
@@ -15,41 +17,57 @@ public sealed class Person : EntityBase
     {
     }
 
-    public string Cnpj { get; private set; } = string.Empty;
+    public string DocumentNumber { get; private set; } = string.Empty;
 
-    public string CorporateName { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
 
-    public string? TradeName { get; private set; }
+    public string? SocialName { get; private set; }
 
-    public Guid LegalNatureId { get; private set; }
+    public EPersonType Type { get; private set; }
+
+    public Guid? LegalNatureId { get; private set; }
 
     public LegalNature? LegalNature { get; private set; }
 
     public IReadOnlyCollection<PersonAddress> Addresses => _addresses.AsReadOnly();
 
     public static Person Create(
-        string cnpj,
-        string corporateName,
-        string? tradeName,
-        Guid legalNatureId)
+        string documentNumber,
+        string name,
+        string? socialName,
+        Guid? legalNatureId)
     {
-        var digits = new string([.. cnpj.Where(char.IsDigit)]);
+        var digits = new string([.. documentNumber.Where(char.IsDigit)]);
 
-        if (digits.Length != 14)
+        var type = digits.Length switch
         {
-            throw new BusinessRuleException("O CNPJ da pessoa deve ter 14 dígitos.");
+            11 => EPersonType.Natural,
+            14 => EPersonType.Legal,
+            _ => throw new BusinessRuleException(
+                "O documento da pessoa deve ser um CPF (11 dígitos) ou um CNPJ (14 dígitos)."),
+        };
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new BusinessRuleException("O nome da pessoa é obrigatório.");
         }
 
-        if (string.IsNullOrWhiteSpace(corporateName))
+        if (type == EPersonType.Legal && legalNatureId is null)
         {
-            throw new BusinessRuleException("A razão social da pessoa é obrigatória.");
+            throw new BusinessRuleException("A pessoa jurídica exige natureza jurídica catalogada.");
+        }
+
+        if (type == EPersonType.Natural && legalNatureId is not null)
+        {
+            throw new BusinessRuleException("A pessoa física não possui natureza jurídica.");
         }
 
         return new Person
         {
-            Cnpj = digits,
-            CorporateName = corporateName.Trim(),
-            TradeName = string.IsNullOrWhiteSpace(tradeName) ? null : tradeName.Trim(),
+            DocumentNumber = digits,
+            Name = name.Trim(),
+            SocialName = string.IsNullOrWhiteSpace(socialName) ? null : socialName.Trim(),
+            Type = type,
             LegalNatureId = legalNatureId,
         };
     }
@@ -76,6 +94,7 @@ public sealed class Person : EntityBase
             Id, zipCode, street, number, complement, neighborhood, city, state));
     }
 
-    /// <summary>RN-016: matriz é o estabelecimento de ordem /0001 no CNPJ.</summary>
-    public bool IsHeadquarters => Cnpj.Length == 14 && Cnpj[8..12] == "0001";
+    /// <summary>RN-016: matriz é o estabelecimento de ordem /0001 do CNPJ (só pessoa jurídica).</summary>
+    public bool IsHeadquarters
+        => Type == EPersonType.Legal && DocumentNumber[8..12] == "0001";
 }

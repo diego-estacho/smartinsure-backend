@@ -9,17 +9,19 @@ public sealed record SearchPersonsResponse(
     string? Notice = null);
 
 /// <summary>
-/// Pessoa no resultado, com a classificação da Natureza Jurídica (RN-015) e,
-/// no contexto de tomador com CNPJ de filial, a filial pré-selecionada (RN-016).
+/// Pessoa no resultado: tipo pelo nome estável (Natural/Legal); classificação da
+/// Natureza Jurídica quando jurídica (RN-015); no contexto de tomador com CNPJ de
+/// filial, a filial pré-selecionada (RN-016).
 /// </summary>
 public sealed record PersonSearchItemResponse(
     Guid Id,
-    string Cnpj,
-    string CorporateName,
-    string? TradeName,
-    bool IsPrivateSector,
+    string DocumentNumber,
+    string Name,
+    string? SocialName,
+    string Type,
+    bool? IsPrivateSector,
     PersonAddressResponse? MainAddress,
-    string? PreSelectedBranchCnpj = null);
+    string? PreSelectedBranchDocumentNumber = null);
 
 public sealed record PersonAddressResponse(
     string? ZipCode,

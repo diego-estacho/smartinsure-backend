@@ -21,9 +21,9 @@ public class SearchPersonsUseCaseTests
 {
     private const string HeadquartersCnpj = "11444777000161";
     private const string BranchCnpj = "11444777000242";
+    private const string Cpf = "52998224725";
 
-    private readonly IPersonRepository _personRepository =
-        Substitute.For<IPersonRepository>();
+    private readonly IPersonRepository _personRepository = Substitute.For<IPersonRepository>();
 
     private readonly ILegalNatureRepository _legalNatureRepository =
         Substitute.For<ILegalNatureRepository>();
@@ -36,8 +36,9 @@ public class SearchPersonsUseCaseTests
         => _useCase = new SearchPersonsUseCase(
             _personRepository, _legalNatureRepository, _bureauProvider, _unitOfWork);
 
-    private static PersonSearchItemDto Item(string cnpj, string name = "Alfa Ltda")
-        => new(Guid.NewGuid(), cnpj, name, null, true, null);
+    private static PersonSearchItemDto Item(
+        string documentNumber, string name = "Alfa Ltda", string type = "Legal", bool? isPrivate = true)
+        => new(Guid.NewGuid(), documentNumber, name, null, type, isPrivate, null);
 
     private static BureauPersonComplement Complement(string name = "Alfa Ltda")
         => new()
@@ -54,7 +55,7 @@ public class SearchPersonsUseCaseTests
         };
 
     private void SearchReturns(params PersonSearchItemDto[] items)
-        => _personRepository.SearchByNameOrCnpjAsync(
+        => _personRepository.SearchByNameOrDocumentAsync(
                 Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(items);
 
@@ -91,7 +92,7 @@ public class SearchPersonsUseCaseTests
         var response = await _useCase.ExecuteAsync(
             new SearchPersonsRequest(HeadquartersCnpj, "Insured"), CancellationToken.None);
 
-        response.Items.Should().ContainSingle(item => item.Cnpj == HeadquartersCnpj);
+        response.Items.Should().ContainSingle(item => item.DocumentNumber == HeadquartersCnpj);
         await _bureauProvider.DidNotReceiveWithAnyArgs()
             .GetPersonComplementAsync(default!, default!, default, default);
         await _personRepository.DidNotReceiveWithAnyArgs()
@@ -100,12 +101,30 @@ public class SearchPersonsUseCaseTests
 
     [Fact]
     [Trait("RuleId", "RN-013")]
-    public async Task Execute_DeveRetornarListaVazia_QuandoTermoNaoEhCnpjSemCorrespondencia()
+    public async Task Execute_DeveRetornarPessoaFisicaDaBase_QuandoCpfJaCadastrado()
+    {
+        SearchReturns(Item(Cpf, "Maria Silva", "Natural", isPrivate: null));
+
+        var response = await _useCase.ExecuteAsync(
+            new SearchPersonsRequest(Cpf, "Insured"), CancellationToken.None);
+
+        response.Items.Should().ContainSingle(item => item.DocumentNumber == Cpf);
+        response.Items[0].Type.Should().Be("Natural");
+        response.Items[0].IsPrivateSector.Should().BeNull();
+        await _personRepository.Received(1).SearchByNameOrDocumentAsync(
+            Cpf, Cpf, false, Arg.Any<CancellationToken>());
+        await _bureauProvider.DidNotReceiveWithAnyArgs()
+            .GetPersonComplementAsync(default!, default!, default, default);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-013")]
+    public async Task Execute_DeveRetornarListaVaziaSemBiro_QuandoCpfNaoCadastrado()
     {
         SearchReturns();
 
         var response = await _useCase.ExecuteAsync(
-            new SearchPersonsRequest("52998224725", "Insured"), CancellationToken.None);
+            new SearchPersonsRequest(Cpf, "Insured"), CancellationToken.None);
 
         response.Items.Should().BeEmpty();
         await _bureauProvider.DidNotReceiveWithAnyArgs()
@@ -124,11 +143,15 @@ public class SearchPersonsUseCaseTests
             new SearchPersonsRequest(HeadquartersCnpj, "Insured"), CancellationToken.None);
 
         response.Items.Should().ContainSingle();
-        response.Items[0].Cnpj.Should().Be(HeadquartersCnpj);
+        response.Items[0].DocumentNumber.Should().Be(HeadquartersCnpj);
+        response.Items[0].Type.Should().Be("Legal");
         response.Items[0].MainAddress.Should().NotBeNull();
         response.Items[0].MainAddress!.City.Should().Be("São Paulo");
         await _personRepository.Received(1)
-            .AddAsync(Arg.Is<Person>(entity => entity.Cnpj == HeadquartersCnpj), Arg.Any<CancellationToken>());
+            .AddAsync(
+                Arg.Is<Person>(person => person.DocumentNumber == HeadquartersCnpj
+                    && person.Type == EPersonType.Legal),
+                Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
@@ -189,7 +212,7 @@ public class SearchPersonsUseCaseTests
         await _useCase.ExecuteAsync(
             new SearchPersonsRequest("Alfa", "PolicyHolder"), CancellationToken.None);
 
-        await _personRepository.Received(1).SearchByNameOrCnpjAsync(
+        await _personRepository.Received(1).SearchByNameOrDocumentAsync(
             "Alfa", null, true, Arg.Any<CancellationToken>());
     }
 
@@ -198,14 +221,14 @@ public class SearchPersonsUseCaseTests
     public async Task Execute_DeveResolverMatrizDaBase_QuandoTomadorInformaFilial()
     {
         SearchReturns();
-        _personRepository.GetByCnpjAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
+        _personRepository.GetByDocumentNumberAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
             .Returns(Item(HeadquartersCnpj));
 
         var response = await _useCase.ExecuteAsync(
             new SearchPersonsRequest(BranchCnpj, "PolicyHolder"), CancellationToken.None);
 
-        response.Items.Should().ContainSingle(item => item.Cnpj == HeadquartersCnpj);
-        response.Items[0].PreSelectedBranchCnpj.Should().Be(BranchCnpj);
+        response.Items.Should().ContainSingle(item => item.DocumentNumber == HeadquartersCnpj);
+        response.Items[0].PreSelectedBranchDocumentNumber.Should().Be(BranchCnpj);
         await _bureauProvider.DidNotReceiveWithAnyArgs()
             .GetPersonComplementAsync(default!, default!, default, default);
     }
@@ -215,7 +238,7 @@ public class SearchPersonsUseCaseTests
     public async Task Execute_DeveImportarMatrizDoBiro_QuandoFilialSemMatrizCadastrada()
     {
         SearchReturns();
-        _personRepository.GetByCnpjAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
+        _personRepository.GetByDocumentNumberAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
             .Returns((PersonSearchItemDto?)null);
         BureauReturns(HeadquartersCnpj, Complement());
         NatureExists();
@@ -223,8 +246,8 @@ public class SearchPersonsUseCaseTests
         var response = await _useCase.ExecuteAsync(
             new SearchPersonsRequest(BranchCnpj, "PolicyHolder"), CancellationToken.None);
 
-        response.Items.Should().ContainSingle(item => item.Cnpj == HeadquartersCnpj);
-        response.Items[0].PreSelectedBranchCnpj.Should().Be(BranchCnpj);
+        response.Items.Should().ContainSingle(item => item.DocumentNumber == HeadquartersCnpj);
+        response.Items[0].PreSelectedBranchDocumentNumber.Should().Be(BranchCnpj);
         await _bureauProvider.Received(1).GetPersonComplementAsync(
             HeadquartersCnpj, "Tomador", EBureau.ReceitaWS, Arg.Any<CancellationToken>());
     }
@@ -234,7 +257,7 @@ public class SearchPersonsUseCaseTests
     public async Task Execute_DeveRetornarVaziaComAviso_QuandoMatrizNaoLocalizadaNoBiro()
     {
         SearchReturns();
-        _personRepository.GetByCnpjAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
+        _personRepository.GetByDocumentNumberAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
             .Returns((PersonSearchItemDto?)null);
         BureauReturns(HeadquartersCnpj, null);
 
