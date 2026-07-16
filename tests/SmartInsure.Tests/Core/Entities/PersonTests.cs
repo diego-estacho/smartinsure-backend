@@ -83,6 +83,21 @@ public class PersonTests
         person.Addresses.Should().ContainSingle(address => address.IsMain && address.State == "SP");
     }
 
+    [Fact]
+    [Trait("RuleId", "RN-017")]
+    public void AssignRole_DeveAcumularPapeisSemDuplicar()
+    {
+        var person = Person.Create("52998224725", "Maria Silva", null, null);
+
+        person.AssignRole(EPersonRole.Insured);
+        person.AssignRole(EPersonRole.Broker);
+        person.AssignRole(EPersonRole.Insured);
+
+        person.Roles.Should().HaveCount(2);
+        person.Roles.Should().ContainSingle(role => role.Role == EPersonRole.Insured);
+        person.Roles.Should().ContainSingle(role => role.Role == EPersonRole.Broker);
+    }
+
     [Theory]
     [InlineData("11444777000161", true)]
     [InlineData("11444777000242", false)]

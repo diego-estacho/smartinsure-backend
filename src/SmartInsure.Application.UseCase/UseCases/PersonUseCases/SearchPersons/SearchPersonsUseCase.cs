@@ -43,6 +43,20 @@ public sealed class SearchPersonsUseCase(
 
         if (found.Count > 0)
         {
+            // RN-017: só a devolução por documento vincula papel — busca por nome é exploratória.
+            if (documentNumber is not null)
+            {
+                var matched = await AssignRoleByDocumentAsync(documentNumber, role, cancellationToken);
+
+                if (matched)
+                {
+                    return new SearchPersonsResponse(
+                        [.. found.Select(item => item.DocumentNumber == documentNumber
+                            ? MapItem(item, null, role)
+                            : MapItem(item))]);
+                }
+            }
+
             return new SearchPersonsResponse([.. found.Select(item => MapItem(item))]);
         }
 
@@ -77,7 +91,9 @@ public sealed class SearchPersonsUseCase(
 
         if (existing is not null)
         {
-            return new SearchPersonsResponse([MapItem(existing, branchCnpj)]);
+            await AssignRoleByDocumentAsync(headquartersCnpj, role, cancellationToken);
+
+            return new SearchPersonsResponse([MapItem(existing, branchCnpj, role)]);
         }
 
         var imported = await ImportFromBureauAsync(headquartersCnpj, role, cancellationToken);
@@ -85,6 +101,26 @@ public sealed class SearchPersonsUseCase(
         return imported is null
             ? new SearchPersonsResponse([], NotFoundNotice)
             : new SearchPersonsResponse([MapItem(imported, branchCnpj)]);
+    }
+
+    /// <summary>RN-017: vincula o papel via change tracker; idempotente na entidade.</summary>
+    private async Task<bool> AssignRoleByDocumentAsync(
+        string documentNumber,
+        EPersonRole role,
+        CancellationToken cancellationToken)
+    {
+        var person = await personRepository.GetTrackedByDocumentNumberAsync(
+            documentNumber, cancellationToken);
+
+        if (person is null)
+        {
+            return false;
+        }
+
+        person.AssignRole(role);
+        await unitOfWork.CommitAsync(cancellationToken);
+
+        return true;
     }
 
     private async Task<PersonSearchItemDto?> ImportFromBureauAsync(
@@ -113,6 +149,9 @@ public sealed class SearchPersonsUseCase(
         var person = Person.Create(
             cnpj, complement.Name, complement.TradeName, legalNature.Id);
 
+        // RN-017: a importação já nasce com o vínculo do papel do contexto.
+        person.AssignRole(role);
+
         person.AddMainAddress(
             complement.ZipCode,
             complement.Street,
@@ -134,6 +173,7 @@ public sealed class SearchPersonsUseCase(
             person.SocialName,
             person.Type.ToString(),
             legalNature.IsPrivate,
+            [role.ToString()],
             new PersonMainAddressDto(
                 mainAddress.ZipCode,
                 mainAddress.Street,
@@ -162,7 +202,8 @@ public sealed class SearchPersonsUseCase(
 
     private static PersonSearchItemResponse MapItem(
         PersonSearchItemDto item,
-        string? preSelectedBranchDocumentNumber = null)
+        string? preSelectedBranchDocumentNumber = null,
+        EPersonRole? ensuredRole = null)
         => new(
             item.Id,
             item.DocumentNumber,
@@ -170,6 +211,7 @@ public sealed class SearchPersonsUseCase(
             item.SocialName,
             item.Type,
             item.IsPrivateSector,
+            EnsureRole(item.Roles, ensuredRole),
             item.MainAddress is null
                 ? null
                 : new PersonAddressResponse(
@@ -181,4 +223,15 @@ public sealed class SearchPersonsUseCase(
                     item.MainAddress.City,
                     item.MainAddress.State),
             preSelectedBranchDocumentNumber);
+
+    private static IReadOnlyList<string> EnsureRole(
+        IReadOnlyList<string> roles, EPersonRole? ensuredRole)
+    {
+        if (ensuredRole is null || roles.Contains(ensuredRole.Value.ToString()))
+        {
+            return roles;
+        }
+
+        return [.. roles, ensuredRole.Value.ToString()];
+    }
 }

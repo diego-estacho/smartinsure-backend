@@ -38,7 +38,7 @@ public class SearchPersonsUseCaseTests
 
     private static PersonSearchItemDto Item(
         string documentNumber, string name = "Alfa Ltda", string type = "J", bool? isPrivate = true)
-        => new(Guid.NewGuid(), documentNumber, name, null, type, isPrivate, null);
+        => new(Guid.NewGuid(), documentNumber, name, null, type, isPrivate, [], null);
 
     private static BureauPersonComplement Complement(string name = "Alfa Ltda")
         => new()
@@ -250,6 +250,54 @@ public class SearchPersonsUseCaseTests
         response.Items[0].PreSelectedBranchDocumentNumber.Should().Be(BranchCnpj);
         await _bureauProvider.Received(1).GetPersonComplementAsync(
             HeadquartersCnpj, "Tomador", EBureau.ReceitaWS, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-017")]
+    public async Task Execute_DeveVincularPapel_QuandoDevolvidaPorDocumento()
+    {
+        SearchReturns(Item(HeadquartersCnpj));
+        var tracked = Person.Create(HeadquartersCnpj, "Alfa Ltda", null, Guid.NewGuid());
+        _personRepository.GetTrackedByDocumentNumberAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
+            .Returns(tracked);
+
+        var response = await _useCase.ExecuteAsync(
+            new SearchPersonsRequest(HeadquartersCnpj, "Insured"), CancellationToken.None);
+
+        tracked.Roles.Should().ContainSingle(role => role.Role == EPersonRole.Insured);
+        response.Items[0].Roles.Should().Contain("Insured");
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-017")]
+    public async Task Execute_NaoDeveVincularPapel_QuandoBuscaPorNome()
+    {
+        SearchReturns(Item("12345678000195"));
+
+        await _useCase.ExecuteAsync(
+            new SearchPersonsRequest("Alfa", "Insured"), CancellationToken.None);
+
+        await _personRepository.DidNotReceiveWithAnyArgs()
+            .GetTrackedByDocumentNumberAsync(default!, default);
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-017")]
+    public async Task Execute_DeveImportarComPapelDoContexto_QuandoImportaDoBiro()
+    {
+        SearchReturns();
+        BureauReturns(HeadquartersCnpj, Complement());
+        NatureExists();
+
+        var response = await _useCase.ExecuteAsync(
+            new SearchPersonsRequest(HeadquartersCnpj, "Broker"), CancellationToken.None);
+
+        response.Items[0].Roles.Should().ContainSingle().Which.Should().Be("Broker");
+        await _personRepository.Received(1).AddAsync(
+            Arg.Is<Person>(person => person.Roles.Count == 1),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]

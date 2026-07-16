@@ -11,6 +11,7 @@ public sealed record PersonSearchItemDto(
     string? SocialName,
     string Type,
     bool? IsPrivateSector,
+    IReadOnlyList<string> Roles,
     PersonMainAddressDto? MainAddress);
 
 public sealed record PersonMainAddressDto(

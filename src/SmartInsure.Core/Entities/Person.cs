@@ -12,6 +12,7 @@ namespace SmartInsure.Core.Entities;
 public sealed class Person : EntityBase
 {
     private readonly List<PersonAddress> _addresses = [];
+    private readonly List<PersonRole> _roles = [];
 
     private Person()
     {
@@ -30,6 +31,8 @@ public sealed class Person : EntityBase
     public LegalNature? LegalNature { get; private set; }
 
     public IReadOnlyCollection<PersonAddress> Addresses => _addresses.AsReadOnly();
+
+    public IReadOnlyCollection<PersonRole> Roles => _roles.AsReadOnly();
 
     public static Person Create(
         string documentNumber,
@@ -92,6 +95,20 @@ public sealed class Person : EntityBase
 
         _addresses.Add(PersonAddress.CreateMain(
             Id, zipCode, street, number, complement, neighborhood, city, state));
+    }
+
+    /// <summary>RN-017: vínculo de papel acumulável e idempotente — repetir não duplica.</summary>
+    public void AssignRole(EPersonRole role)
+    {
+        foreach (var existing in _roles)
+        {
+            if (existing.Role == role)
+            {
+                return;
+            }
+        }
+
+        _roles.Add(PersonRole.Create(Id, role));
     }
 
     /// <summary>RN-016: matriz é o estabelecimento de ordem /0001 do CNPJ (só pessoa jurídica).</summary>

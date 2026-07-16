@@ -20,6 +20,7 @@ public sealed record PersonSearchItemResponse(
     string? SocialName,
     string Type,
     bool? IsPrivateSector,
+    IReadOnlyList<string> Roles,
     PersonAddressResponse? MainAddress,
     string? PreSelectedBranchDocumentNumber = null);
 

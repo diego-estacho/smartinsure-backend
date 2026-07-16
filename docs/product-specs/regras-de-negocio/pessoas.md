@@ -39,3 +39,13 @@
 **Critério de aceitação.** Busca por nome ou documento no contexto de tomador devolve apenas matrizes. Busca pelo CNPJ de uma filial devolve a matriz da mesma raiz de CNPJ — importada conforme RN-014 quando ainda não cadastrada — com a indicação da filial pré-selecionada.
 
 **Casos limite.** Matriz não localizada nem na base nem no Birô: lista vazia com aviso de não localizado. Matriz já cadastrada: devolvida da base, sem nova consulta ao Birô, mantendo a filial pré-selecionada.
+
+## RN-017 — Vínculo de papel da Pessoa
+
+**Descrição.** A plataforma registra os papéis que uma Pessoa exerce (segurado, corretor, tomador) como vínculos acumuláveis: uma Pessoa pode ter vários papéis ao mesmo tempo, e o vínculo permite contagem precisa em relatórios. O vínculo é criado automaticamente quando a Pessoa é devolvida por busca de documento ou importada em um contexto de papel.
+
+**Pré-condições.** Busca com papel de contexto informado (RN-013) que devolve a Pessoa por documento, importa do Birô (RN-014) ou resolve a matriz do tomador (RN-016).
+
+**Critério de aceitação.** Pessoa devolvida por documento ou importada no contexto de um papel passa a ter o vínculo daquele papel, e os papéis acompanham a Pessoa nas consultas. Repetir a operação no mesmo papel não duplica o vínculo. Qualquer papel aceita Pessoa física ou jurídica.
+
+**Casos limite.** Busca por trecho de nome não cria vínculo (é exploratória — vincular todos os resultados poluiria os relatórios). No contexto de tomador, a RN-016 continua limitando a busca a matrizes, mas o vínculo em si não restringe tipo. Remoção de vínculo está fora desta fase; se virar necessidade, nasce como RN própria.

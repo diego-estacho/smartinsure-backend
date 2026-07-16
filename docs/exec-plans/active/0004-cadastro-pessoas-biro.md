@@ -17,6 +17,7 @@ Fatia vertical da jornada Cadastro de Pessoas: busca de Pessoa Jurídica por nom
 - [x] Infra.Data: mappings (alinhados 1:1 com as migrations), `PersonRepository`, `LegalNatureRepository`, DbSets e DI.
 - [x] Api: `PersonsEndpoint` (GET /persons?term&role — autenticado).
 - [x] Testes com rastreabilidade `[Trait("RuleId", "RN-013".."RN-016")]`.
+- [x] RN-017 (vínculo de papel da Pessoa): entidade `PersonRole`, `Person.AssignRole` idempotente, migration `V20260716192848__criar-tabela-person-roles.sql`, vínculo automático na devolução por documento/importação (busca por nome não vincula), papéis expostos na resposta; testes com `RuleId RN-017`.
 - [x] Validar migrations localmente (`docker compose --profile migrations up -d`).
 - [ ] OPEN-04: registrar decisão parcial (gatilho busca-por-documento + preenchimento de cadastro) após ratificação da PO.
 - [ ] Contrato `openapi.json` publicado; front consome depois (mesmo `AB#NNNNN`, ainda sem PBI).

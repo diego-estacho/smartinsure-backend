@@ -19,4 +19,8 @@ public interface IPersonRepository : IRepository<Person>
     /// <summary>RN-014: uma Pessoa por documento — consulta antes de importar.</summary>
     Task<PersonSearchItemDto?> GetByDocumentNumberAsync(
         string documentNumber, CancellationToken cancellationToken);
+
+    /// <summary>RN-017: entidade rastreada para atribuição de papel via change tracker.</summary>
+    Task<Person?> GetTrackedByDocumentNumberAsync(
+        string documentNumber, CancellationToken cancellationToken);
 }

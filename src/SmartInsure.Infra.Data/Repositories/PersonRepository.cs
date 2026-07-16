@@ -38,6 +38,13 @@ public sealed class PersonRepository(SmartInsureDbContext context)
         => await ProjectItems(Set.AsNoTracking().Where(person => person.DocumentNumber == documentNumber))
             .FirstOrDefaultAsync(cancellationToken);
 
+    public async Task<Person?> GetTrackedByDocumentNumberAsync(
+        string documentNumber, CancellationToken cancellationToken)
+        => await Set
+            .Include(person => person.Roles)
+            .FirstOrDefaultAsync(
+                person => person.DocumentNumber == documentNumber, cancellationToken);
+
     private static IQueryable<PersonSearchItemDto> ProjectItems(IQueryable<Person> query)
         => query.Select(person => new PersonSearchItemDto(
             person.Id,
@@ -46,6 +53,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
             person.SocialName,
             person.Type.ToString(),
             person.LegalNature == null ? null : (bool?)person.LegalNature.IsPrivate,
+            person.Roles.Select(role => role.Role.ToString()).ToList(),
             person.Addresses
                 .Where(address => address.IsMain)
                 .Select(address => new PersonMainAddressDto(

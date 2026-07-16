@@ -45,6 +45,14 @@ public sealed class PersonMapping : IEntityTypeConfiguration<Person>
         builder.Navigation(entity => entity.Addresses)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
+        builder.HasMany(entity => entity.Roles)
+            .WithOne()
+            .HasForeignKey(role => role.PersonId)
+            .IsRequired();
+
+        builder.Navigation(entity => entity.Roles)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         // Alinhado 1:1 com a migration criar-tabelas-persons (evitar drift de constraint).
         builder.Property(entity => entity.CreatedAt).IsRequired();
         builder.Property(entity => entity.CreatedBy).HasMaxLength(100).IsRequired();
