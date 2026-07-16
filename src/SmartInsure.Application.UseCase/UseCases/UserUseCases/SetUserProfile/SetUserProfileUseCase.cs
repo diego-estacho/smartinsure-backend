@@ -42,7 +42,7 @@ public sealed class SetUserProfileUseCase(
         {
             if (!Enum.TryParse<EUserProfile>(request.Profile, ignoreCase: true, out var profile))
             {
-                throw new BusinessRuleException("O perfil informado é desconhecido.");
+                throw new BusinessRuleException("O perfil deve ser SystemAdministrator ou nulo para revogação.");
             }
 
             user.GrantProfile(profile);
