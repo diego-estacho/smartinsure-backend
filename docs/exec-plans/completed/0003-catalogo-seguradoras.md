@@ -1,6 +1,6 @@
 # Exec-plan 0003 — Catálogo de Seguradoras e perfil Administrador do Sistema (RN-005..RN-010)
 
-Status: em execução — backend e migrations implementados e verificados; PRs pendentes
+Status: concluído em 2026-07-16 — backend e migrations implementados, verificados (gates + smoke 8/8) e validados manualmente pelo dev; PRs abertos com AB#0001
 Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/SECURITY.md`, RNs em `docs/product-specs/regras-de-negocio/seguradoras.md` (RN-005..RN-009) e `usuarios.md` (RN-010), glossário (termos Perfil e Administrador do Sistema e status Ativa/Inativa de Seguradora, propostos 2026-07-16), OPEN-03 (perfis de Corretora — fora do escopo; este plano cria apenas o perfil interno) e OPEN-04 (Birô — não usado no cadastro).
 
 ## Objetivo
@@ -19,7 +19,7 @@ Fatia vertical da jornada Seguradoras (AB#0001, backend-only): catálogo de Segu
 - [x] Testes com rastreabilidade `[Trait("RuleId", "RN-00X")]` para toda RN; TDD (teste antes do código).
 - [x] Contrato `docs/generated/openapi.json` regenerado com as rotas novas.
 - [x] Verificação: gates verdes + smoke e2e (403 sem perfil; visão operacional sem Inativas) + code review por task; evidências abaixo.
-- [ ] PRs linkados por `AB#0001`: backend primeiro, depois dbmigration (`develop`); exec-plan movido para `completed/` no PR que encerra.
+- [x] PRs linkados por `AB#0001`: backend primeiro, depois dbmigration (`develop`); exec-plan movido para `completed/` no PR que encerra.
 
 **Runbook — primeiro Administrador do Sistema (RN-010, operação interna):** a equipe executa no ambiente alvo `UPDATE dbo.Users SET Profile = 'SystemAdministrator' WHERE Email = '<e-mail do operador>';`. Dado de ambiente não entra em migration imutável.
 
@@ -50,3 +50,4 @@ Plano detalhado (rascunho de execução, scratch ADR-004): fora do repo, na past
   - S8 (RN-010): `PUT /users/{id}/profile` sem perfil → 403.
 - Contrato: `docs/generated/openapi.json` com `/api/v1/insurers` (POST/GET), `/api/v1/insurers/{id}` (PUT/GET), `/api/v1/insurers/{id}/status` (PATCH) e `/api/v1/users/{id}/profile` (PUT).
 - Observação de processo: regeneração do contrato ainda sem script formal (candidata a `scripts/` pela regra das 3 ocorrências); Mongo não sobe no compose local e não foi exercitado pelo smoke (nenhum caminho desta atividade usa Mongo).
+- Validação manual do dev (2026-07-16): API rodando do worktree contra o SQL do compose local, roteiro 401/403/201/409/filtro RN-008 confirmado via Scalar com JWTs locais e admin semeado pelo runbook.
