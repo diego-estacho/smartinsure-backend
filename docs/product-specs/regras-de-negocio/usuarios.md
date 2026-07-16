@@ -21,3 +21,13 @@
 **Critério de aceitação.** Ao autenticar-se pela primeira vez e concluir a troca obrigatória de senha, a situação do Usuário passa de Pendente para Ativo. Enquanto a troca de senha não for concluída, o Usuário permanece Pendente.
 
 **Casos limite.** Nova senha igual à senha inicial padrão: troca recusada e Usuário permanece Pendente. Autenticação realizada sem conclusão da troca de senha: o Usuário não acessa as funcionalidades da plataforma e permanece Pendente.
+
+## RN-010 — Perfil Administrador do Sistema
+
+**Descrição.** O Usuário pode ter o Perfil Administrador do Sistema, que autoriza as operações internas da plataforma (como manter o catálogo de Seguradoras). Usuário sem Perfil é usuário comum. Somente um Administrador do Sistema concede ou revoga o Perfil de outro Usuário; o primeiro Administrador do Sistema nasce por operação interna da equipe SmartInsure.
+
+**Pré-condições.** Concedente autenticado com o perfil Administrador do Sistema; Usuário destinatário existente na plataforma.
+
+**Critério de aceitação.** Ao conceder o Perfil a um Usuário, ele passa a poder executar as operações exclusivas do Perfil; ao revogar, deixa de poder executá-las imediatamente. Concessão ou revogação solicitada por Usuário sem o Perfil é recusada por falta de permissão.
+
+**Casos limite.** Conceder o Perfil a quem já o tem, ou revogar de quem não o tem: solicitação recusada com indicação clara de que o Usuário já está na condição pedida. Revogação que deixaria a plataforma sem nenhum Administrador do Sistema: recusada. Usuário destinatário inexistente: recusada com indicação clara.
