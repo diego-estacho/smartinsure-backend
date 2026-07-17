@@ -1,14 +1,12 @@
+using SmartInsure.Application.UseCase.Services.PersonImports;
 using SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons.Requests;
 using SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons.Responses;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Repositories.Dtos;
-using SmartInsure.Core.Abstractions.Services;
-using SmartInsure.Core.Abstractions.Services.Dtos;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
-using SmartInsure.Core.Exceptions;
 using SmartInsure.Infra.CrossCutting.Validators;
 
 namespace SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons;
@@ -21,8 +19,7 @@ namespace SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons;
 /// </summary>
 public sealed class SearchPersonsUseCase(
     IPersonRepository personRepository,
-    ILegalNatureRepository legalNatureRepository,
-    IBureauProvider bureauProvider,
+    IPersonBureauImporter personBureauImporter,
     IUnitOfWork unitOfWork) : ISearchPersonsUseCase
 {
     private const string NotFoundNotice = "CNPJ não localizado na fonte de dados cadastrais.";
@@ -128,39 +125,14 @@ public sealed class SearchPersonsUseCase(
         EPersonRole role,
         CancellationToken cancellationToken)
     {
-        var personType = role switch
-        {
-            EPersonRole.Insured => "Segurado",
-            EPersonRole.Broker => "Corretor",
-            _ => "Tomador",
-        };
-
-        var complement = await bureauProvider.GetPersonComplementAsync(
-            cnpj, personType, EBureau.ReceitaWS, cancellationToken);
-
-        // RN-004/RN-014: consulta sem dado não bloqueia — nada é gravado.
-        if (complement is null || string.IsNullOrWhiteSpace(complement.Name))
+        var imported = await personBureauImporter.ImportLegalPersonAsync(
+            cnpj, role, cancellationToken);
+        if (imported is null)
         {
             return null;
         }
 
-        var legalNature = await ResolveLegalNatureAsync(complement, cancellationToken);
-
-        var person = Person.Create(
-            cnpj, complement.Name, complement.TradeName, legalNature.Id);
-
-        // RN-017: a importação já nasce com o vínculo do papel do contexto.
-        person.AssignRole(role);
-
-        person.AddMainAddress(
-            complement.ZipCode,
-            complement.Street,
-            complement.Number,
-            complement.AddressComplement,
-            complement.District,
-            complement.City,
-            complement.State);
-
+        var person = imported.Person;
         await personRepository.AddAsync(person, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
 
@@ -172,7 +144,7 @@ public sealed class SearchPersonsUseCase(
             person.Name,
             person.SocialName,
             person.Type.ToString(),
-            legalNature.IsPrivate,
+            imported.IsPrivateSector,
             [role.ToString()],
             new PersonMainAddressDto(
                 mainAddress.ZipCode,
@@ -182,22 +154,6 @@ public sealed class SearchPersonsUseCase(
                 mainAddress.Neighborhood,
                 mainAddress.City,
                 mainAddress.State));
-    }
-
-    private async Task<LegalNature> ResolveLegalNatureAsync(
-        BureauPersonComplement complement,
-        CancellationToken cancellationToken)
-    {
-        var code = new string([.. (complement.LegalNature ?? string.Empty).Where(char.IsDigit)]);
-
-        var legalNature = string.IsNullOrEmpty(code)
-            ? null
-            : await legalNatureRepository.GetByCodeAsync(code, cancellationToken);
-
-        // RN-014/RN-015: natureza jurídica não catalogada recusa a importação.
-        return legalNature
-            ?? throw new BusinessRuleException(
-                "A natureza jurídica retornada pela fonte não está catalogada na plataforma.");
     }
 
     private static PersonSearchItemResponse MapItem(

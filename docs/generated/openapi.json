@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.1.1",
   "info": {
     "title": "SmartInsure.Api | v1",
@@ -47,6 +47,155 @@
         "responses": {
           "204": {
             "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/brokerages": {
+      "get": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfBrokerageListItemResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBrokerageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateBrokerageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/brokerages/{id}": {
+      "get": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBrokerageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/brokerages/{id}/status": {
+      "patch": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeBrokerageStatusBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeBrokerageStatusResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -238,6 +387,41 @@
         }
       }
     },
+    "/api/v1/persons": {
+      "get": {
+        "tags": [
+          "PersonsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "term",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchPersonsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/users": {
       "post": {
         "tags": [
@@ -376,6 +560,127 @@
           }
         }
       },
+      "BrokerageAddressResponse": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "BrokerageListItemResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName",
+          "isPrivateSector",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeBrokerageStatusBody": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeBrokerageStatusResponse": {
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "ChangeInsurerStatusBody": {
         "required": [
           "status"
@@ -400,6 +705,80 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "CreateBrokerageRequest": {
+        "required": [
+          "cnpj"
+        ],
+        "type": "object",
+        "properties": {
+          "cnpj": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateBrokerageResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName",
+          "legalNatureCode",
+          "legalNatureName",
+          "isPrivateSector",
+          "status",
+          "mainAddress"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "mainAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ImportedBrokerageAddressResponse"
+              }
+            ]
           }
         }
       },
@@ -513,6 +892,69 @@
           }
         }
       },
+      "GetBrokerageResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName",
+          "legalNatureCode",
+          "legalNatureName",
+          "isPrivateSector",
+          "status",
+          "mainAddress"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "mainAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BrokerageAddressResponse"
+              }
+            ]
+          }
+        }
+      },
       "GetInsurerResponse": {
         "required": [
           "id",
@@ -551,6 +993,62 @@
           }
         }
       },
+      "ImportedBrokerageAddressResponse": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "InsurerListItemResponse": {
         "required": [
           "id",
@@ -586,6 +1084,55 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "PagedResponseOfBrokerageListItemResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrokerageListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           }
         }
       },
@@ -635,6 +1182,144 @@
               "string"
             ],
             "format": "int64"
+          }
+        }
+      },
+      "PersonAddressResponse": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PersonSearchItemResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName",
+          "type",
+          "isPrivateSector",
+          "roles",
+          "mainAddress"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "type": "string"
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mainAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PersonAddressResponse"
+              }
+            ]
+          },
+          "preSelectedBranchDocumentNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "SearchPersonsResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersonSearchItemResponse"
+            }
+          },
+          "notice": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -745,7 +1430,13 @@
       "name": "AuthenticationEndpoint"
     },
     {
+      "name": "BrokeragesEndpoint"
+    },
+    {
       "name": "InsurersEndpoint"
+    },
+    {
+      "name": "PersonsEndpoint"
     },
     {
       "name": "UsersEndpoint"

@@ -16,6 +16,10 @@ public sealed class PersonRoleMapping : IEntityTypeConfiguration<PersonRole>
             .HasMaxLength(20)
             .IsRequired();
 
+        builder.Property(role => role.Status)
+            .HasMaxLength(20)
+            .IsRequired();
+
         // RN-017: um vínculo por papel por Pessoa.
         builder.HasIndex(role => new { role.PersonId, role.Role })
             .HasDatabaseName("UX_PersonRoles_PersonId_Role")

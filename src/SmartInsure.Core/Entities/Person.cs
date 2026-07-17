@@ -111,6 +111,19 @@ public sealed class Person : EntityBase
         _roles.Add(PersonRole.Create(Id, role));
     }
 
+    public PersonRole? GetRole(EPersonRole role)
+    {
+        foreach (var existing in _roles)
+        {
+            if (existing.Role == role)
+            {
+                return existing;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>RN-016: matriz é o estabelecimento de ordem /0001 do CNPJ (só pessoa jurídica).</summary>
     public bool IsHeadquarters
         => Type == EPersonType.J && DocumentNumber[8..12] == "0001";

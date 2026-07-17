@@ -1,5 +1,6 @@
 using FluentAssertions;
 using NSubstitute;
+using SmartInsure.Application.UseCase.Services.PersonImports;
 using SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons;
 using SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons.Requests;
 using SmartInsure.Core.Abstractions;
@@ -34,7 +35,9 @@ public class SearchPersonsUseCaseTests
 
     public SearchPersonsUseCaseTests()
         => _useCase = new SearchPersonsUseCase(
-            _personRepository, _legalNatureRepository, _bureauProvider, _unitOfWork);
+            _personRepository,
+            new PersonBureauImporter(_legalNatureRepository, _bureauProvider),
+            _unitOfWork);
 
     private static PersonSearchItemDto Item(
         string documentNumber, string name = "Alfa Ltda", string type = "J", bool? isPrivate = true)

@@ -52,3 +52,10 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 |---|---|---|---|
 | **Ativa** | `Active` | Seguradora em operação no catálogo, visível aos fluxos operacionais | Ativa → Inativa (RN-009) |
 | **Inativa** | `Inactive` | Seguradora fora de operação — permanece no catálogo, fora da visão operacional (nunca excluída) | Inativa → Ativa (RN-009) |
+
+### Corretora (ratificado pela PO em 2026-07-17)
+
+| Status | Nome estável (API) | Significado | Transições permitidas |
+|---|---|---|---|
+| **Ativa** | `Active` | Corretora habilitada no cadastro de Corretoras | Ativa → Inativa (RN-021) |
+| **Inativa** | `Inactive` | Corretora mantida no cadastro de Corretoras sem bloqueio automático em outros fluxos nesta fase | Inativa → Ativa (RN-021) |

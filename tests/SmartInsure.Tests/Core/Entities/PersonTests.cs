@@ -98,6 +98,45 @@ public class PersonTests
         person.Roles.Should().ContainSingle(role => role.Role == EPersonRole.Broker);
     }
 
+    [Fact]
+    [Trait("RuleId", "RN-019")]
+    public void AssignRole_DeveCriarPapelAtivo_QuandoVinculaCorretor()
+    {
+        var person = Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid());
+
+        person.AssignRole(EPersonRole.Broker);
+
+        person.GetRole(EPersonRole.Broker)!.Status.Should().Be(EPersonRoleStatus.Active);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-021")]
+    public void PersonRole_DeveAtivarEInativar_QuandoSituacaoMuda()
+    {
+        var person = Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid());
+        person.AssignRole(EPersonRole.Broker);
+        var role = person.GetRole(EPersonRole.Broker)!;
+
+        role.Deactivate();
+        role.Status.Should().Be(EPersonRoleStatus.Inactive);
+
+        role.Activate();
+        role.Status.Should().Be(EPersonRoleStatus.Active);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-021")]
+    public void PersonRole_DeveRecusar_QuandoSituacaoJaEAPedida()
+    {
+        var person = Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid());
+        person.AssignRole(EPersonRole.Broker);
+        var role = person.GetRole(EPersonRole.Broker)!;
+
+        var action = role.Activate;
+
+        action.Should().Throw<ConflictException>();
+    }
+
     [Theory]
     [InlineData("11444777000161", true)]
     [InlineData("11444777000242", false)]

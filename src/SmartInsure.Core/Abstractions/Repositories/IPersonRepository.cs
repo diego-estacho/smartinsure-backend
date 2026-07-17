@@ -1,5 +1,6 @@
 using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Entities;
+using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Core.Abstractions.Repositories;
 
@@ -23,4 +24,21 @@ public interface IPersonRepository : IRepository<Person>
     /// <summary>RN-017: entidade rastreada para atribuição de papel via change tracker.</summary>
     Task<Person?> GetTrackedByDocumentNumberAsync(
         string documentNumber, CancellationToken cancellationToken);
+
+    /// <summary>RN-018: lista Pessoas jurídicas com Papel da Pessoa de corretor.</summary>
+    Task<(IReadOnlyList<BrokerageListItemDto> Items, long TotalCount)> ListBrokeragesAsync(
+        int page,
+        int pageSize,
+        EPersonRoleStatus? status,
+        CancellationToken cancellationToken);
+
+    /// <summary>RN-020: detalhe da Corretora a partir da Pessoa jurídica com papel Corretor.</summary>
+    Task<BrokerageDetailsDto?> GetBrokerageByIdAsync(
+        Guid personId,
+        CancellationToken cancellationToken);
+
+    /// <summary>RN-021: Pessoa rastreada com o papel Corretor para alterar situação.</summary>
+    Task<Person?> GetTrackedBrokerageByIdAsync(
+        Guid personId,
+        CancellationToken cancellationToken);
 }
