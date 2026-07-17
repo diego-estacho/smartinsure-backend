@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using SmartInsure.Application.UseCase.Services.PersonImports;
 
 namespace SmartInsure.Application.UseCase.IoC;
 
@@ -31,6 +32,9 @@ public static class DependencyInjection
         }
 
         services.AddValidatorsFromAssembly(assembly);
+
+        // Serviço compartilhado por use cases; fora da convenção I{Ação}UseCase → {Ação}UseCase.
+        services.AddScoped<IPersonBureauImporter, PersonBureauImporter>();
 
         return services;
     }

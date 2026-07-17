@@ -6,7 +6,7 @@ O que está listado aqui **não é implementável** até ser decidido. Agente qu
 Dono: PO (gerente de projeto)
 Bloqueia: qualquer código de domínio (nomes de entidades, rotas, telas, status)
 Status: aberta
-Contexto: a proposta está em [glossario.md](glossario.md). Falta a PO ratificar os termos e enumerar os status do produto com as transições permitidas.
+Contexto: a proposta está em [glossario.md](glossario.md). Já foram ratificados os status de Usuário e Corretora. Falta a PO ratificar os demais termos e enumerar os demais status do produto com as transições permitidas.
 
 ## OPEN-02 — Política de acesso de agentes de IA a dados (LGPD)
 Dono: time + empresa (verificar se o grupo já tem política formalizada)
@@ -25,7 +25,7 @@ Dono: PO (gerente de projeto)
 Bloqueia: qualquer efeito automático dos dados do Birô (preencher cadastro, bloquear ou alertar por situação cadastral) e os gatilhos de negócio que disparam a consulta
 Status: aberta
 Contexto: a consulta ao Birô existe como serviço reutilizável (RN-003, RN-004), mas o negócio ainda não definiu o que a plataforma faz com o retorno (situação cadastral, endereço, atividade econômica) nem em quais momentos da jornada a consulta dispara. Cada consulta tem custo por chamada e hoje não há reuso de respostas — se o volume crescer, a decisão de reuso/validade também é da PO.
-Parcialmente resolvida em 2026-07-16 (RN-013..RN-016, jornada Cadastro de Pessoas): a busca por CNPJ não cadastrado dispara a consulta e o retorno preenche o cadastro da Pessoa Jurídica (nome, fantasia, natureza jurídica, endereço principal), importado uma única vez. Segue em aberto: uso da situação cadastral (bloquear/alertar), demais gatilhos da jornada e reuso/validade de respostas.
+Parcialmente resolvida em 2026-07-16 (RN-013..RN-016, jornada Cadastro de Pessoas): a busca por CNPJ não cadastrado dispara a consulta e o retorno preenche o cadastro da Pessoa Jurídica (nome, fantasia, natureza jurídica, endereço principal), importado uma única vez. Parcialmente resolvida em 2026-07-17 (RN-019, jornada Corretoras): a criação de Corretora por CNPJ usa a busca de Pessoa e importa a Pessoa jurídica pelo Birô quando necessário. Segue em aberto: uso da situação cadastral (bloquear/alertar), demais gatilhos da jornada e reuso/validade de respostas.
 
 ## OPEN-05 — Bloqueio por tentativas repetidas de login
 Dono: PO (gerente de projeto)
