@@ -17,6 +17,8 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<LegalNature> LegalNatures => Set<LegalNature>();
 
+    public DbSet<InsurerEnablement> InsurerEnablements => Set<InsurerEnablement>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartInsureDbContext).Assembly);

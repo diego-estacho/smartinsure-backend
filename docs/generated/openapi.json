@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.1.1",
   "info": {
     "title": "SmartInsure.Api | v1",
@@ -193,6 +193,194 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ChangeBrokerageStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/insurer-enablements": {
+      "post": {
+        "tags": [
+          "InsurerEnablementsEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInsurerEnablementRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateInsurerEnablementResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "InsurerEnablementsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "brokerageId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfInsurerEnablementListItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/insurer-enablements/{id}": {
+      "put": {
+        "tags": [
+          "InsurerEnablementsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInsurerEnablementBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateInsurerEnablementResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "InsurerEnablementsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetInsurerEnablementResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/insurer-enablements/{id}/status": {
+      "patch": {
+        "tags": [
+          "InsurerEnablementsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeInsurerEnablementStatusBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeInsurerEnablementStatusResponse"
                 }
               }
             }
@@ -681,6 +869,33 @@
           }
         }
       },
+      "ChangeInsurerEnablementStatusBody": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeInsurerEnablementStatusResponse": {
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "ChangeInsurerStatusBody": {
         "required": [
           "status"
@@ -779,6 +994,71 @@
                 "$ref": "#/components/schemas/ImportedBrokerageAddressResponse"
               }
             ]
+          }
+        }
+      },
+      "CreateInsurerEnablementRequest": {
+        "required": [
+          "brokerageId",
+          "insurerId",
+          "calculationEngine",
+          "connectionParameters"
+        ],
+        "type": "object",
+        "properties": {
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "calculationEngine": {
+            "type": "string"
+          },
+          "connectionParameters": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CreateInsurerEnablementResponse": {
+        "required": [
+          "id",
+          "brokerageId",
+          "insurerId",
+          "calculationEngine",
+          "connectionParameters",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "calculationEngine": {
+            "type": "string"
+          },
+          "connectionParameters": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
           }
         }
       },
@@ -955,6 +1235,51 @@
           }
         }
       },
+      "GetInsurerEnablementResponse": {
+        "required": [
+          "id",
+          "brokerageId",
+          "brokerageName",
+          "insurerId",
+          "insurerCorporateName",
+          "calculationEngine",
+          "connectionParameters",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerageName": {
+            "type": "string"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerCorporateName": {
+            "type": "string"
+          },
+          "calculationEngine": {
+            "type": "string"
+          },
+          "connectionParameters": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "GetInsurerResponse": {
         "required": [
           "id",
@@ -1049,6 +1374,44 @@
           }
         }
       },
+      "InsurerEnablementListItemResponse": {
+        "required": [
+          "id",
+          "brokerageId",
+          "brokerageName",
+          "insurerId",
+          "insurerCorporateName",
+          "calculationEngine",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerageName": {
+            "type": "string"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerCorporateName": {
+            "type": "string"
+          },
+          "calculationEngine": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "InsurerListItemResponse": {
         "required": [
           "id",
@@ -1100,6 +1463,55 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BrokerageListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "PagedResponseOfInsurerEnablementListItemResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InsurerEnablementListItemResponse"
             }
           },
           "page": {
@@ -1385,6 +1797,61 @@
           }
         }
       },
+      "UpdateInsurerEnablementBody": {
+        "required": [
+          "calculationEngine",
+          "connectionParameters"
+        ],
+        "type": "object",
+        "properties": {
+          "calculationEngine": {
+            "type": "string"
+          },
+          "connectionParameters": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "UpdateInsurerEnablementResponse": {
+        "required": [
+          "id",
+          "brokerageId",
+          "insurerId",
+          "calculationEngine",
+          "connectionParameters",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "calculationEngine": {
+            "type": "string"
+          },
+          "connectionParameters": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "UpdateInsurerResponse": {
         "required": [
           "id",
@@ -1431,6 +1898,9 @@
     },
     {
       "name": "BrokeragesEndpoint"
+    },
+    {
+      "name": "InsurerEnablementsEndpoint"
     },
     {
       "name": "InsurersEndpoint"

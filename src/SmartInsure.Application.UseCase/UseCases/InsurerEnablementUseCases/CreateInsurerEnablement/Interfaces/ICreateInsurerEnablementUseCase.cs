@@ -1,0 +1,8 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.InsurerEnablementUseCases.CreateInsurerEnablement.Requests;
+using SmartInsure.Application.UseCase.UseCases.InsurerEnablementUseCases.CreateInsurerEnablement.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.InsurerEnablementUseCases.CreateInsurerEnablement.Interfaces;
+
+public interface ICreateInsurerEnablementUseCase
+    : IUseCase<CreateInsurerEnablementRequest, CreateInsurerEnablementResponse>;
