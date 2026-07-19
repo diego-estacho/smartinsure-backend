@@ -127,6 +127,6 @@ public class CalculationEngineResolverTests
             .ResolveAsync(BrokerageId, InsurerId, CancellationToken.None);
 
         (await act.Should().ThrowAsync<BusinessRuleException>())
-            .WithMessage("*motor de cálculo*");
+            .WithMessage("*não está habilitada*");
     }
 }

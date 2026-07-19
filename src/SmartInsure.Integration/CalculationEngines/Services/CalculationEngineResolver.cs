@@ -42,7 +42,7 @@ public sealed class CalculationEngineResolver(
 
         var engine = serviceProvider.GetKeyedService<ICalculationEngine>(enablement.CalculationEngine)
             ?? throw new BusinessRuleException(
-                "O motor de cálculo configurado para a habilitação não está disponível na plataforma.");
+                "A seguradora não está habilitada para a corretora.");
 
         return new CalculationEngineResolution(engine, enablement.ConnectionParameters);
     }
