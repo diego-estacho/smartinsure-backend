@@ -23,6 +23,10 @@ public sealed class UpdateInsurerValidator : AbstractValidator<UpdateInsurerRequ
         RuleFor(request => request.LogoUrl)
             .Must(BeAValidUrl).WithMessage("O endereço do logotipo é inválido.")
             .MaximumLength(500).WithMessage("O endereço do logotipo deve ter no máximo 500 caracteres.");
+
+        RuleFor(request => request.ReferenceExternalId)
+            .MaximumLength(100)
+            .WithMessage("O identificador externo deve ter no máximo 100 caracteres.");
     }
 
     private static bool BeAValidUrl(string? url)

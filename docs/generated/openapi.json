@@ -1135,8 +1135,7 @@
             "type": [
               "null",
               "string"
-            ],
-            "format": "uuid"
+            ]
           }
         }
       },
@@ -1178,8 +1177,7 @@
             "type": [
               "null",
               "string"
-            ],
-            "format": "uuid"
+            ]
           },
           "status": {
             "type": "string"
@@ -1371,8 +1369,7 @@
             "type": [
               "null",
               "string"
-            ],
-            "format": "uuid"
+            ]
           },
           "status": {
             "type": "string"
@@ -1877,8 +1874,7 @@
             "type": [
               "null",
               "string"
-            ],
-            "format": "uuid"
+            ]
           }
         }
       },
@@ -1920,8 +1916,7 @@
             "type": [
               "null",
               "string"
-            ],
-            "format": "uuid"
+            ]
           },
           "status": {
             "type": "string"

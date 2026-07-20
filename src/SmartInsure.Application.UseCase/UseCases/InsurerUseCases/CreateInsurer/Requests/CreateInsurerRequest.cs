@@ -13,4 +13,4 @@ public sealed record CreateInsurerRequest(
     string? TradeName,
     string? LogoUrl,
     string InitialStatus,
-    Guid? ReferenceExternalId = null);
+    string? ReferenceExternalId = null);

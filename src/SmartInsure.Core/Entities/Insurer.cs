@@ -25,7 +25,7 @@ public sealed class Insurer : EntityBase
     /// Identificador da Seguradora no sistema de origem do Motor de Cálculo
     /// (ex.: InsuranceUniqueId no PlugV2). Opcional — nem toda seguradora opera via motor externo.
     /// </summary>
-    public Guid? ReferenceExternalId { get; private set; }
+    public string? ReferenceExternalId { get; private set; }
 
     public EInsurerStatus Status { get; private set; }
 
@@ -35,19 +35,20 @@ public sealed class Insurer : EntityBase
         string? tradeName,
         string? logoUrl,
         EInsurerStatus initialStatus,
-        Guid? referenceExternalId = null)
+        string? referenceExternalId = null)
     {
-        var insurer = new Insurer { Status = initialStatus, ReferenceExternalId = referenceExternalId };
+        var insurer = new Insurer { Status = initialStatus };
         insurer.SetDetails(cnpj, corporateName, tradeName, logoUrl);
+        insurer.SetReferenceExternalId(referenceExternalId);
         return insurer;
     }
 
     /// <summary>RN-008: alteração cadastral mantém as exigências do cadastro; situação não muda aqui.</summary>
     public void UpdateDetails(
-        string cnpj, string corporateName, string? tradeName, string? logoUrl, Guid? referenceExternalId = null)
+        string cnpj, string corporateName, string? tradeName, string? logoUrl, string? referenceExternalId = null)
     {
         SetDetails(cnpj, corporateName, tradeName, logoUrl);
-        ReferenceExternalId = referenceExternalId;
+        SetReferenceExternalId(referenceExternalId);
     }
 
     /// <summary>RN-009: Inativa → Ativa; ativar quem já está Ativa é conflito de estado.</summary>
@@ -71,6 +72,11 @@ public sealed class Insurer : EntityBase
 
         Status = EInsurerStatus.Inactive;
     }
+
+    private void SetReferenceExternalId(string? referenceExternalId)
+        => ReferenceExternalId = string.IsNullOrWhiteSpace(referenceExternalId)
+            ? null
+            : referenceExternalId.Trim();
 
     private void SetDetails(string cnpj, string corporateName, string? tradeName, string? logoUrl)
     {

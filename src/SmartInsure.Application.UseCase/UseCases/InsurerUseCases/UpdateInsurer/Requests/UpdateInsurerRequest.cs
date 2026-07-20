@@ -13,4 +13,4 @@ public sealed record UpdateInsurerRequest(
     string CorporateName,
     string? TradeName,
     string? LogoUrl,
-    Guid? ReferenceExternalId = null);
+    string? ReferenceExternalId = null);
