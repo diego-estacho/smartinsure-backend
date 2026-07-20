@@ -388,6 +388,28 @@
         }
       }
     },
+    "/api/v1/calculation-engines": {
+      "get": {
+        "tags": [
+          "CalculationEnginesEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CalculationEngineListItemResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/insurers": {
       "post": {
         "tags": [
@@ -876,6 +898,17 @@
             ]
           },
           "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CalculationEngineListItemResponse": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
             "type": "string"
           }
         }
@@ -1934,6 +1967,9 @@
     },
     {
       "name": "BrokeragesEndpoint"
+    },
+    {
+      "name": "CalculationEnginesEndpoint"
     },
     {
       "name": "InsurersEndpoint"
