@@ -1,6 +1,6 @@
 # Exec-plan 0006 — Tomadores: cadastro, endereços e Nomeação (RN-025..RN-028)
 
-Status: em andamento — iniciado em 2026-07-20
+Status: concluído — PRs mergeados em 2026-07-20 (dbmigration#7, backend#13, frontend#14)
 Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/SECURITY.md`, RNs em `docs/product-specs/regras-de-negocio/tomadores.md`, RN-013..RN-017 (`pessoas.md`, fluxo de busca/importação reaproveitado), glossário (termo Nomeação de Tomador `PolicyHolderAppointment` — proposto 2026-07-20, aguardando ratificação da PO), OPEN-03 (sem restrição de Perfil nesta fase).
 
 ## Objetivo
@@ -20,7 +20,7 @@ Jornada de Tomadores: listagem e detalhes (RN-025) reaproveitando o cadastro de 
 - [x] Contrato `openapi.json` publicado (6 rotas `policy-holders`).
 - [x] Frontend: páginas `/tomadores` (lista), criação por CNPJ (busca de Pessoa), detalhe com endereços (CRUD de adicionais) e nomeações (criar/substituir/encerrar + histórico); BFF + composables + mapa de status Vigente/Encerrada; types regenerados.
 - [x] Testes front `describe('RN-NNN ...')` + E2E Playwright da jornada.
-- [ ] PRs: dbmigration (→ develop) antes do backend (→ main), depois frontend — mesmo vínculo (AB# pendente — slug provisório `tomadores`).
+- [x] PRs: dbmigration (→ develop) antes do backend (→ main), depois frontend — mesmo vínculo (AB# pendente — slug provisório `tomadores`).
 
 ## Critérios de aceite
 
