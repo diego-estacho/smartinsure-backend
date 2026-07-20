@@ -27,7 +27,8 @@ public sealed class UpdateInsurerUseCase(
             throw new ConflictException("Já existe uma seguradora com este CNPJ no catálogo.");
         }
 
-        insurer.UpdateDetails(cnpj, request.CorporateName, request.TradeName, request.LogoUrl);
+        insurer.UpdateDetails(
+            cnpj, request.CorporateName, request.TradeName, request.LogoUrl, request.ReferenceExternalId);
         await unitOfWork.CommitAsync(cancellationToken);
 
         return new UpdateInsurerResponse(
@@ -36,6 +37,7 @@ public sealed class UpdateInsurerUseCase(
             insurer.CorporateName,
             insurer.TradeName,
             insurer.LogoUrl,
+            insurer.ReferenceExternalId,
             insurer.Status.ToString());
     }
 }

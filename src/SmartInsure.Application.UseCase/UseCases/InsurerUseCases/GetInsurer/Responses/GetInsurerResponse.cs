@@ -7,4 +7,5 @@ public sealed record GetInsurerResponse(
     string CorporateName,
     string? TradeName,
     string? LogoUrl,
+    string? ReferenceExternalId,
     string Status);

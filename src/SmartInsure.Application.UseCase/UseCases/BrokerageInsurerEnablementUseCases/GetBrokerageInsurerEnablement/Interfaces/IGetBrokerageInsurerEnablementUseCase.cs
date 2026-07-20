@@ -1,0 +1,8 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.GetBrokerageInsurerEnablement.Requests;
+using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.GetBrokerageInsurerEnablement.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.GetBrokerageInsurerEnablement.Interfaces;
+
+public interface IGetBrokerageInsurerEnablementUseCase
+    : IUseCase<GetBrokerageInsurerEnablementRequest, GetBrokerageInsurerEnablementResponse>;

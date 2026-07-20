@@ -22,6 +22,7 @@ public sealed class GetInsurerUseCase(IInsurerRepository insurerRepository) : IG
             insurer.CorporateName,
             insurer.TradeName,
             insurer.LogoUrl,
+            insurer.ReferenceExternalId,
             insurer.Status.ToString());
     }
 }

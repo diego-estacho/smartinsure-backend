@@ -25,6 +25,10 @@ public sealed class CreateInsurerValidator : AbstractValidator<CreateInsurerRequ
             .Must(BeAValidUrl).WithMessage("O endereço do logotipo é inválido.")
             .MaximumLength(500).WithMessage("O endereço do logotipo deve ter no máximo 500 caracteres.");
 
+        RuleFor(request => request.ReferenceExternalId)
+            .MaximumLength(100)
+            .WithMessage("O identificador externo deve ter no máximo 100 caracteres.");
+
         RuleFor(request => request.InitialStatus)
             .Must(status => Enum.TryParse<EInsurerStatus>(status, ignoreCase: true, out _))
             .WithMessage("A situação inicial deve ser Active ou Inactive.");

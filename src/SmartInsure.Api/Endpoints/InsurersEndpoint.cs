@@ -76,7 +76,8 @@ public sealed class InsurersEndpoint : CarterModule
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
-            new UpdateInsurerRequest(id, body.Cnpj, body.CorporateName, body.TradeName, body.LogoUrl),
+            new UpdateInsurerRequest(
+                id, body.Cnpj, body.CorporateName, body.TradeName, body.LogoUrl, body.ReferenceExternalId),
             validator);
 
     private static async Task<IResult> ChangeStatusAsync(
@@ -121,7 +122,7 @@ public sealed class InsurersEndpoint : CarterModule
 
 /// <summary>Corpo do PUT — o id vem da rota.</summary>
 public sealed record UpdateInsurerBody(
-    string Cnpj, string CorporateName, string? TradeName, string? LogoUrl);
+    string Cnpj, string CorporateName, string? TradeName, string? LogoUrl, string? ReferenceExternalId = null);
 
 /// <summary>Corpo do PATCH de situação — nome estável Active/Inactive.</summary>
 public sealed record ChangeInsurerStatusBody(string Status);
