@@ -27,6 +27,7 @@ public sealed class ListBrokerageInsurerEnablementsUseCase(
                 item.BrokerageName,
                 item.InsurerId,
                 item.InsurerCorporateName,
+                item.InsurerLogoUrl,
                 item.CalculationEngine,
                 item.Status))
             .ToList();

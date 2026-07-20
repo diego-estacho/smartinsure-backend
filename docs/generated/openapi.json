@@ -833,6 +833,7 @@
           "brokerageName",
           "insurerId",
           "insurerCorporateName",
+          "insurerLogoUrl",
           "calculationEngine",
           "status"
         ],
@@ -855,6 +856,12 @@
           },
           "insurerCorporateName": {
             "type": "string"
+          },
+          "insurerLogoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "calculationEngine": {
             "type": "string"

@@ -6,6 +6,7 @@ public sealed record BrokerageInsurerEnablementListItemDto(
     string BrokerageName,
     Guid InsurerId,
     string InsurerCorporateName,
+    string? InsurerLogoUrl,
     string CalculationEngine,
     string Status);
 

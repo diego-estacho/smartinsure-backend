@@ -74,6 +74,10 @@ public sealed class BrokerageInsurerEnablementRepository(SmartInsureDbContext co
                     .Where(insurer => insurer.Id == enablement.InsurerId)
                     .Select(insurer => insurer.CorporateName)
                     .First(),
+                Context.Insurers
+                    .Where(insurer => insurer.Id == enablement.InsurerId)
+                    .Select(insurer => insurer.LogoUrl)
+                    .First(),
                 enablement.CalculationEngine.ToString(),
                 enablement.Status.ToString()))
             .ToListAsync(cancellationToken);
