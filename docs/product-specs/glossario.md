@@ -29,6 +29,7 @@ Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de enti
 | **Natureza Jurídica** | `LegalNature` | Código oficial (CONCLA/Receita Federal) que classifica a Pessoa jurídica e determina se ela é do setor público ou privado (proposto em 2026-07-16 — aguardando ratificação da PO) | 1 por Pessoa jurídica | — |
 | **Motor de Cálculo** | `CalculationEngine` | Serviço que executa as operações junto a uma Seguradora (cotar, calcular prêmio, consultar modalidades/cláusulas/coberturas, emitir, cancelar); cada Seguradora habilitada usa um motor definido na Habilitação de Seguradora — nesta fase o único motor disponível é o PlugV2 (proposto em 2026-07-19 — aguardando ratificação da PO) | 1 por Habilitação de Seguradora | a Seguradora; a integração do Birô |
 | **Habilitação de Seguradora** | `BrokerageInsurerEnablement` | Vínculo entre Corretora e Seguradora que autoriza a operação do par e registra o Motor de Cálculo e os parâmetros de conexão usados (proposto em 2026-07-19 — aguardando ratificação da PO) | 0..1 por par Corretora×Seguradora | o cadastro da Seguradora; a Cotação |
+| **Nomeação de Tomador** | `PolicyHolderAppointment` | Vínculo que nomeia uma Corretora para atuar por um Tomador junto a uma Seguradora; independe da Habilitação de Seguradora (proposto em 2026-07-20 — aguardando ratificação da PO) | 0..1 vigente por par Tomador×Seguradora | a Habilitação de Seguradora; o Papel da Pessoa |
 | **Matriz / Filial** | `Headquarters` / `Branch` | O estabelecimento principal da empresa (ordem `/0001` no CNPJ) / os demais estabelecimentos da mesma raiz de CNPJ (proposto em 2026-07-16 — aguardando ratificação da PO) | — | empresas distintas |
 
 Origem: ontologia definida pelo negócio em 2026-05-22 ("Oferta (singular) → Cotações, uma por seguradora"). Se a PO decidir termos diferentes, este arquivo muda ANTES de qualquer código de domínio existir.
@@ -61,6 +62,13 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 |---|---|---|---|
 | **Ativa** | `Active` | Habilitação em operação — o par Corretora×Seguradora pode operar pelo Motor de Cálculo configurado | Ativa → Inativa (RN-022) |
 | **Inativa** | `Inactive` | Habilitação suspensa — permanece no cadastro, operações do par são recusadas (nunca excluída) | Inativa → Ativa (RN-022) |
+
+### Nomeação de Tomador (proposto em 2026-07-20 — aguardando ratificação da PO)
+
+| Status | Nome estável (API) | Significado | Transições permitidas |
+|---|---|---|---|
+| **Vigente** | `Active` | Nomeação em vigor — a Corretora é a nomeada do Tomador junto àquela Seguradora | Vigente → Encerrada (RN-028) |
+| **Encerrada** | `Ended` | Nomeação terminada por encerramento avulso ou substituição — permanece no histórico (nunca excluída) | — |
 
 ### Corretora (ratificado pela PO em 2026-07-17)
 
