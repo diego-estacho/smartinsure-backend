@@ -41,4 +41,21 @@ public interface IPersonRepository : IRepository<Person>
     Task<Person?> GetTrackedBrokerageByIdAsync(
         Guid personId,
         CancellationToken cancellationToken);
+
+    /// <summary>RN-025: lista Pessoas jurídicas com papel Tomador, filtradas por search opcional.</summary>
+    Task<(IReadOnlyList<PolicyHolderListItemDto> Items, long TotalCount)> ListPolicyHoldersAsync(
+        int page,
+        int pageSize,
+        string? search,
+        CancellationToken cancellationToken);
+
+    /// <summary>RN-025: detalhes do Tomador a partir da Pessoa jurídica com papel PolicyHolder, incluindo endereços e nomeações.</summary>
+    Task<PolicyHolderDetailsDto?> GetPolicyHolderByIdAsync(
+        Guid personId,
+        CancellationToken cancellationToken);
+
+    /// <summary>RN-025/026: Pessoa rastreada com o papel PolicyHolder para alterar endereços.</summary>
+    Task<Person?> GetTrackedPolicyHolderByIdAsync(
+        Guid personId,
+        CancellationToken cancellationToken);
 }

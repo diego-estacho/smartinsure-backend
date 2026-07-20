@@ -50,6 +50,48 @@ public sealed class PersonAddress : EntityBase
             IsMain = true,
         };
 
+    /// <summary>RN-026: cria endereço complementar (não principal).</summary>
+    internal static PersonAddress CreateAdditional(
+        Guid personId,
+        string? zipCode,
+        string? street,
+        string? number,
+        string? complement,
+        string? neighborhood,
+        string? city,
+        string? state)
+        => new()
+        {
+            PersonId = personId,
+            ZipCode = Clean(zipCode, digitsOnly: true),
+            Street = Clean(street),
+            Number = Clean(number),
+            Complement = Clean(complement),
+            Neighborhood = Clean(neighborhood),
+            City = Clean(city),
+            State = Clean(state)?.ToUpperInvariant(),
+            IsMain = false,
+        };
+
+    /// <summary>RN-026: altera um endereço complementar com a mesma normalização.</summary>
+    internal void Update(
+        string? zipCode,
+        string? street,
+        string? number,
+        string? complement,
+        string? neighborhood,
+        string? city,
+        string? state)
+    {
+        ZipCode = Clean(zipCode, digitsOnly: true);
+        Street = Clean(street);
+        Number = Clean(number);
+        Complement = Clean(complement);
+        Neighborhood = Clean(neighborhood);
+        City = Clean(city);
+        State = Clean(state)?.ToUpperInvariant();
+    }
+
     private static string? Clean(string? value, bool digitsOnly = false)
     {
         if (string.IsNullOrWhiteSpace(value))

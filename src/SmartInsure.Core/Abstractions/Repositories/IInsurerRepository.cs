@@ -11,4 +11,7 @@ public interface IInsurerRepository : IRepository<Insurer>
     /// <summary>RN-010: consulta padrão só Ativas; visão completa quando includeInactive.</summary>
     Task<(IReadOnlyList<InsurerListItemDto> Items, long TotalCount)> ListAsync(
         int page, int pageSize, bool includeInactive, CancellationToken cancellationToken);
+
+    /// <summary>RN-027: Seguradora rastreada para validação de status.</summary>
+    Task<Insurer?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken);
 }
