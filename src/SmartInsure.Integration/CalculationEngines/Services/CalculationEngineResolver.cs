@@ -14,7 +14,7 @@ namespace SmartInsure.Integration.CalculationEngines.Services;
 /// não disponível na plataforma (sem tentativa por outro motor).
 /// </summary>
 public sealed class CalculationEngineResolver(
-    IInsurerEnablementRepository enablementRepository,
+    IBrokerageInsurerEnablementRepository enablementRepository,
     IInsurerRepository insurerRepository,
     IServiceProvider serviceProvider) : ICalculationEngineResolver
 {
@@ -35,7 +35,7 @@ public sealed class CalculationEngineResolver(
         var enablement = await enablementRepository.GetByPairAsync(
             brokerageId, insurerId, cancellationToken);
 
-        if (enablement is null || enablement.Status == EInsurerEnablementStatus.Inactive)
+        if (enablement is null || enablement.Status == EBrokerageInsurerEnablementStatus.Inactive)
         {
             throw new BusinessRuleException("A seguradora não está habilitada para a corretora.");
         }

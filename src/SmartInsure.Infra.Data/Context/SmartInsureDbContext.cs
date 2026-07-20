@@ -17,7 +17,7 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<LegalNature> LegalNatures => Set<LegalNature>();
 
-    public DbSet<InsurerEnablement> InsurerEnablements => Set<InsurerEnablement>();
+    public DbSet<BrokerageInsurerEnablement> BrokerageInsurerEnablements => Set<BrokerageInsurerEnablement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

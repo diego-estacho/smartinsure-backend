@@ -1,0 +1,8 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.ChangeBrokerageInsurerEnablementStatus.Requests;
+using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.ChangeBrokerageInsurerEnablementStatus.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.ChangeBrokerageInsurerEnablementStatus.Interfaces;
+
+public interface IChangeBrokerageInsurerEnablementStatusUseCase
+    : IUseCase<ChangeBrokerageInsurerEnablementStatusRequest, ChangeBrokerageInsurerEnablementStatusResponse>;

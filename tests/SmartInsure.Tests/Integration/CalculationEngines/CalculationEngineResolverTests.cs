@@ -17,16 +17,16 @@ public class CalculationEngineResolverTests
     private static readonly Guid BrokerageId = Guid.CreateVersion7();
     private static readonly Guid InsurerId = Guid.CreateVersion7();
 
-    private readonly IInsurerEnablementRepository _enablementRepository =
-        Substitute.For<IInsurerEnablementRepository>();
+    private readonly IBrokerageInsurerEnablementRepository _enablementRepository =
+        Substitute.For<IBrokerageInsurerEnablementRepository>();
 
     private readonly IInsurerRepository _insurerRepository = Substitute.For<IInsurerRepository>();
 
     private static Insurer ActiveInsurer()
         => Insurer.Create("98765432000109", "Seguradora Beta S.A.", null, null, EInsurerStatus.Active);
 
-    private static InsurerEnablement PlugV2Enablement(string? connectionParameters = null)
-        => InsurerEnablement.Create(
+    private static BrokerageInsurerEnablement PlugV2Enablement(string? connectionParameters = null)
+        => BrokerageInsurerEnablement.Create(
             BrokerageId, InsurerId, ECalculationEngine.PlugV2, connectionParameters);
 
     private CalculationEngineResolver BuildResolver(bool registerPlugV2 = true)
@@ -64,7 +64,7 @@ public class CalculationEngineResolverTests
         _insurerRepository.GetByIdAsync(InsurerId, Arg.Any<CancellationToken>())
             .Returns(ActiveInsurer());
         _enablementRepository.GetByPairAsync(BrokerageId, InsurerId, Arg.Any<CancellationToken>())
-            .Returns((InsurerEnablement?)null);
+            .Returns((BrokerageInsurerEnablement?)null);
 
         var act = () => BuildResolver().ResolveAsync(BrokerageId, InsurerId, CancellationToken.None);
 
