@@ -21,6 +21,12 @@ public sealed class Insurer : EntityBase
 
     public string? LogoUrl { get; private set; }
 
+    /// <summary>
+    /// Identificador da Seguradora no sistema de origem do Motor de Cálculo
+    /// (ex.: InsuranceUniqueId no PlugV2). Opcional — nem toda seguradora opera via motor externo.
+    /// </summary>
+    public Guid? ReferenceExternalId { get; private set; }
+
     public EInsurerStatus Status { get; private set; }
 
     public static Insurer Create(
@@ -28,16 +34,21 @@ public sealed class Insurer : EntityBase
         string corporateName,
         string? tradeName,
         string? logoUrl,
-        EInsurerStatus initialStatus)
+        EInsurerStatus initialStatus,
+        Guid? referenceExternalId = null)
     {
-        var insurer = new Insurer { Status = initialStatus };
+        var insurer = new Insurer { Status = initialStatus, ReferenceExternalId = referenceExternalId };
         insurer.SetDetails(cnpj, corporateName, tradeName, logoUrl);
         return insurer;
     }
 
     /// <summary>RN-008: alteração cadastral mantém as exigências do cadastro; situação não muda aqui.</summary>
-    public void UpdateDetails(string cnpj, string corporateName, string? tradeName, string? logoUrl)
-        => SetDetails(cnpj, corporateName, tradeName, logoUrl);
+    public void UpdateDetails(
+        string cnpj, string corporateName, string? tradeName, string? logoUrl, Guid? referenceExternalId = null)
+    {
+        SetDetails(cnpj, corporateName, tradeName, logoUrl);
+        ReferenceExternalId = referenceExternalId;
+    }
 
     /// <summary>RN-009: Inativa → Ativa; ativar quem já está Ativa é conflito de estado.</summary>
     public void Activate()

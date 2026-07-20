@@ -1,13 +1,16 @@
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.CreateBrokerageInsurerEnablement;
 using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.CreateBrokerageInsurerEnablement.Requests;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Repositories.Dtos;
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
+using SmartInsure.Integration.CalculationEngines.Services;
 
 namespace SmartInsure.Tests.Application.UseCases.BrokerageInsurerEnablementUseCases.CreateBrokerageInsurerEnablement;
 
@@ -27,11 +30,17 @@ public class CreateBrokerageInsurerEnablementUseCaseTests
     private readonly CreateBrokerageInsurerEnablementUseCase _useCase;
 
     public CreateBrokerageInsurerEnablementUseCaseTests()
-        => _useCase = new CreateBrokerageInsurerEnablementUseCase(
-            _enablementRepository, _insurerRepository, _personRepository, _unitOfWork);
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedScoped<ICalculationEngine, PlugV2CalculationEngine>(ECalculationEngine.PlugV2);
+
+        _useCase = new CreateBrokerageInsurerEnablementUseCase(
+            _enablementRepository, _insurerRepository, _personRepository, _unitOfWork,
+            services.BuildServiceProvider());
+    }
 
     private static CreateBrokerageInsurerEnablementRequest ValidRequest()
-        => new(BrokerageId, InsurerId, "PlugV2", """{"brokerCnpj":"12345678000195"}""");
+        => new(BrokerageId, InsurerId, "PlugV2", """{"baseUrl":"https://plug.example.com","key":"chave-do-vinculo"}""");
 
     private void SetupExistingBrokerageAndInsurer()
     {
@@ -99,6 +108,31 @@ public class CreateBrokerageInsurerEnablementUseCaseTests
         var act = () => _useCase.ExecuteAsync(ValidRequest(), CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
+    }
+
+    [Fact]
+    public async Task Execute_DeveRecusar_QuandoParametrosDeConexaoDoMotorAusentes()
+    {
+        SetupExistingBrokerageAndInsurer();
+        var request = new CreateBrokerageInsurerEnablementRequest(BrokerageId, InsurerId, "PlugV2", null);
+
+        var act = () => _useCase.ExecuteAsync(request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
+    }
+
+    [Fact]
+    public async Task Execute_DeveRecusar_QuandoParametrosDeConexaoInvalidosParaOMotor()
+    {
+        SetupExistingBrokerageAndInsurer();
+        var request = new CreateBrokerageInsurerEnablementRequest(
+            BrokerageId, InsurerId, "PlugV2", """{"baseUrl":"nao-e-url"}""");
+
+        var act = () => _useCase.ExecuteAsync(request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
         await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
     }
 

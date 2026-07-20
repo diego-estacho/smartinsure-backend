@@ -12,4 +12,10 @@ namespace SmartInsure.Core.Abstractions.Services;
 public interface ICalculationEngine
 {
     ECalculationEngine Engine { get; }
+
+    /// <summary>
+    /// RN-022 (caso limite): parâmetros de conexão obrigatórios do motor ausentes ou
+    /// inválidos recusam a gravação da Habilitação. Lança exceção de regra de negócio.
+    /// </summary>
+    void EnsureValidConnectionParameters(string? connectionParameters);
 }

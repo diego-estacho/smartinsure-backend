@@ -1,12 +1,15 @@
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.UpdateBrokerageInsurerEnablement;
 using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.UpdateBrokerageInsurerEnablement.Requests;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
+using SmartInsure.Integration.CalculationEngines.Services;
 
 namespace SmartInsure.Tests.Application.UseCases.BrokerageInsurerEnablementUseCases.UpdateBrokerageInsurerEnablement;
 
@@ -21,7 +24,13 @@ public class UpdateBrokerageInsurerEnablementUseCaseTests
     private readonly UpdateBrokerageInsurerEnablementUseCase _useCase;
 
     public UpdateBrokerageInsurerEnablementUseCaseTests()
-        => _useCase = new UpdateBrokerageInsurerEnablementUseCase(_repository, _unitOfWork);
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedScoped<ICalculationEngine, PlugV2CalculationEngine>(ECalculationEngine.PlugV2);
+
+        _useCase = new UpdateBrokerageInsurerEnablementUseCase(
+            _repository, _unitOfWork, services.BuildServiceProvider());
+    }
 
     [Fact]
     public async Task Execute_DeveAtualizarParametrosDeConexao_QuandoHabilitacaoExiste()
@@ -32,10 +41,10 @@ public class UpdateBrokerageInsurerEnablementUseCaseTests
 
         var response = await _useCase.ExecuteAsync(
             new UpdateBrokerageInsurerEnablementRequest(
-                enablement.Id, "PlugV2", """{"brokerCnpj":"12345678000195"}"""),
+                enablement.Id, "PlugV2", """{"baseUrl":"https://plug.example.com","key":"chave-do-vinculo"}"""),
             CancellationToken.None);
 
-        response.ConnectionParameters.Should().Be("""{"brokerCnpj":"12345678000195"}""");
+        response.ConnectionParameters.Should().Be("""{"baseUrl":"https://plug.example.com","key":"chave-do-vinculo"}""");
         response.CalculationEngine.Should().Be("PlugV2");
         await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
@@ -47,7 +56,7 @@ public class UpdateBrokerageInsurerEnablementUseCaseTests
             .Returns((BrokerageInsurerEnablement?)null);
 
         var act = () => _useCase.ExecuteAsync(
-            new UpdateBrokerageInsurerEnablementRequest(Guid.CreateVersion7(), "PlugV2", null),
+            new UpdateBrokerageInsurerEnablementRequest(Guid.CreateVersion7(), "PlugV2", """{"baseUrl":"https://plug.example.com","key":"chave-do-vinculo"}"""),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();

@@ -49,13 +49,13 @@ public class CalculationEngineResolverTests
         _insurerRepository.GetByIdAsync(InsurerId, Arg.Any<CancellationToken>())
             .Returns(ActiveInsurer());
         _enablementRepository.GetByPairAsync(BrokerageId, InsurerId, Arg.Any<CancellationToken>())
-            .Returns(PlugV2Enablement("""{"brokerCnpj":"12345678000195"}"""));
+            .Returns(PlugV2Enablement("""{"baseUrl":"https://plug.example.com","key":"chave-do-vinculo"}"""));
 
         var resolution = await BuildResolver()
             .ResolveAsync(BrokerageId, InsurerId, CancellationToken.None);
 
         resolution.Engine.Engine.Should().Be(ECalculationEngine.PlugV2);
-        resolution.ConnectionParameters.Should().Be("""{"brokerCnpj":"12345678000195"}""");
+        resolution.ConnectionParameters.Should().Be("""{"baseUrl":"https://plug.example.com","key":"chave-do-vinculo"}""");
     }
 
     [Fact]

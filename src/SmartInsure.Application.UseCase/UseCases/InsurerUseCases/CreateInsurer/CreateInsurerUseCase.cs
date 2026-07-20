@@ -31,7 +31,8 @@ public sealed class CreateInsurerUseCase(
             throw new BusinessRuleException("A situação inicial deve ser Active ou Inactive.");
         }
         var insurer = Insurer.Create(
-            cnpj, request.CorporateName, request.TradeName, request.LogoUrl, initialStatus);
+            cnpj, request.CorporateName, request.TradeName, request.LogoUrl, initialStatus,
+            request.ReferenceExternalId);
 
         await insurerRepository.AddAsync(insurer, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
@@ -42,6 +43,7 @@ public sealed class CreateInsurerUseCase(
             insurer.CorporateName,
             insurer.TradeName,
             insurer.LogoUrl,
+            insurer.ReferenceExternalId,
             insurer.Status.ToString());
     }
 }

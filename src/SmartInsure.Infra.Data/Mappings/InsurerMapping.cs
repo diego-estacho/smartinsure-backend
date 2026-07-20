@@ -29,6 +29,9 @@ public sealed class InsurerMapping : IEntityTypeConfiguration<Insurer>
         builder.Property(insurer => insurer.LogoUrl)
             .HasMaxLength(500);
 
+        // RN-023: identificador da Seguradora no sistema de origem do Motor de Cálculo (opcional).
+        builder.Property(insurer => insurer.ReferenceExternalId);
+
         builder.Property(insurer => insurer.Status)
             .HasMaxLength(20)
             .IsRequired();

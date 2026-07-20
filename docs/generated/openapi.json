@@ -1130,6 +1130,13 @@
           },
           "initialStatus": {
             "type": "string"
+          },
+          "referenceExternalId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -1140,6 +1147,7 @@
           "corporateName",
           "tradeName",
           "logoUrl",
+          "referenceExternalId",
           "status"
         ],
         "type": "object",
@@ -1165,6 +1173,13 @@
               "null",
               "string"
             ]
+          },
+          "referenceExternalId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           },
           "status": {
             "type": "string"
@@ -1325,6 +1340,7 @@
           "corporateName",
           "tradeName",
           "logoUrl",
+          "referenceExternalId",
           "status"
         ],
         "type": "object",
@@ -1350,6 +1366,13 @@
               "null",
               "string"
             ]
+          },
+          "referenceExternalId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           },
           "status": {
             "type": "string"
@@ -1849,6 +1872,13 @@
               "null",
               "string"
             ]
+          },
+          "referenceExternalId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -1859,6 +1889,7 @@
           "corporateName",
           "tradeName",
           "logoUrl",
+          "referenceExternalId",
           "status"
         ],
         "type": "object",
@@ -1884,6 +1915,13 @@
               "null",
               "string"
             ]
+          },
+          "referenceExternalId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           },
           "status": {
             "type": "string"

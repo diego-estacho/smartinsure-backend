@@ -1,8 +1,10 @@
 using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.CreateBrokerageInsurerEnablement.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.CreateBrokerageInsurerEnablement.Requests;
 using SmartInsure.Application.UseCase.UseCases.BrokerageInsurerEnablementUseCases.CreateBrokerageInsurerEnablement.Responses;
+using Microsoft.Extensions.DependencyInjection;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
@@ -17,16 +19,17 @@ public sealed class CreateBrokerageInsurerEnablementUseCase(
     IBrokerageInsurerEnablementRepository enablementRepository,
     IInsurerRepository insurerRepository,
     IPersonRepository personRepository,
-    IUnitOfWork unitOfWork) : ICreateBrokerageInsurerEnablementUseCase
+    IUnitOfWork unitOfWork,
+    IServiceProvider serviceProvider) : ICreateBrokerageInsurerEnablementUseCase
 {
     public async Task<CreateBrokerageInsurerEnablementResponse> ExecuteAsync(
         CreateBrokerageInsurerEnablementRequest request,
         CancellationToken cancellationToken)
     {
-        if (!Enum.TryParse<ECalculationEngine>(request.CalculationEngine, ignoreCase: true, out var engine))
-        {
-            throw new BusinessRuleException("O motor de cálculo informado não está disponível na plataforma.");
-        }
+        var engine = ResolveEngine(request.CalculationEngine);
+
+        // RN-022 (caso limite): parâmetros de conexão obrigatórios do motor ausentes recusam a gravação.
+        engine.EnsureValidConnectionParameters(request.ConnectionParameters);
 
         _ = await personRepository.GetBrokerageByIdAsync(request.BrokerageId, cancellationToken)
             ?? throw new NotFoundException("Corretora não encontrada.");
@@ -40,7 +43,7 @@ public sealed class CreateBrokerageInsurerEnablementUseCase(
         }
 
         var enablement = BrokerageInsurerEnablement.Create(
-            request.BrokerageId, request.InsurerId, engine, request.ConnectionParameters);
+            request.BrokerageId, request.InsurerId, engine.Engine, request.ConnectionParameters);
 
         await enablementRepository.AddAsync(enablement, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
@@ -52,5 +55,16 @@ public sealed class CreateBrokerageInsurerEnablementUseCase(
             enablement.CalculationEngine.ToString(),
             enablement.ConnectionParameters,
             enablement.Status.ToString());
+    }
+
+    private ICalculationEngine ResolveEngine(string calculationEngine)
+    {
+        if (!Enum.TryParse<ECalculationEngine>(calculationEngine, ignoreCase: true, out var engine))
+        {
+            throw new BusinessRuleException("O motor de cálculo informado não está disponível na plataforma.");
+        }
+
+        return serviceProvider.GetKeyedService<ICalculationEngine>(engine)
+            ?? throw new BusinessRuleException("O motor de cálculo informado não está disponível na plataforma.");
     }
 }
