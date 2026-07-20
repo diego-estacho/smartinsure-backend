@@ -1,0 +1,3 @@
+namespace SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.EndPolicyHolderAppointment.Requests;
+
+public sealed record EndPolicyHolderAppointmentRequest(Guid AppointmentId);

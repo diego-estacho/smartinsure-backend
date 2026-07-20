@@ -1,0 +1,9 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderAppointment.Requests;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderAppointment.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderAppointment.Interfaces;
+
+public interface ICreatePolicyHolderAppointmentUseCase : IUseCase<CreatePolicyHolderAppointmentRequest, CreatePolicyHolderAppointmentResponse>
+{
+}
