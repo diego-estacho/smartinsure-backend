@@ -1,6 +1,6 @@
 # Exec-plan 0005 — Motor de Cálculo e Habilitação de Seguradora (RN-022..RN-024)
 
-Status: em execução — backend e migration implementados; PRs pendentes
+Status: concluído — PRs mergeados em 2026-07-20 (dbmigration#6, backend#12, frontend#11)
 Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/SECURITY.md`, RNs em `docs/product-specs/regras-de-negocio/motor-de-calculo.md`, RN-004 (`integracao-biro.md`, padrão de falha de integração), glossário (termos Motor de Cálculo e Habilitação de Seguradora — propostos 2026-07-19), OPEN-07 (cotar Ofertas fica fora desta entrega).
 
 ## Objetivo
@@ -23,7 +23,7 @@ Infraestrutura do Motor de Cálculo: cadastro da Habilitação de Seguradora (v�
 - [x] Api: `GET /api/v1/calculation-engines` (motores por nome estável, pro select da configuração).
 - [x] Frontend: aba Habilitações de Seguradora nos detalhes da Corretora — CRUD sem exclusão, dialogs de formulário e de confirmação, PlugV2 com baseUrl/key serializados em JSON; BFF + composables + types regenerados (PR smartinsure-frontend#11).
 - [x] E2E Playwright da jornada de habilitação (BFF mockado no browser; 6/6 verdes, evidência no PR do front).
-- [ ] PRs: dbmigration#6 (→ develop) antes do backend#12 (→ main), depois frontend#11 — mesmo vínculo de atividade (AB# pendente — slug provisório `motor-de-calculo`).
+- [x] PRs: dbmigration#6 (→ develop) antes do backend#12 (→ main), depois frontend#11 — mesmo vínculo de atividade (AB# pendente — slug provisório `motor-de-calculo`).
 
 ## Critérios de aceite
 
