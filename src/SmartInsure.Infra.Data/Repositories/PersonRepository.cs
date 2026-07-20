@@ -120,6 +120,127 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                     && person.Roles.Any(role => role.Role == EPersonRole.Broker),
                 cancellationToken);
 
+    public async Task<(IReadOnlyList<PolicyHolderListItemDto> Items, long TotalCount)> ListPolicyHoldersAsync(
+        int page,
+        int pageSize,
+        string? search,
+        CancellationToken cancellationToken)
+    {
+        var query = Set.AsNoTracking()
+            .Where(person => person.Type == EPersonType.J
+                && person.Roles.Any(role => role.Role == EPersonRole.PolicyHolder)
+                && person.DocumentNumber.Substring(8, 4) == "0001");
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchTerm = search.Trim();
+            query = query.Where(person => person.Name.Contains(searchTerm)
+                || (person.SocialName != null && person.SocialName.Contains(searchTerm))
+                || person.DocumentNumber.Contains(searchTerm));
+        }
+
+        var totalCount = await query.LongCountAsync(cancellationToken);
+
+        var items = await query
+            .OrderBy(person => person.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(person => new PolicyHolderListItemDto(
+                person.Id,
+                person.DocumentNumber,
+                person.Name,
+                person.SocialName,
+                person.LegalNature == null ? null : (bool?)person.LegalNature.IsPrivate))
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
+    public async Task<PolicyHolderDetailsDto?> GetPolicyHolderByIdAsync(
+        Guid personId,
+        CancellationToken cancellationToken)
+    {
+        var person = await Set.AsNoTracking()
+            .Where(p => p.Id == personId
+                && p.Type == EPersonType.J
+                && p.Roles.Any(role => role.Role == EPersonRole.PolicyHolder)
+                && p.DocumentNumber.Substring(8, 4) == "0001")
+            .Select(p => new
+            {
+                p.Id,
+                p.DocumentNumber,
+                p.Name,
+                p.SocialName,
+                LegalNatureCode = p.LegalNature == null ? null : p.LegalNature.Code,
+                LegalNatureDescription = p.LegalNature == null ? null : p.LegalNature.Name,
+                IsPrivateSector = p.LegalNature == null ? null : (bool?)p.LegalNature.IsPrivate,
+                Addresses = p.Addresses.Select(a => new PersonAddressDetailsDto(
+                    a.Id,
+                    a.ZipCode,
+                    a.Street,
+                    a.Number,
+                    a.Complement,
+                    a.Neighborhood,
+                    a.City,
+                    a.State,
+                    a.IsMain)).ToList(),
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (person is null)
+        {
+            return null;
+        }
+
+        // Single LINQ join query to avoid N+1: appointments + insurers + persons in one go
+        var appointments = await Context.Set<PolicyHolderAppointment>().AsNoTracking()
+            .Where(appointment => appointment.PolicyHolderId == personId)
+            .Join(Context.Set<Insurer>().AsNoTracking(),
+                appointment => appointment.InsurerId,
+                insurer => insurer.Id,
+                (appointment, insurer) => new { appointment, insurer })
+            .Join(Context.Set<Person>().AsNoTracking(),
+                x => x.appointment.BrokerageId,
+                broker => broker.Id,
+                (x, broker) => new PolicyHolderAppointmentDetailDto(
+                    x.appointment.Id,
+                    x.appointment.InsurerId,
+                    x.insurer.Cnpj,
+                    x.insurer.CorporateName,
+                    x.appointment.BrokerageId,
+                    broker.DocumentNumber,
+                    broker.Name,
+                    x.appointment.Status.ToString(),
+                    x.appointment.StartedAt,
+                    x.appointment.EndedAt))
+            .OrderByDescending(dto => dto.StartedAt)
+            .ToListAsync(cancellationToken);
+
+        return new PolicyHolderDetailsDto(
+            person.Id,
+            person.DocumentNumber,
+            person.Name,
+            person.SocialName,
+            person.LegalNatureCode,
+            person.LegalNatureDescription,
+            person.IsPrivateSector,
+            person.Addresses,
+            appointments);
+    }
+
+    public async Task<Person?> GetTrackedPolicyHolderByIdAsync(
+        Guid personId,
+        CancellationToken cancellationToken)
+        => await Set
+            .Include(person => person.Roles)
+            .Include(person => person.Addresses)
+            .FirstOrDefaultAsync(
+                person => person.Id == personId
+                    && person.Type == EPersonType.J
+                    && person.Roles.Any(role => role.Role == EPersonRole.PolicyHolder)
+                    && person.DocumentNumber.Substring(8, 4) == "0001",
+                cancellationToken);
+
     private static IQueryable<PersonSearchItemDto> ProjectItems(IQueryable<Person> query)
         => query.Select(person => new PersonSearchItemDto(
             person.Id,

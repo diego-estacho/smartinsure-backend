@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5158/"
+      "url": "http://127.0.0.1:5981/"
     }
   ],
   "paths": {
@@ -632,6 +632,292 @@
         }
       }
     },
+    "/api/v1/policy-holders": {
+      "get": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfPolicyHolderListItemResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePolicyHolderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePolicyHolderResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/policy-holders/{id}": {
+      "get": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPolicyHolderResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/policy-holders/{id}/addresses": {
+      "post": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddPolicyHolderAddressBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/policy-holders/{id}/addresses/{addressId}": {
+      "put": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "addressId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePolicyHolderAddressBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "addressId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/policy-holders/{id}/appointments": {
+      "post": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePolicyHolderAppointmentBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePolicyHolderAppointmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/policy-holders/{id}/appointments/{appointmentId}/end": {
+      "patch": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/v1/users": {
       "post": {
         "tags": [
@@ -736,6 +1022,62 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "AddPolicyHolderAddressBody": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1224,6 +1566,137 @@
           }
         }
       },
+      "CreatePolicyHolderAppointmentBody": {
+        "required": [
+          "brokerageId",
+          "insurerId"
+        ],
+        "type": "object",
+        "properties": {
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "CreatePolicyHolderAppointmentResponse": {
+        "required": [
+          "id",
+          "policyHolderId",
+          "brokerageId",
+          "insurerId",
+          "status",
+          "startedAt",
+          "endedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "CreatePolicyHolderRequest": {
+        "required": [
+          "cnpj"
+        ],
+        "type": "object",
+        "properties": {
+          "cnpj": {
+            "type": "string"
+          }
+        }
+      },
+      "CreatePolicyHolderResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName",
+          "legalNatureCode",
+          "legalNatureDescription",
+          "isPrivateSector",
+          "mainAddress"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureDescription": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "mainAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ImportedPolicyHolderAddressResponse"
+              }
+            ]
+          }
+        }
+      },
       "CreateUserRequest": {
         "required": [
           "name",
@@ -1416,7 +1889,125 @@
           }
         }
       },
+      "GetPolicyHolderResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName",
+          "legalNatureCode",
+          "legalNatureDescription",
+          "isPrivateSector",
+          "addresses",
+          "appointments"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureDescription": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyHolderAddressResponse"
+            }
+          },
+          "appointments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyHolderAppointmentResponse"
+            }
+          }
+        }
+      },
       "ImportedBrokerageAddressResponse": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ImportedPolicyHolderAddressResponse": {
         "required": [
           "zipCode",
           "street",
@@ -1657,6 +2248,55 @@
           }
         }
       },
+      "PagedResponseOfPolicyHolderListItemResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyHolderListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
       "PersonAddressResponse": {
         "required": [
           "zipCode",
@@ -1771,6 +2411,160 @@
             "type": [
               "null",
               "string"
+            ]
+          }
+        }
+      },
+      "PolicyHolderAddressResponse": {
+        "required": [
+          "id",
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state",
+          "isMain"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isMain": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PolicyHolderAppointmentResponse": {
+        "required": [
+          "id",
+          "insurerId",
+          "insurerDocumentNumber",
+          "insurerName",
+          "brokerageId",
+          "brokerageDocumentNumber",
+          "brokerageName",
+          "status",
+          "startedAt",
+          "endedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerDocumentNumber": {
+            "type": "string"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerageDocumentNumber": {
+            "type": "string"
+          },
+          "brokerageName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "PolicyHolderListItemResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName",
+          "isPrivateSector"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
             ]
           }
         }
@@ -1962,6 +2756,62 @@
             "type": "string"
           }
         }
+      },
+      "UpdatePolicyHolderAddressBody": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
       }
     }
   },
@@ -1983,6 +2833,9 @@
     },
     {
       "name": "PersonsEndpoint"
+    },
+    {
+      "name": "PolicyHoldersEndpoint"
     },
     {
       "name": "UsersEndpoint"

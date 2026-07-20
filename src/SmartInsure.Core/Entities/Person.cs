@@ -127,4 +127,75 @@ public sealed class Person : EntityBase
     /// <summary>RN-016: matriz é o estabelecimento de ordem /0001 do CNPJ (só pessoa jurídica).</summary>
     public bool IsHeadquarters
         => Type == EPersonType.J && DocumentNumber[8..12] == "0001";
+
+    /// <summary>RN-026: adiciona endereço complementar (não principal).</summary>
+    public void AddAdditionalAddress(
+        string? zipCode,
+        string? street,
+        string? number,
+        string? complement,
+        string? neighborhood,
+        string? city,
+        string? state)
+    {
+        _addresses.Add(PersonAddress.CreateAdditional(
+            Id, zipCode, street, number, complement, neighborhood, city, state));
+    }
+
+    /// <summary>RN-026: altera endereço complementar (nunca o principal).</summary>
+    public void UpdateAdditionalAddress(
+        Guid addressId,
+        string? zipCode,
+        string? street,
+        string? number,
+        string? complement,
+        string? neighborhood,
+        string? city,
+        string? state)
+    {
+        PersonAddress? address = FindAddressById(addressId);
+
+        if (address is null)
+        {
+            throw new NotFoundException("Endereço não encontrado.");
+        }
+
+        if (address.IsMain)
+        {
+            throw new BusinessRuleException("O endereço principal não pode ser alterado ou removido.");
+        }
+
+        address.Update(zipCode, street, number, complement, neighborhood, city, state);
+    }
+
+    /// <summary>RN-026: remove endereço complementar (nunca o principal).</summary>
+    public void RemoveAdditionalAddress(Guid addressId)
+    {
+        PersonAddress? address = FindAddressById(addressId);
+
+        if (address is null)
+        {
+            throw new NotFoundException("Endereço não encontrado.");
+        }
+
+        if (address.IsMain)
+        {
+            throw new BusinessRuleException("O endereço principal não pode ser alterado ou removido.");
+        }
+
+        _addresses.Remove(address);
+    }
+
+    private PersonAddress? FindAddressById(Guid addressId)
+    {
+        foreach (var address in _addresses)
+        {
+            if (address.Id == addressId)
+            {
+                return address;
+            }
+        }
+
+        return null;
+    }
 }

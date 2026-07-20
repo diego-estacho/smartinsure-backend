@@ -45,4 +45,7 @@ public sealed class InsurerRepository(SmartInsureDbContext context)
 
         return (items, totalCount);
     }
+
+    public async Task<Insurer?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken)
+        => await Set.FirstOrDefaultAsync(insurer => insurer.Id == id, cancellationToken);
 }
