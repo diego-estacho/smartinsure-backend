@@ -20,7 +20,7 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 **Critério de aceitação.** Dada uma Habilitação Ativa do par com Motor de Cálculo configurado, a operação é executada por esse motor com os parâmetros de conexão da Habilitação. Sem Habilitação, com Habilitação Inativa ou sem Motor de Cálculo resolvível, a operação é recusada com mensagem indicando que a Seguradora não está habilitada para a Corretora.
 
-**Casos limite.** Seguradora Inativa no catálogo: a operação é recusada mesmo com Habilitação Ativa (RN-010). Motor de Cálculo referenciado pela Habilitação não disponível na plataforma: operação recusada, sem tentativa por outro motor. Nesta fase o único Motor de Cálculo disponível é o PlugV2.
+**Casos limite.** Seguradora Inativa no catálogo: a operação é recusada mesmo com Habilitação Ativa (RN-010). Motor de Cálculo referenciado pela Habilitação não disponível na plataforma: operação recusada, sem tentativa por outro motor. Nesta fase o único Motor de Cálculo disponível é o PlugV2. Quando o motor exige identificar a Seguradora no sistema de origem, esse identificador externo é um dado cadastral opcional da Seguradora (mantido conforme RN-008) — Seguradora sem identificador externo só opera em motores que não o exigem.
 
 ## RN-024 — Falha do Motor de Cálculo não derruba a Oferta
 
