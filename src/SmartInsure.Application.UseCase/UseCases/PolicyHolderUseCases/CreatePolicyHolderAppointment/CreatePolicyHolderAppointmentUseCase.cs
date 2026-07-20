@@ -54,6 +54,8 @@ public sealed class CreatePolicyHolderAppointmentUseCase(
         var activeAppointment = await appointmentRepository.GetTrackedActiveByPairAsync(
             request.PolicyHolderId, request.InsurerId, cancellationToken);
 
+        PolicyHolderAppointment newAppointment;
+
         if (activeAppointment is not null)
         {
             // Se a Corretora é a mesma: conflito
@@ -63,16 +65,40 @@ public sealed class CreatePolicyHolderAppointmentUseCase(
                     "A corretora informada já é a nomeada vigente para esta seguradora.");
             }
 
-            // Se a Corretora é diferente: substituir (End + Create na mesma transação)
-            activeAppointment.End();
+            // Se a Corretora é diferente: substituir (End + Create com transação explícita)
+            // RN-028: usar duas flushes para garantir atomicidade da substituição
+            // Índice único filtrado (PolicyHolderId, InsurerId) WHERE Status='Active' não é deferível;
+            // sem UPDATE antes de INSERT, o unique viola se INSERT executar primeiro.
+            await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                activeAppointment.End();
+                await unitOfWork.CommitAsync(cancellationToken);  // Flush #1: old row -> Ended
+
+                // Criar a nova Nomeação
+                newAppointment = PolicyHolderAppointment.Create(
+                    request.PolicyHolderId, request.BrokerageId, request.InsurerId);
+
+                await appointmentRepository.AddAsync(newAppointment, cancellationToken);
+                await unitOfWork.CommitAsync(cancellationToken);  // Flush #2: INSERT Active
+
+                await transaction.CommitAsync(cancellationToken); // Commit DB transaction
+            }
+            catch
+            {
+                // EF's IDbContextTransaction.DisposeAsync rolls back if not committed
+                throw;
+            }
         }
+        else
+        {
+            // Criar a nova Nomeação (sem existente)
+            newAppointment = PolicyHolderAppointment.Create(
+                request.PolicyHolderId, request.BrokerageId, request.InsurerId);
 
-        // Criar a nova Nomeação
-        var newAppointment = PolicyHolderAppointment.Create(
-            request.PolicyHolderId, request.BrokerageId, request.InsurerId);
-
-        await appointmentRepository.AddAsync(newAppointment, cancellationToken);
-        await unitOfWork.CommitAsync(cancellationToken);
+            await appointmentRepository.AddAsync(newAppointment, cancellationToken);
+            await unitOfWork.CommitAsync(cancellationToken);
+        }
 
         return new CreatePolicyHolderAppointmentResponse(
             newAppointment.Id,

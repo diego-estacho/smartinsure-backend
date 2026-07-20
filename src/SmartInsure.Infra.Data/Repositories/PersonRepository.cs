@@ -192,32 +192,28 @@ public sealed class PersonRepository(SmartInsureDbContext context)
             return null;
         }
 
+        // Single LINQ join query to avoid N+1: appointments + insurers + persons in one go
         var appointments = await Context.Set<PolicyHolderAppointment>().AsNoTracking()
             .Where(appointment => appointment.PolicyHolderId == personId)
-            .OrderByDescending(appointment => appointment.StartedAt)
-            .Select(appointment => new PolicyHolderAppointmentDetailDto(
-                appointment.Id,
-                appointment.InsurerId,
-                Context.Set<Insurer>()
-                    .Where(insurer => insurer.Id == appointment.InsurerId)
-                    .Select(insurer => insurer.Cnpj)
-                    .First(),
-                Context.Set<Insurer>()
-                    .Where(insurer => insurer.Id == appointment.InsurerId)
-                    .Select(insurer => insurer.CorporateName)
-                    .First(),
-                appointment.BrokerageId,
-                Context.Set<Person>()
-                    .Where(p => p.Id == appointment.BrokerageId)
-                    .Select(p => p.DocumentNumber)
-                    .First(),
-                Context.Set<Person>()
-                    .Where(p => p.Id == appointment.BrokerageId)
-                    .Select(p => p.Name)
-                    .First(),
-                appointment.Status.ToString(),
-                appointment.StartedAt,
-                appointment.EndedAt))
+            .Join(Context.Set<Insurer>().AsNoTracking(),
+                appointment => appointment.InsurerId,
+                insurer => insurer.Id,
+                (appointment, insurer) => new { appointment, insurer })
+            .Join(Context.Set<Person>().AsNoTracking(),
+                x => x.appointment.BrokerageId,
+                broker => broker.Id,
+                (x, broker) => new PolicyHolderAppointmentDetailDto(
+                    x.appointment.Id,
+                    x.appointment.InsurerId,
+                    x.insurer.Cnpj,
+                    x.insurer.CorporateName,
+                    x.appointment.BrokerageId,
+                    broker.DocumentNumber,
+                    broker.Name,
+                    x.appointment.Status.ToString(),
+                    x.appointment.StartedAt,
+                    x.appointment.EndedAt))
+            .OrderByDescending(dto => dto.StartedAt)
             .ToListAsync(cancellationToken);
 
         return new PolicyHolderDetailsDto(

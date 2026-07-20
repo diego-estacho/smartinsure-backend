@@ -20,8 +20,10 @@ using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHo
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHolders.Responses;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.RemovePolicyHolderAddress.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.RemovePolicyHolderAddress.Requests;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.RemovePolicyHolderAddress.Validators;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.UpdatePolicyHolderAddress.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.UpdatePolicyHolderAddress.Requests;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.EndPolicyHolderAppointment.Validators;
 
 namespace SmartInsure.Api.Endpoints;
 
@@ -135,13 +137,14 @@ public sealed class PolicyHoldersEndpoint : CarterModule
         HttpContext httpContext,
         RequestHandler handler,
         IRemovePolicyHolderAddressUseCase useCase,
+        IValidator<RemovePolicyHolderAddressRequest> validator,
         Guid id,
         Guid addressId)
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
             new RemovePolicyHolderAddressRequest(id, addressId),
-            null,
+            validator,
             _ => Results.NoContent());
 
     private static async Task<IResult> CreateAppointmentAsync(
@@ -162,13 +165,14 @@ public sealed class PolicyHoldersEndpoint : CarterModule
         HttpContext httpContext,
         RequestHandler handler,
         IEndPolicyHolderAppointmentUseCase useCase,
+        IValidator<EndPolicyHolderAppointmentRequest> validator,
         Guid id,
         Guid appointmentId)
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
             new EndPolicyHolderAppointmentRequest(appointmentId),
-            null,
+            validator,
             _ => Results.NoContent());
 }
 
