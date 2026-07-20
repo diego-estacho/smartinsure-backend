@@ -20,7 +20,10 @@ Infraestrutura do Motor de Cálculo: cadastro da Habilitação de Seguradora (v�
 - [x] Testes com `[Trait("RuleId", "RN-022")]` e `RN-023`; RN-024 fica para a demanda do cotar (OPEN-07).
 - [x] Validar migration localmente (`docker compose --profile migrations up -d`).
 - [x] Contrato `openapi.json` publicado.
-- [ ] PRs: dbmigration (→ develop) antes/junto do backend (→ main), mesmo vínculo de atividade (AB# pendente — slug provisório `motor-de-calculo`).
+- [x] Api: `GET /api/v1/calculation-engines` (motores por nome estável, pro select da configuração).
+- [x] Frontend: aba Habilitações de Seguradora nos detalhes da Corretora — CRUD sem exclusão, dialogs de formulário e de confirmação, PlugV2 com baseUrl/key serializados em JSON; BFF + composables + types regenerados (PR smartinsure-frontend#11).
+- [ ] E2E Playwright da jornada de habilitação (pendente).
+- [ ] PRs: dbmigration#6 (→ develop) antes do backend#12 (→ main), depois frontend#11 — mesmo vínculo de atividade (AB# pendente — slug provisório `motor-de-calculo`).
 
 ## Critérios de aceite
 
