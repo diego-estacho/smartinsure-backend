@@ -19,6 +19,14 @@ public sealed class CreditInquiryResultMapping : IEntityTypeConfiguration<Credit
         // Uma Seguradora aparece uma única vez por consulta (RN-029/RN-030).
         builder.HasIndex(result => new { result.CreditInquiryId, result.InsurerId }).IsUnique();
 
+        // FK com DeleteBehavior.Restrict (convenção global, ADR-034).
+        builder.HasOne<Insurer>()
+            .WithMany()
+            .HasForeignKey(result => result.InsurerId);
+
+        // Índice para queries por Seguradora (RN-031).
+        builder.HasIndex(result => result.InsurerId);
+
         builder.Property(result => result.Status)
             .HasMaxLength(20)
             .IsRequired();

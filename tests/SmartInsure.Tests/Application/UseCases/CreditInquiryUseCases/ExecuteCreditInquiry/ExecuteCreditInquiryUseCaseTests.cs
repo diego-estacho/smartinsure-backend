@@ -56,15 +56,6 @@ public class ExecuteCreditInquiryUseCaseTests
     }
 
     [Fact]
-    public async Task Execute_DeveRecusar_QuandoCnpjInvalido()
-    {
-        var request = new ExecuteCreditInquiryRequest(BrokerageId, "11111111111111");
-
-        // Validação é feita pelo validator, não pelo use case — error aqui é esperado.
-        // Este teste valida que o use case não é chamado com CNPJ inválido.
-    }
-
-    [Fact]
     public async Task Execute_DeveRecusar_QuandoCorretoraSemHabilitacaoAtiva()
     {
         SetupExistingBrokerage();
@@ -104,6 +95,68 @@ public class ExecuteCreditInquiryUseCaseTests
         response.Summary.InsurersQueried.Should().BeGreaterThan(0);
         await _creditInquiryRepository.Received(1)
             .AddAsync(Arg.Any<CreditInquiry>(), Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-030")]
+    public async Task Execute_DeveIsolarFalha_ComMultiplasSeguradoras()
+    {
+        // RN-030: fan-out com isolamento — uma seguradora indisponível não impede resultado de outra.
+        SetupExistingBrokerage();
+
+        var insurerId2 = Guid.CreateVersion7();
+
+        var enablement1 = BrokerageInsurerEnablement.Create(
+            BrokerageId, InsurerId, ECalculationEngine.PlugV2,
+            """{"baseUrl":"https://plug.example.com","key":"test-key"}""");
+
+        var enablement2 = BrokerageInsurerEnablement.Create(
+            BrokerageId, insurerId2, ECalculationEngine.PlugV2,
+            """{"baseUrl":"https://plug2.example.com","key":"test-key-2"}""");
+
+        _enablementRepository.ListActiveByBrokerageAsync(BrokerageId, Arg.Any<CancellationToken>())
+            .Returns([enablement1, enablement2]);
+
+        // Ambas Ativas: a indisponibilidade da Beta vem do MOTOR, não de pré-condição (RN-030).
+        var insurerBeta = Insurer.Create(
+            "98765432000109", "Seguradora Beta S.A.", null, null,
+            EInsurerStatus.Active, "InsurerId123");
+
+        var insurerGamma = Insurer.Create(
+            "98765432000110", "Seguradora Gamma S.A.", null, null,
+            EInsurerStatus.Active, "InsurerId456");
+
+        _insurerRepository.GetByIdAsync(InsurerId, Arg.Any<CancellationToken>())
+            .Returns(insurerBeta);
+        _insurerRepository.GetByIdAsync(insurerId2, Arg.Any<CancellationToken>())
+            .Returns(insurerGamma);
+
+        // Motor fake: falha para a Seguradora Beta, retorna limites para a Gamma (RN-030).
+        var engine = Substitute.For<ICalculationEngine>();
+        engine.GetPolicyHolderLimitsAndRatesAsync(
+                Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string>(), "InsurerId123", Arg.Any<CancellationToken>())
+            .Returns<Task<PolicyHolderLimitsAndRates?>>(_ =>
+                throw new CalculationEngineException("Motor indisponível para a seguradora."));
+        engine.GetPolicyHolderLimitsAndRatesAsync(
+                Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string>(), "InsurerId456", Arg.Any<CancellationToken>())
+            .Returns(new PolicyHolderLimitsAndRates { TraditionalLimit = 1000m, TraditionalRate = 0.6m });
+
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton(ECalculationEngine.PlugV2, engine);
+        var useCase = new ExecuteCreditInquiryUseCase(
+            _enablementRepository, _insurerRepository, _personRepository, _creditInquiryRepository,
+            _unitOfWork, services.BuildServiceProvider());
+
+        var response = await useCase.ExecuteAsync(ValidRequest(), CancellationToken.None);
+
+        // RN-030: falha isolada — um Unavailable com motivo, um Available com limites.
+        response.Results.Should().HaveCount(2);
+        response.Results.Should().ContainSingle(r => r.Status == "Unavailable" && r.FailureReason != null);
+        response.Results.Should().ContainSingle(r => r.Status == "Available" && r.TraditionalLimit == 1000m);
+        // RN-031: a consulta persiste com ambos os resultados.
+        await _creditInquiryRepository.Received(1)
+            .AddAsync(Arg.Is<CreditInquiry>(i => i.Results.Count == 2), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 

@@ -20,18 +20,9 @@ public sealed class GetCreditInquiryUseCase(
         var inquiry = await creditInquiryRepository.GetByIdAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Consulta de crédito não encontrada.");
 
-        // Carrega Insurers para montagem dos nomes.
+        // Carrega Insurers para montagem dos nomes (batch para evitar N+1).
         var insurerIds = inquiry.Results.Select(r => r.InsurerId).Distinct().ToList();
-        var insurers = new Dictionary<Guid, string>();
-
-        foreach (var insurerId in insurerIds)
-        {
-            var insurer = await insurerRepository.GetByIdAsync(insurerId, cancellationToken);
-            if (insurer is not null)
-            {
-                insurers[insurerId] = insurer.CorporateName;
-            }
-        }
+        var insurers = await insurerRepository.GetCorporateNamesByIdsAsync(insurerIds, cancellationToken);
 
         var available = inquiry.Results.Where(r => r.Status == ECreditInquiryResultStatus.Available).ToList();
 

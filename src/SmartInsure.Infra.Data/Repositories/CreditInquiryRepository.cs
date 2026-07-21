@@ -38,7 +38,10 @@ public sealed class CreditInquiryRepository(SmartInsureDbContext dbContext) : IC
 
         if (!string.IsNullOrWhiteSpace(policyHolderCnpj))
         {
-            query = query.Where(inquiry => inquiry.PolicyHolderCnpj.Contains(policyHolderCnpj));
+            // Normaliza o CNPJ removendo caracteres não-numéricos antes de comparar
+            // (banco armazena CNPJ normalizado — RN-007)
+            var normalizedCnpj = new string(policyHolderCnpj.Where(char.IsDigit).ToArray());
+            query = query.Where(inquiry => inquiry.PolicyHolderCnpj.Contains(normalizedCnpj));
         }
 
         var total = await query.LongCountAsync(cancellationToken);
