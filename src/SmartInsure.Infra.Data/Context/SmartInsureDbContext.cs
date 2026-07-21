@@ -19,6 +19,10 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<BrokerageInsurerEnablement> BrokerageInsurerEnablements => Set<BrokerageInsurerEnablement>();
 
+    public DbSet<CreditInquiry> CreditInquiries => Set<CreditInquiry>();
+
+    public DbSet<CreditInquiryResult> CreditInquiryResults => Set<CreditInquiryResult>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartInsureDbContext).Assembly);
