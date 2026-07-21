@@ -44,3 +44,21 @@ Dono: PO (gerente de projeto)
 Bloqueia: a funcionalidade de cotar Ofertas (disparo das Cotações a partir de uma Oferta)
 Status: aberta
 Contexto: decidido em 2026-07-19 que esta fase entrega apenas a infraestrutura do Motor de Cálculo (RN-022..RN-024) — Habilitação de Seguradora e resolução do motor por configuração, com PlugV2 como único motor. A direção indicada pelo negócio é que cotar dispare para TODAS as Seguradoras habilitadas da Corretora (uma Cotação por Seguradora, conforme glossário), mas a demanda do cotar ainda não foi especificada; escopo, disparo (todas vs. uma escolhida), momento e experiência do corretor serão definidos na demanda própria. Também segue aberto quem pode gerenciar a Habilitação de Seguradora — nesta fase qualquer usuário autenticado (mesma pendência de perfis da OPEN-03).
+
+## OPEN-08 — Mapeamento automático de modalidade "por semelhança"
+Dono: PO (gerente de projeto)
+Bloqueia: a confirmação automática de Mapeamento de Modalidade por aproximação de nome/descrição (forma `Similarity`)
+Status: aberta
+Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A importação confirma mapeamento automaticamente apenas "por identificador do motor" (RN-032); tudo o mais cai na Fila de Revisão como pendente (RN-034). A confirmação automática "por semelhança" — aproximar a Modalidade Importada das Modalidades do mesmo Ramo por nome/descrição e confirmar acima de um grau de confiança — fica fora desta fase. Falta a PO definir o método de aproximação e o grau de confiança mínimo (idealmente calibrados com dados reais após a primeira carga). Sem essa definição, "por semelhança" não é implementável.
+
+## OPEN-09 — Credencial e divergência de catálogo quando a Seguradora tem várias Corretoras habilitadas
+Dono: PO (gerente de projeto)
+Bloqueia: a regra de qual credencial (PlugKey) usar na importação de uma Seguradora habilitada por mais de uma Corretora, e o tratamento caso o catálogo retornado divirja entre Corretoras
+Status: aberta
+Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A Modalidade Importada é da Seguradora, não da Corretora (o `BrokerCnpj`/PlugKey é só credencial de busca), então a importação deduplica por Seguradora e faz uma chamada por Seguradora (RN-031). Falta a PO decidir qual credencial usar quando várias Corretoras habilitam a mesma Seguradora e o que fazer se o retorno divergir entre elas (hoje assume-se catálogo único por Seguradora).
+
+## OPEN-10 — Cadência do agendamento da importação de modalidades
+Dono: PO (gerente de projeto)
+Bloqueia: nada crítico (há default proposto); ajusta a frequência do job
+Status: aberta
+Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A importação roda periodicamente por agendamento (RN-031). Proposta de default: diária, em horário de baixo pico, com a cadência configurável (não fixa no código). Falta a PO confirmar se há requisito de frequência específico (ex.: mais de uma vez ao dia, ou alinhado a janela da Seguradora).

@@ -31,6 +31,12 @@ Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de enti
 | **Habilitação de Seguradora** | `BrokerageInsurerEnablement` | Vínculo entre Corretora e Seguradora que autoriza a operação do par e registra o Motor de Cálculo e os parâmetros de conexão usados (proposto em 2026-07-19 — aguardando ratificação da PO) | 0..1 por par Corretora×Seguradora | o cadastro da Seguradora; a Cotação |
 | **Nomeação de Tomador** | `PolicyHolderAppointment` | Vínculo que nomeia uma Corretora para atuar por um Tomador junto a uma Seguradora; independe da Habilitação de Seguradora (proposto em 2026-07-20 — aguardando ratificação da PO) | 0..1 vigente por par Tomador×Seguradora | a Habilitação de Seguradora; o Papel da Pessoa |
 | **Matriz / Filial** | `Headquarters` / `Branch` | O estabelecimento principal da empresa (ordem `/0001` no CNPJ) / os demais estabelecimentos da mesma raiz de CNPJ (proposto em 2026-07-16 — aguardando ratificação da PO) | — | empresas distintas |
+| **Modalidade** | `Modality` | Modalidade de Seguro Garantia no vocabulário do Smart, sem dono de Seguradora; o item que o corretor escolhe e o eixo pelo qual compara ofertas entre Seguradoras. Catálogo curado pela equipe (proposto em 2026-07-21 — aguardando ratificação da PO) | catálogo curado | a Modalidade Importada (a versão de cada Seguradora) |
+| **Grupo de Modalidade** | `ModalityGroup` | Agrupador de Modalidades por finalidade (ex.: Garantias de Licitação), curado pela equipe (proposto em 2026-07-21 — aguardando ratificação da PO) | 1 por Modalidade | o Grupo Importado |
+| **Modalidade Importada** | `ImportedModality` | A modalidade como uma Seguradora a oferece, trazida na importação exatamente como exposta (nome de origem, público-alvo, ramo, parâmetros comerciais); ligada à Modalidade por Mapeamento (proposto em 2026-07-21 — aguardando ratificação da PO) | 1 por Seguradora, por identificador de origem | a Modalidade (o item do Smart) |
+| **Grupo Importado** | `ImportedGroup` | O agrupador que a Seguradora associa à Modalidade Importada, preservado como veio, para conferência e rastreio (proposto em 2026-07-21 — aguardando ratificação da PO) | — | o Grupo de Modalidade |
+| **Mapeamento de Modalidade** | `ModalityMapping` | A ligação entre uma Modalidade Importada e a Modalidade que ela representa; é o que torna as ofertas comparáveis (proposto em 2026-07-21 — aguardando ratificação da PO) | ≤1 confirmado por Modalidade Importada; N por Modalidade | — |
+| **Ramo** | `SuretyBranch` | Ramo regulatório do Seguro Garantia sob o qual a Seguradora oferece a modalidade: setor público ou privado; trava do mapeamento (nunca cruza ramos) e insumo da disponibilidade derivada (proposto em 2026-07-21 — aguardando ratificação da PO) | 1 por Modalidade Importada | a Filial (`Branch`) |
 
 Origem: ontologia definida pelo negócio em 2026-05-22 ("Oferta (singular) → Cotações, uma por seguradora"). Se a PO decidir termos diferentes, este arquivo muda ANTES de qualquer código de domínio existir.
 
@@ -76,3 +82,25 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 |---|---|---|---|
 | **Ativa** | `Active` | Corretora habilitada no cadastro de Corretoras | Ativa → Inativa (RN-021) |
 | **Inativa** | `Inactive` | Corretora mantida no cadastro de Corretoras sem bloqueio automático em outros fluxos nesta fase | Inativa → Ativa (RN-021) |
+
+### Modalidade, Grupo de Modalidade, Modalidade Importada e Grupo Importado (proposto em 2026-07-21 — aguardando ratificação da PO)
+
+Mesma situação de operação para os quatro itens do catálogo de Modalidades. Nada é excluído; sai de operação por Inativação (RN-036).
+
+| Status | Nome estável (API) | Significado | Transições permitidas |
+|---|---|---|---|
+| **Ativa** | `Active` | Item em operação no catálogo | Ativa → Inativa (RN-036) |
+| **Inativa** | `Inactive` | Item fora de operação, mantido no catálogo para histórico e retorno | Inativa → Ativa (RN-036) |
+
+> A Modalidade Importada passa a Inativa **automaticamente** quando deixa de vir numa importação bem-sucedida da Seguradora (RN-035); reaparecendo, é reativada.
+
+### Mapeamento de Modalidade (proposto em 2026-07-21 — aguardando ratificação da PO)
+
+| Status | Nome estável (API) | Significado | Transições permitidas |
+|---|---|---|---|
+| **Confirmado** | `Confirmed` | Mapeamento válido para a operação — a Modalidade Importada é oferecida sob a Modalidade | — (troca de Modalidade recria o mapeamento, RN-034) |
+| **Pendente de revisão** | `Pending` | Mapeamento não vale ainda; item está na Fila de Revisão, não é oferecido (RN-033) | Pendente → Confirmado (RN-034) |
+
+> **Ignorada** (`Ignored`) é um marcador da Modalidade Importada (não um status de mapeamento): item que o administrador decidiu não oferecer; não volta à Fila nas próximas importações, mas fica registrado (RN-034).
+
+**Enums do domínio de Modalidades** (não são status de operação, expostos por nome estável): **Ramo** (`SuretyBranch`) — `Public` / `Private`; **Forma de estabelecimento do mapeamento** — `Identifier` / `Similarity` / `Manual` (a forma `Similarity` está fora desta fase — ver [open-decisions.md](open-decisions.md)).
