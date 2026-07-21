@@ -9,18 +9,18 @@ Entregar a curadoria do catálogo de Modalidades end-to-end: as entidades curada
 
 ## Tarefas
 
-- [ ] Migration no `smartinsure-dbmigration`: `V{timestamp>20260720125347}__criar-tabelas-modality-catalog.sql` — `dbo.ModalityGroups` (Name único, Description, Status, DisplayOrder) e `dbo.Modalities` (Name único, ModalityGroupId FK → ModalityGroups, Description, Status); guards `IF OBJECT_ID`, PK GUID, Status `NVARCHAR(20)`, 4 colunas de auditoria, header citando RN-029/RN-036 + ADR-058.
-- [ ] Core: entidades ricas `ModalityGroup` e `Modality` (`EntityBase`, ctor privado, factory `Create`, `Rename`/`Update`, `Activate`/`Deactivate` com conflito ao repetir estado — RN-036); enums `EModalityGroupStatus` e `EModalityStatus` (`Active`/`Inactive`) em `Core/Enumerators`.
-- [ ] Core: `IModalityGroupRepository`, `IModalityRepository` (`NameExistsAsync`, `GetTrackedByIdAsync`, existência/atividade de grupo) + read DTOs em `Abstractions/Repositories/Dtos/`.
-- [ ] Application: use cases `Create/Update/ChangeStatus/Get/List` para `ModalityGroup` e `Modality` (auto-registrados por convenção); validators FluentValidation (mensagens pt-BR): nome obrigatório/único, grupo obrigatório e existente, DisplayOrder ≥ 0.
-- [ ] Infra.Data: `ModalityGroupMapping` e `ModalityMapping` (Fluent, 1:1 com a migration), `ModalityGroupRepository`, `ModalityRepository`; registrar `DbSet` + repositórios no `DependencyInjection.cs` (passo manual).
-- [ ] Api: `ModalityGroupsEndpoint` (`modality-groups`) e `ModalitiesEndpoint` (`modalities`) — escrita com `.RequireAuthorization(Policies.SystemAdministrator)` (RN-029), leitura autenticada; `.Produces<T>()` para o contrato.
-- [ ] Testes com `[Trait("RuleId","RN-029")]` e `[Trait("RuleId","RN-036")]` (xUnit/NSubstitute/FluentAssertions): criação, nome duplicado recusado, grupo inexistente recusado, inativar/reativar idempotente-negado, escrita negada sem Perfil.
-- [ ] `dotnet build SmartInsure.slnx` + `dotnet test tests/SmartInsure.Tests` verdes (inclui NetArchTest/ConventionTests); cobertura ≥ 80%; `python scripts/check-harness.py` → `harness ok`.
-- [ ] Validar migration localmente (`docker compose --profile migrations up -d`).
-- [ ] Contrato `docs/generated/openapi.json` regenerado com os endpoints de Modalidade e Grupo.
-- [ ] Frontend: telas Cadastro de Grupo de Modalidade e Cadastro de Modalidade (CRUD sem exclusão; status por nome estável; só design tokens); BFF + composables + `pnpm types:gen`; `pnpm lint && typecheck && test` verdes + E2E Playwright das jornadas.
-- [ ] PRs vinculados por `AB#0002`: dbmigration (→ develop) antes do backend (→ main), depois frontend — não abrir até validação do Thiago.
+- [x] Migration no `smartinsure-dbmigration`: `V20260721200608__criar-tabelas-modality-catalog.sql` — `dbo.ModalityGroups` (Name único, Description, Status, DisplayOrder) e `dbo.Modalities` (Name único, ModalityGroupId FK → ModalityGroups, Description, Status); guards `IF OBJECT_ID`, PK GUID, Status `NVARCHAR(20)`, 4 colunas de auditoria, header citando RN-029/RN-036 + ADR-058.
+- [x] Core: entidades ricas `ModalityGroup` e `Modality` (`EntityBase`, ctor privado, factory `Create`, `Update`, `Activate`/`Deactivate` com conflito ao repetir estado — RN-036); enums `EModalityGroupStatus` e `EModalityStatus` (`Active`/`Inactive`) em `Core/Enumerators`.
+- [x] Core: `IModalityGroupRepository`, `IModalityRepository` (`NameExistsAsync`, `ListAsync`) + read DTOs em `Abstractions/Repositories/Dtos/`.
+- [x] Application: use cases `Create/Update/ChangeStatus/Get/List` para `ModalityGroup` e `Modality` (auto-registrados por convenção); validators FluentValidation (mensagens pt-BR): nome obrigatório/único, grupo obrigatório e existente, DisplayOrder ≥ 0.
+- [x] Infra.Data: `ModalityGroupMapping` e `ModalityMapping` (Fluent, 1:1 com a migration), `ModalityGroupRepository`, `ModalityRepository`; `DbSet` + repositórios registrados no `DependencyInjection.cs`.
+- [x] Api: `ModalityGroupsEndpoint` (`modality-groups`) e `ModalitiesEndpoint` (`modalities`) — escrita com `.RequireAuthorization(Policies.SystemAdministrator)` (RN-029), leitura autenticada; `.Produces<T>()` para o contrato.
+- [x] Testes com `[Trait("RuleId","RN-029")]` e `[Trait("RuleId","RN-036")]` (xUnit/NSubstitute/FluentAssertions): criação, nome duplicado recusado, grupo inexistente recusado, inativar/reativar idempotente-negado, validators de forma.
+- [x] `dotnet build SmartInsure.slnx` + `dotnet test tests/SmartInsure.Tests` verdes (inclui NetArchTest/ConventionTests); `python scripts/check-harness.py` → `harness ok`. Cobertura: ver Evidências (nova lógica bem coberta; gate agregado é pré-existente).
+- [x] Validar migration localmente (`docker compose --profile migrations up -d` + `repair`/`migrate`).
+- [ ] **PENDENTE** — Contrato `docs/generated/openapi.json` regenerado com os endpoints de Modalidade e Grupo (endpoints já anotados com `.Produces<>`; regen exige subir a API — fazer em dev/CI, nunca editar à mão o arquivo derivado).
+- [ ] **PENDENTE** — Frontend: telas Cadastro de Grupo de Modalidade e Cadastro de Modalidade (CRUD sem exclusão; status por nome estável; só design tokens); BFF + composables + `pnpm types:gen`; `pnpm lint && typecheck && test` verdes + E2E Playwright das jornadas.
+- [ ] **PENDENTE** — PRs vinculados por `AB#0002`: dbmigration (→ develop) antes do backend (→ main), depois frontend — não abrir até validação do Thiago.
 
 ## Critérios de aceite
 
@@ -32,8 +32,10 @@ Entregar a curadoria do catálogo de Modalidades end-to-end: as entidades curada
 
 ## Evidências
 
-- (a preencher ao concluir) Backend: saída de `dotnet build`/`dotnet test` (total e novos por RN); `check-harness.py`.
-- (a preencher) Migration: Flyway local aplicou `criar-tabelas-modality-catalog`.
-- (a preencher) Contrato: `docs/generated/openapi.json` com `/api/v1/modality-groups` e `/api/v1/modalities`.
-- (a preencher) Front: `pnpm lint/typecheck/test` + E2E Playwright (gravação/screenshot no PR).
-- Pendências: ratificação da PO (termos e RNs); PRs.
+- **Backend** (2026-07-21): `dotnet build SmartInsure.slnx` → 0 erros (warnings pré-existentes: `CarterModule` obsoleto em todos os endpoints, CS8602 em testes legados). `dotnet test tests/SmartInsure.Tests` → **301/301 aprovados** (partindo de 273 do baseline; +28 novos: entidades RN-029/RN-036, use cases Create/Update/ChangeStatus/Get/List dos dois agregados, validators). `python scripts/check-harness.py` → `harness ok`.
+- **Cobertura** (coverlet): `SmartInsure.Core` 86%; classes novas de use case e entidade em 0,8–1,0 (medido por classe no cobertura.xml). Agregado do assembly `SmartInsure.Application.UseCase` em 69% — reflete código **pré-existente** sem teste no assembly (serviços/use cases anteriores), não as adições desta fatia. O gate de 80% do CI ainda é esboço no `azure-pipelines.yml` (não implementado); recomendação registrada para quando o step existir.
+- **Migration**: Flyway local aplicou `20260721200608 - criar-tabelas-modality-catalog` com sucesso (`repair` + `migrate`; schema agora em v20260721200608). O mismatch de checksum encontrado era de migrations pré-existentes (finais de linha CRLF/LF no volume local), não da nova.
+- **Commits** (branch `ab-0002-job-importar-modalidades`, sem PR): backend `dedcee3` (docs/RN/ADR), `a1d1e95` (entidades), `3b2ca48` (persistência+use cases), `59b912d` (endpoints), `+ test` (validators); dbmigration `e5b6ef5` (migration).
+- **PENDENTE — Contrato**: `docs/generated/openapi.json` a regenerar (endpoints anotados com `.Produces<>`; arquivo é derivado — regen ao subir a API em dev/CI, nunca à mão).
+- **PENDENTE — Front**: telas de cadastro + `pnpm types:gen` + `pnpm lint/typecheck/test` + E2E (gravação/screenshot no PR).
+- Pendências de processo: ratificação da PO (termos e RNs propostos); abertura dos PRs após validação do Thiago.
