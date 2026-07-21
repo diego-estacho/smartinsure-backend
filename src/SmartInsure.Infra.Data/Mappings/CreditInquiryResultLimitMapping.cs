@@ -20,7 +20,7 @@ public sealed class CreditInquiryResultLimitMapping : IEntityTypeConfiguration<C
             .IsRequired();
 
         builder.Property(limit => limit.GroupType)
-            .HasMaxLength(50)
+            .HasMaxLength(60)
             .IsRequired();
 
         // Índice único: ResultId + GroupName (um grupo por resultado).

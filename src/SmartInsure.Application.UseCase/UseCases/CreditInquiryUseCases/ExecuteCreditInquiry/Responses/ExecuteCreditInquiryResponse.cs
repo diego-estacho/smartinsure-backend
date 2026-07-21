@@ -21,7 +21,6 @@ public sealed record CreditInquiryResultResponse(
     string InsurerName,
     string Status,
     string? FailureReason,
-    string? PolicyHolderName,
     IReadOnlyList<CreditInquiryLimitGroupResponse> Limits);
 
 /// <summary>Limite de crédito agrupado por grupo de modalidade (RN-029).</summary>

@@ -44,7 +44,6 @@ public sealed class GetCreditInquiryUseCase(
                     insurers.TryGetValue(result.InsurerId, out var name) ? name : "Seguradora desconhecida",
                     result.Status.ToString(),
                     result.FailureReason,
-                    inquiry.PolicyHolderName,
                     result.Limits
                         .Select(l => new CreditInquiryLimitGroupResponse(
                             l.GroupName,

@@ -19,6 +19,7 @@ public sealed class CreditInquiryRepository(SmartInsureDbContext dbContext) : IC
         return await dbContext.CreditInquiries
             .AsNoTracking()
             .Include(inquiry => inquiry.Results)
+            .ThenInclude(result => result.Limits)
             .FirstOrDefaultAsync(inquiry => inquiry.Id == id, cancellationToken);
     }
 

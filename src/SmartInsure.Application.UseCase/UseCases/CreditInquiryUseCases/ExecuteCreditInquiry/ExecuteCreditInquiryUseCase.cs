@@ -195,7 +195,6 @@ public sealed class ExecuteCreditInquiryUseCase(
                     insurerName,
                     result.Status.ToString(),
                     result.FailureReason,
-                    inquiry.PolicyHolderName,
                     result.Limits
                         .Select(l => new CreditInquiryLimitGroupResponse(
                             l.GroupName,

@@ -426,4 +426,61 @@ public class PlugV2CalculationEngineTests
         fakeHandler.CapturedRequest!.RequestUri.ToString()
             .Should().Contain("plug.example.com");
     }
+
+    [Fact]
+    [Trait("RuleId", "RN-029")]
+    public async Task GetPolicyHolderLimitsAndRates_DeveAgregarPeloMaiorLimiteDisponivel_QuandoGrupoTemVariasModalidades()
+    {
+        // RN-029: valor do grupo = maior limite entre as modalidades; taxa e revisado vêm da MESMA linha.
+        var responseJson = new
+        {
+            StatusCode = 200,
+            HasError = false,
+            Errors = new object[] { },
+            Response = new[]
+            {
+                new
+                {
+                    Insurance = new { Id = 325, Name = "Essor Seguros S.A.", InsuranceUniqueId = InsurerExternalId },
+                    PolicyHolderName = "SPAL",
+                    PolicyHolderCnpj = PolicyHolderCnpj,
+                    PolicyHolderUniqueId = "338b04ff-1234-5678-abcd-ef0123456789",
+                    CanSetupAProposal = true,
+                    LimitsAndRates = new[]
+                    {
+                        new { BranchName = "Setor Privado", BranchCode = "76", ModalityGroupName = "Tradicional", ModalityGroupType = "GARANTIA_TRADICIONAL", ModalityName = "Licitante", ModalityUniqueId = "m1", LimitRevised = 3_000_000m, AvailableLimit = 2_000_000m, Tax = 0.50m },
+                        new { BranchName = "Setor Público", BranchCode = "75", ModalityGroupName = "Tradicional", ModalityGroupType = "GARANTIA_TRADICIONAL", ModalityName = "Executante Construtor", ModalityUniqueId = "m2", LimitRevised = 5_000_000m, AvailableLimit = 4_500_000m, Tax = 0.43m },
+                        new { BranchName = "Setor Público", BranchCode = "75", ModalityGroupName = "Tradicional", ModalityGroupType = "GARANTIA_TRADICIONAL", ModalityName = "Retenção", ModalityUniqueId = "m3", LimitRevised = 1_000_000m, AvailableLimit = 900_000m, Tax = 0.60m },
+                        new { BranchName = "Setor Público", BranchCode = "75", ModalityGroupName = "Judiciais", ModalityGroupType = "GARANTIA_JUDICIAIS", ModalityName = "Execução Trabalhista", ModalityUniqueId = "m4", LimitRevised = 1_000_000m, AvailableLimit = 800_000m, Tax = 0.97m },
+                    },
+                },
+            },
+        };
+
+        var fakeHandler = new FakeHttpMessageHandler(request =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(responseJson),
+                    System.Text.Encoding.UTF8,
+                    "application/json"),
+            }));
+
+        var engine = BuildEngine(fakeHandler);
+        var result = await engine.GetPolicyHolderLimitsAndRatesAsync(
+            ConnectionParameters, BrokerageCnpj, PolicyHolderCnpj, InsurerExternalId,
+            CancellationToken.None);
+
+        result.Should().NotBeNull();
+        result!.Groups.Should().HaveCount(2);
+
+        var traditional = result.Groups.Single(g => g.GroupName == "Tradicional");
+        traditional.AvailableLimit.Should().Be(4_500_000m);
+        traditional.RevisedLimit.Should().Be(5_000_000m);
+        traditional.Rate.Should().Be(0.43m);
+
+        var judicial = result.Groups.Single(g => g.GroupName == "Judiciais");
+        judicial.AvailableLimit.Should().Be(800_000m);
+        judicial.Rate.Should().Be(0.97m);
+    }
 }

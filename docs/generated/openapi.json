@@ -1963,7 +1963,6 @@
           "insurerName",
           "status",
           "failureReason",
-          "policyHolderName",
           "limits"
         ],
         "type": "object",
@@ -1979,12 +1978,6 @@
             "type": "string"
           },
           "failureReason": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "policyHolderName": {
             "type": [
               "null",
               "string"
