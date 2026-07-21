@@ -19,6 +19,10 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<BrokerageInsurerEnablement> BrokerageInsurerEnablements => Set<BrokerageInsurerEnablement>();
 
+    public DbSet<ModalityGroup> ModalityGroups => Set<ModalityGroup>();
+
+    public DbSet<Modality> Modalities => Set<Modality>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartInsureDbContext).Assembly);

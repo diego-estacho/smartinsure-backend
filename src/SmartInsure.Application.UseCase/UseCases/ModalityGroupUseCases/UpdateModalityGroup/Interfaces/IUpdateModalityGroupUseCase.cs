@@ -1,0 +1,7 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.ModalityGroupUseCases.UpdateModalityGroup.Requests;
+using SmartInsure.Application.UseCase.UseCases.ModalityGroupUseCases.UpdateModalityGroup.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.ModalityGroupUseCases.UpdateModalityGroup.Interfaces;
+
+public interface IUpdateModalityGroupUseCase : IUseCase<UpdateModalityGroupRequest, UpdateModalityGroupResponse>;
