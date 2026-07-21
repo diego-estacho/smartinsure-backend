@@ -41,6 +41,7 @@ Fatia vertical (sem AB# — pendência conhecida): usuário seleciona Corretora 
 - Harness: `python scripts/check-harness.py` → ok (backend e frontend)
 - Contrato: `docs/generated/openapi.json` regenerado com `/api/v1/credit-inquiries` (POST/GET/GET{id}) — +452 linhas
 - Frontend: `npm run lint`, `npm run typecheck`, `vitest run` 83/83, `npm run build` verdes; Playwright 24/24 (8 novos da jornada Consulta de Crédito)
-- Review em dois eixos: 2 bugs (typo `traditionLimit`/`traditionRate` no DTO PlugV2) e 4 comparações frágeis de enum via `ToString()` corrigidos; achados de rota/UI pt-BR descartados (AGENTS.md do front determina pt-BR)
+- Review em dois eixos (Standards ∥ Spec, por repo): pré-PR — typo `traditionLimit`/`traditionRate` no DTO PlugV2 e 4 comparações frágeis de enum corrigidos; pós-PR — CHECK de motivo obrigatório em resultado indisponível na migration, N+1 de Seguradoras no detalhe eliminado (batch), mapping EF com FK/índice de Insurer (anti-drift), teste oco de CNPJ removido, teste real de isolamento RN-030 (Available + Unavailable na mesma consulta), motivo de indisponibilidade visível na tela + 2 cenários E2E novos (RN-029). Descartados: rota/UI pt-BR (regra do repo), HasConversion (convenção global ADR-031), JudicialFiscalRate (prints + "respectivas taxas" da RN-029)
+- Front após fixes: 26/26 E2E · 83/83 unit · lint/typecheck verdes; backend 294/294
 - Migration: validação local via `docker compose --profile migrations up -d` BLOQUEADA (Docker Desktop não inicia nesta máquina) — validar pela aplicação do CI no push pra `develop`
 - Pendência conhecida: AB# não informado; vincular nos PRs quando existir
