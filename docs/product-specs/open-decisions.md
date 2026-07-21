@@ -44,3 +44,9 @@ Dono: PO (gerente de projeto)
 Bloqueia: a funcionalidade de cotar Ofertas (disparo das Cotações a partir de uma Oferta)
 Status: aberta
 Contexto: decidido em 2026-07-19 que esta fase entrega apenas a infraestrutura do Motor de Cálculo (RN-022..RN-024) — Habilitação de Seguradora e resolução do motor por configuração, com PlugV2 como único motor. A direção indicada pelo negócio é que cotar dispare para TODAS as Seguradoras habilitadas da Corretora (uma Cotação por Seguradora, conforme glossário), mas a demanda do cotar ainda não foi especificada; escopo, disparo (todas vs. uma escolhida), momento e experiência do corretor serão definidos na demanda própria. Também segue aberto quem pode gerenciar a Habilitação de Seguradora — nesta fase qualquer usuário autenticado (mesma pendência de perfis da OPEN-03).
+
+## OPEN-08 — Limite utilizado e funcionalidades complementares da Consulta de Crédito
+Dono: PO (gerente de projeto)
+Bloqueia: exibição do limite utilizado e do percentual disponível vs. utilizado na Consulta de Crédito (RN-029); Registro Manual de Limite; Solicitação de Análise de Crédito pela assessoria
+Status: aberta
+Contexto: decidido em 2026-07-20 que esta fase entrega apenas a consulta online de Limites de Crédito com histórico (RN-029..RN-031). O dado de limite utilizado não existe hoje na plataforma nem no retorno do motor (confirmado pelo negócio em 2026-07-20) — a tela não o apresenta como zero. O registro manual de limite (informado por portal, telefone ou e-mail da seguradora) e a solicitação de análise pela assessoria ficaram fora desta entrega e serão especificados em demanda própria. A lista de "tomadores pesquisados recentemente" foi decidida como conveniência de tela, sem persistência — não gera RN.
