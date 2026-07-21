@@ -32,6 +32,7 @@ public class CreateBrokerageInsurerEnablementUseCaseTests
     public CreateBrokerageInsurerEnablementUseCaseTests()
     {
         var services = new ServiceCollection();
+        services.AddHttpClient("PlugV2");
         services.AddKeyedScoped<ICalculationEngine, PlugV2CalculationEngine>(ECalculationEngine.PlugV2);
 
         _useCase = new CreateBrokerageInsurerEnablementUseCase(
