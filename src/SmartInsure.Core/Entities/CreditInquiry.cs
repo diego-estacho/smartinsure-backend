@@ -18,6 +18,9 @@ public sealed class CreditInquiry : EntityBase
 
     public string PolicyHolderCnpj { get; private set; } = string.Empty;
 
+    /// <summary>Razão social do tomador, quando informada por alguma Seguradora (nullable).</summary>
+    public string? PolicyHolderName { get; private set; }
+
     public DateTime QueriedAt { get; private set; }
 
     public IReadOnlyCollection<CreditInquiryResult> Results => _results.AsReadOnly();
@@ -40,5 +43,14 @@ public sealed class CreditInquiry : EntityBase
         }
 
         _results.Add(result);
+    }
+
+    /// <summary>RN-029: define a razão social do tomador quando informada pela Seguradora.</summary>
+    public void SetPolicyHolderName(string? policyHolderName)
+    {
+        if (!string.IsNullOrWhiteSpace(policyHolderName) && string.IsNullOrWhiteSpace(PolicyHolderName))
+        {
+            PolicyHolderName = policyHolderName;
+        }
     }
 }

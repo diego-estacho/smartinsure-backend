@@ -74,19 +74,42 @@ public class PlugV2CalculationEngineTests
     [Fact]
     public async Task GetPolicyHolderLimitsAndRatesAsync_DeveMapearResposta_QuandoRetorna200ComJsonValido()
     {
-        var validUntil = DateTime.UtcNow.AddMonths(12);
         var responseJson = new
         {
-            success = true,
-            message = "Success",
-            traditionalLimit = 1000m,
-            traditionalRate = 0.05m,
-            judicialLimit = 2000m,
-            judicialRate = 0.06m,
-            judicialFiscalRate = 0.07m,
-            financialLimit = 3000m,
-            financialRate = 0.08m,
-            limitValidUntil = validUntil,
+            StatusCode = 200,
+            HasError = false,
+            Errors = new object[] { },
+            Response = new[]
+            {
+                new
+                {
+                    Insurance = new
+                    {
+                        Id = 325,
+                        Name = "Essor Seguros S.A.",
+                        InsuranceUniqueId = InsurerExternalId,
+                    },
+                    PolicyHolderName = "SPAL",
+                    PolicyHolderCnpj = PolicyHolderCnpj,
+                    PolicyHolderUniqueId = "338b04ff-1234-5678-abcd-ef0123456789",
+                    CanSetupAProposal = true,
+                    LimitsAndRates = new[]
+                    {
+                        new
+                        {
+                            BranchName = "Garantia",
+                            BranchCode = "76",
+                            ModalityGroupName = "Tradicional",
+                            ModalityGroupType = "GARANTIA_TRADICIONAL",
+                            ModalityName = "Tradicional",
+                            ModalityUniqueId = "1a44d0ef-1234-5678-abcd-ef0123456789",
+                            LimitRevised = 1000m,
+                            AvailableLimit = 1000m,
+                            Tax = 0.05m,
+                        },
+                    },
+                }
+            },
         };
 
         var fakeHandler = new FakeHttpMessageHandler(async request =>
@@ -110,14 +133,11 @@ public class PlugV2CalculationEngineTests
             CancellationToken.None);
 
         result.Should().NotBeNull();
-        result!.TraditionalLimit.Should().Be(1000m);
-        result.TraditionalRate.Should().Be(0.05m);
-        result.JudicialLimit.Should().Be(2000m);
-        result.JudicialRate.Should().Be(0.06m);
-        result.JudicialFiscalRate.Should().Be(0.07m);
-        result.FinancialLimit.Should().Be(3000m);
-        result.FinancialRate.Should().Be(0.08m);
-        result.LimitValidUntil.Should().Be(validUntil);
+        result!.Groups.Should().HaveCount(1);
+        result.Groups[0].GroupName.Should().Be("Tradicional");
+        result.Groups[0].AvailableLimit.Should().Be(1000m);
+        result.Groups[0].RevisedLimit.Should().Be(1000m);
+        result.Groups[0].Rate.Should().Be(0.05m);
     }
 
     [Fact]
@@ -129,7 +149,7 @@ public class PlugV2CalculationEngineTests
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    JsonSerializer.Serialize(new { success = true }),
+                    JsonSerializer.Serialize(new { StatusCode = 200, HasError = false, Errors = new object[] { }, Response = new object[] { } }),
                     System.Text.Encoding.UTF8,
                     "application/json"),
             };
@@ -154,7 +174,7 @@ public class PlugV2CalculationEngineTests
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    JsonSerializer.Serialize(new { success = true }),
+                    JsonSerializer.Serialize(new { StatusCode = 200, HasError = false, Errors = new object[] { }, Response = new object[] { } }),
                     System.Text.Encoding.UTF8,
                     "application/json"),
             };
@@ -184,7 +204,7 @@ public class PlugV2CalculationEngineTests
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    JsonSerializer.Serialize(new { success = false, message = "Not found" }),
+                    JsonSerializer.Serialize(new { StatusCode = 200, HasError = true, Errors = new[] { "Not found" }, Response = (object[])null }),
                     System.Text.Encoding.UTF8,
                     "application/json"),
             };
@@ -272,8 +292,8 @@ public class PlugV2CalculationEngineTests
         var fakeHandler = new FakeHttpMessageHandler(async request =>
         {
             await Task.Delay(0);
-            // Missing the required "success" field
-            var invalidJson = new { message = "Missing success" };
+            // Missing required fields like StatusCode, Response, etc.
+            var invalidJson = new { message = "Missing fields" };
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(
@@ -297,10 +317,40 @@ public class PlugV2CalculationEngineTests
     {
         var responseJson = new
         {
-            success = true,
-            traditionalLimit = 1000m,
-            traditionalRate = 0.05m,
-            // Judicial and Financial omitted - they should be null
+            StatusCode = 200,
+            HasError = false,
+            Errors = new object[] { },
+            Response = new[]
+            {
+                new
+                {
+                    Insurance = new
+                    {
+                        Id = 325,
+                        Name = "Essor Seguros S.A.",
+                        InsuranceUniqueId = InsurerExternalId,
+                    },
+                    PolicyHolderName = "SPAL",
+                    PolicyHolderCnpj = PolicyHolderCnpj,
+                    PolicyHolderUniqueId = "338b04ff-1234-5678-abcd-ef0123456789",
+                    CanSetupAProposal = true,
+                    LimitsAndRates = new[]
+                    {
+                        new
+                        {
+                            BranchName = "Garantia",
+                            BranchCode = "76",
+                            ModalityGroupName = "Tradicional",
+                            ModalityGroupType = "GARANTIA_TRADICIONAL",
+                            ModalityName = "Tradicional",
+                            ModalityUniqueId = "1a44d0ef-1234-5678-abcd-ef0123456789",
+                            LimitRevised = 1000m,
+                            AvailableLimit = 1000m,
+                            Tax = 0.05m,
+                        },
+                    },
+                }
+            },
         };
 
         var fakeHandler = new FakeHttpMessageHandler(async request =>
@@ -324,33 +374,30 @@ public class PlugV2CalculationEngineTests
             CancellationToken.None);
 
         result.Should().NotBeNull();
-        result!.TraditionalLimit.Should().Be(1000m);
-        result.JudicialLimit.Should().BeNull();
-        result.FinancialLimit.Should().BeNull();
+        result!.Groups.Should().HaveCount(1);
+        result.Groups[0].GroupName.Should().Be("Tradicional");
+        result.Groups[0].AvailableLimit.Should().Be(1000m);
     }
 
     [Fact]
-    public async Task GetPolicyHolderLimitsAndRatesAsync_DeveLancarCalculationEngineException_QuandoTimeoutOcorre()
+    public async Task GetPolicyHolderLimitsAndRates_DeveRetornarNulo_QuandoResponseVazio()
     {
-        var fakeHandler = new FakeHttpMessageHandler(async request =>
-        {
-            await Task.Delay(100); // Simulate delay (won't actually timeout in this test setup)
-            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        // RN-030: retorno sem nenhuma seguradora vira indisponibilidade, nunca resultado válido.
+        var fakeHandler = new FakeHttpMessageHandler(request =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    JsonSerializer.Serialize(new { success = true }),
+                    JsonSerializer.Serialize(new { StatusCode = 200, HasError = false, Errors = new object[] { }, Response = new object[] { } }),
                     System.Text.Encoding.UTF8,
                     "application/json"),
-            };
-        });
+            }));
 
         var engine = BuildEngine(fakeHandler);
-        // This test is more about the handler setup; actual timeout testing would need real HTTP setup
         var result = await engine.GetPolicyHolderLimitsAndRatesAsync(
             ConnectionParameters, BrokerageCnpj, PolicyHolderCnpj, InsurerExternalId,
             CancellationToken.None);
 
-        result.Should().NotBeNull();
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -362,7 +409,7 @@ public class PlugV2CalculationEngineTests
             return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    JsonSerializer.Serialize(new { success = true }),
+                    JsonSerializer.Serialize(new { StatusCode = 200, HasError = false, Errors = new object[] { }, Response = new object[] { } }),
                     System.Text.Encoding.UTF8,
                     "application/json"),
             };

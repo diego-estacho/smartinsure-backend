@@ -18,6 +18,9 @@ public sealed class CreditInquiryMapping : IEntityTypeConfiguration<CreditInquir
             .HasMaxLength(20)
             .IsRequired();
 
+        builder.Property(inquiry => inquiry.PolicyHolderName)
+            .HasMaxLength(200);
+
         builder.Property(inquiry => inquiry.QueriedAt).IsRequired();
 
         // RN-031: histórico consultável por CNPJ e por Corretora.

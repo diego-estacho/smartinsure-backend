@@ -140,7 +140,21 @@ public class ExecuteCreditInquiryUseCaseTests
                 throw new CalculationEngineException("Motor indisponível para a seguradora."));
         engine.GetPolicyHolderLimitsAndRatesAsync(
                 Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string>(), "InsurerId456", Arg.Any<CancellationToken>())
-            .Returns(new PolicyHolderLimitsAndRates { TraditionalLimit = 1000m, TraditionalRate = 0.6m });
+            .Returns(new PolicyHolderLimitsAndRates
+            {
+                PolicyHolderName = "Test Holder",
+                Groups = new[]
+                {
+                    new PolicyHolderLimitGroup
+                    {
+                        GroupName = "Tradicional",
+                        GroupType = "GARANTIA_TRADICIONAL",
+                        AvailableLimit = 1000m,
+                        RevisedLimit = 1000m,
+                        Rate = 0.6m
+                    }
+                }.ToList()
+            });
 
         var services = new ServiceCollection();
         services.AddKeyedSingleton(ECalculationEngine.PlugV2, engine);
@@ -153,7 +167,7 @@ public class ExecuteCreditInquiryUseCaseTests
         // RN-030: falha isolada — um Unavailable com motivo, um Available com limites.
         response.Results.Should().HaveCount(2);
         response.Results.Should().ContainSingle(r => r.Status == "Unavailable" && r.FailureReason != null);
-        response.Results.Should().ContainSingle(r => r.Status == "Available" && r.TraditionalLimit == 1000m);
+        response.Results.Should().ContainSingle(r => r.Status == "Available" && r.Limits.First(l => l.GroupName == "Tradicional").AvailableLimit == 1000m);
         // RN-031: a consulta persiste com ambos os resultados.
         await _creditInquiryRepository.Received(1)
             .AddAsync(Arg.Is<CreditInquiry>(i => i.Results.Count == 2), Arg.Any<CancellationToken>());

@@ -5,6 +5,7 @@ public sealed record ExecuteCreditInquiryResponse(
     Guid CreditInquiryId,
     DateTime QueriedAt,
     string PolicyHolderCnpj,
+    string? PolicyHolderName,
     CreditInquirySummary Summary,
     IReadOnlyList<CreditInquiryResultResponse> Results);
 
@@ -14,17 +15,19 @@ public sealed record CreditInquirySummary(
     int InsurersAvailable,
     decimal ConsolidatedLimit);
 
-/// <summary>Resultado individual por Seguradora (status, limites, taxas, validade).</summary>
+/// <summary>Resultado individual por Seguradora (status, limites por grupo de modalidade).</summary>
 public sealed record CreditInquiryResultResponse(
     Guid InsurerId,
     string InsurerName,
     string Status,
     string? FailureReason,
-    decimal? TraditionalLimit,
-    decimal? TraditionalRate,
-    decimal? JudicialLimit,
-    decimal? JudicialRate,
-    decimal? JudicialFiscalRate,
-    decimal? FinancialLimit,
-    decimal? FinancialRate,
-    DateTime? LimitValidUntil);
+    string? PolicyHolderName,
+    IReadOnlyList<CreditInquiryLimitGroupResponse> Limits);
+
+/// <summary>Limite de crédito agrupado por grupo de modalidade (RN-029).</summary>
+public sealed record CreditInquiryLimitGroupResponse(
+    string GroupName,
+    string GroupType,
+    decimal AvailableLimit,
+    decimal UsedLimit,
+    decimal Rate);

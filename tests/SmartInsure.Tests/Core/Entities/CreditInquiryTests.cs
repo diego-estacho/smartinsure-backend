@@ -49,11 +49,16 @@ public class CreditInquiryTests
     {
         var inquiry = CreditInquiry.Create(BrokerageId, PolicyHolderCnpj);
         var insurer1Id = Guid.CreateVersion7();
+        var resultId = Guid.CreateVersion7();
 
-        var result = CreditInquiryResult.Available(
-            inquiry.Id, insurer1Id,
-            1000m, 0.05m, 2000m, 0.06m, 0.07m, 3000m, 0.08m,
-            DateTime.UtcNow.AddMonths(12));
+        var limits = new[]
+        {
+            CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m),
+            CreditInquiryResultLimit.Create("Judicial", "GARANTIA_JUDICIAL", 2000m, 2000m, 0.06m),
+            CreditInquiryResultLimit.Create("Financeira", "GARANTIA_FINANCEIRA", 3000m, 3000m, 0.08m),
+        };
+
+        var result = CreditInquiryResult.Available(inquiry.Id, insurer1Id, limits);
 
         inquiry.AddResult(result);
 
@@ -67,11 +72,14 @@ public class CreditInquiryTests
         var inquiry = CreditInquiry.Create(BrokerageId, PolicyHolderCnpj);
         var insurer1Id = Guid.CreateVersion7();
         var insurer2Id = Guid.CreateVersion7();
+        var resultId1 = Guid.CreateVersion7();
 
-        var result1 = CreditInquiryResult.Available(
-            inquiry.Id, insurer1Id,
-            1000m, 0.05m, null, null, null, null, null,
-            DateTime.UtcNow.AddMonths(12));
+        var limits1 = new[]
+        {
+            CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m),
+        };
+
+        var result1 = CreditInquiryResult.Available(inquiry.Id, insurer1Id, limits1);
 
         var result2 = CreditInquiryResult.Unavailable(
             inquiry.Id, insurer2Id,
@@ -91,11 +99,14 @@ public class CreditInquiryTests
         var inquiry = CreditInquiry.Create(BrokerageId, PolicyHolderCnpj);
         var outherInquiryId = Guid.CreateVersion7();
         var insurerId = Guid.CreateVersion7();
+        var resultId = Guid.CreateVersion7();
 
-        var resultWithWrongInquiryId = CreditInquiryResult.Available(
-            outherInquiryId, insurerId,
-            1000m, 0.05m, null, null, null, null, null,
-            DateTime.UtcNow.AddMonths(12));
+        var limits = new[]
+        {
+            CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m),
+        };
+
+        var resultWithWrongInquiryId = CreditInquiryResult.Available(outherInquiryId, insurerId, limits);
 
         var act = () => inquiry.AddResult(resultWithWrongInquiryId);
 

@@ -35,7 +35,8 @@ public sealed class PlugV2CalculationEngine(IHttpClientFactory httpClientFactory
         var config = PlugV2ConnectionParameters.Parse(connectionParameters);
 
         var client = httpClientFactory.CreateClient(ClientName);
-        client.BaseAddress = new Uri(config.BaseUrl);
+        // Barra final preserva o caminho do gateway (ex.: /qa/garantia/plugv2) na resolução da URI relativa.
+        client.BaseAddress = new Uri(config.BaseUrl.EndsWith('/') ? config.BaseUrl : config.BaseUrl + "/");
         client.Timeout = TimeSpan.FromSeconds(TimeoutSeconds);
 
         var request = new PlugV2GetPolicyHolderLimitsAndRatesRequest
@@ -47,7 +48,7 @@ public sealed class PlugV2CalculationEngine(IHttpClientFactory httpClientFactory
 
         try
         {
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/GetPolicyHolderLimitsAndRates")
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "GetPolicyHolderLimitsAndRates")
             {
                 Content = new StringContent(
                     JsonSerializer.Serialize(request, JsonOptions),
@@ -70,21 +71,40 @@ public sealed class PlugV2CalculationEngine(IHttpClientFactory httpClientFactory
             var response = JsonSerializer.Deserialize<PlugV2GetPolicyHolderLimitsAndRatesResponse>(
                 responseContent, JsonOptions);
 
-            if (response is null || !response.Success)
+            // RN-030: resposta nula ou com erro => indisponível.
+            if (response is null || response.HasError || response.Response?.Count == 0)
             {
                 return null;
             }
 
+            // Localizar resposta da Seguradora pelo InsuranceUniqueId (case-insensitive).
+            var insurerResponse = response.Response!.FirstOrDefault(r =>
+                r.Insurance?.InsuranceUniqueId?.Equals(insurerExternalId, StringComparison.OrdinalIgnoreCase) == true);
+
+            // RN-030: Seguradora não encontrada na resposta => indisponível.
+            if (insurerResponse is null || insurerResponse.LimitsAndRates?.Count == 0)
+            {
+                return null;
+            }
+
+            // RN-029: agregar LimitsAndRates por ModalityGroupName, selecionando a linha com maior AvailableLimit.
+            var groups = insurerResponse.LimitsAndRates
+                .GroupBy(l => l.ModalityGroupName)
+                .Select(g => g.OrderByDescending(l => l.AvailableLimit).First())
+                .Select(l => new PolicyHolderLimitGroup
+                {
+                    GroupName = l.ModalityGroupName,
+                    GroupType = l.ModalityGroupType,
+                    AvailableLimit = l.AvailableLimit,
+                    RevisedLimit = l.LimitRevised,
+                    Rate = l.Tax,
+                })
+                .ToList();
+
             return new PolicyHolderLimitsAndRates
             {
-                TraditionalLimit = response.TraditionalLimit,
-                TraditionalRate = response.TraditionalRate,
-                JudicialLimit = response.JudicialLimit,
-                JudicialRate = response.JudicialRate,
-                JudicialFiscalRate = response.JudicialFiscalRate,
-                FinancialLimit = response.FinancialLimit,
-                FinancialRate = response.FinancialRate,
-                LimitValidUntil = response.LimitValidUntil,
+                PolicyHolderName = insurerResponse.PolicyHolderName,
+                Groups = groups.AsReadOnly(),
             };
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

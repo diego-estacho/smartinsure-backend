@@ -77,8 +77,11 @@ public sealed class ExecuteCreditInquiryUseCase(
         // Coleta resultados (sempre sucesso, mesmo com falhas isoladas — RN-030).
         foreach (var task in motorTasks)
         {
-            var result = await task;
+            var (result, policyHolderName) = await task;
             creditInquiry.AddResult(result);
+
+            // RN-029: quando a Seguradora informar a razão social do tomador, ela é registrada.
+            creditInquiry.SetPolicyHolderName(policyHolderName);
         }
 
         // RN-031: persiste histórico imutável com todos os resultados.
@@ -89,7 +92,7 @@ public sealed class ExecuteCreditInquiryUseCase(
         return BuildResponse(creditInquiry, insurerData);
     }
 
-    private async Task<CreditInquiryResult> ExecuteMotorCallAsync(
+    private async Task<(CreditInquiryResult Result, string? PolicyHolderName)> ExecuteMotorCallAsync(
         Guid creditInquiryId,
         Guid insurerId,
         (Insurer insurer, ICalculationEngine engine, string connectionParams) data,
@@ -102,15 +105,15 @@ public sealed class ExecuteCreditInquiryUseCase(
         // RN-010/RN-023: Insurer inativa → Unavailable.
         if (insurer.Status != EInsurerStatus.Active)
         {
-            return CreditInquiryResult.Unavailable(
-                creditInquiryId, insurerId, "Seguradora está inativa no catálogo.");
+            return (CreditInquiryResult.Unavailable(
+                creditInquiryId, insurerId, "Seguradora está inativa no catálogo."), null);
         }
 
         // RN-023: sem ReferenceExternalId → Unavailable.
         if (string.IsNullOrWhiteSpace(insurer.ReferenceExternalId))
         {
-            return CreditInquiryResult.Unavailable(
-                creditInquiryId, insurerId, "Identificador externo da seguradora não configurado.");
+            return (CreditInquiryResult.Unavailable(
+                creditInquiryId, insurerId, "Identificador externo da seguradora não configurado."), null);
         }
 
         try
@@ -126,21 +129,24 @@ public sealed class ExecuteCreditInquiryUseCase(
             // RN-030: resposta nula (indisponibilidade no motor) → Unavailable.
             if (limits is null)
             {
-                return CreditInquiryResult.Unavailable(
-                    creditInquiryId, insurerId, "Seguradora indisponível ou tomador sem limite de crédito.");
+                return (CreditInquiryResult.Unavailable(
+                    creditInquiryId, insurerId, "Seguradora indisponível ou tomador sem limite de crédito."), null);
             }
 
-            return CreditInquiryResult.Available(
-                creditInquiryId,
-                insurerId,
-                limits.TraditionalLimit,
-                limits.TraditionalRate,
-                limits.JudicialLimit,
-                limits.JudicialRate,
-                limits.JudicialFiscalRate,
-                limits.FinancialLimit,
-                limits.FinancialRate,
-                limits.LimitValidUntil);
+            // RN-029: cria CreditInquiryResult com limites agrupados por grupo de modalidade.
+            var resultLimits = limits.Groups
+                .Select(g => CreditInquiryResultLimit.Create(
+                    g.GroupName,
+                    g.GroupType,
+                    g.AvailableLimit,
+                    g.RevisedLimit,
+                    g.Rate))
+                .ToList();
+
+            // Available() vai corrigir o ID dos limites para corresponder ao ID do resultado criado.
+            var result = CreditInquiryResult.Available(creditInquiryId, insurerId, resultLimits);
+
+            return (result, limits.PolicyHolderName);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -149,8 +155,8 @@ public sealed class ExecuteCreditInquiryUseCase(
         catch (CalculationEngineException exception)
         {
             // RN-030: exceção de integração (não é negócio) → Unavailable com motivo.
-            return CreditInquiryResult.Unavailable(
-                creditInquiryId, insurerId, $"Falha na integração: {exception.Message}");
+            return (CreditInquiryResult.Unavailable(
+                creditInquiryId, insurerId, $"Falha na integração: {exception.Message}"), null);
         }
     }
 
@@ -166,15 +172,15 @@ public sealed class ExecuteCreditInquiryUseCase(
     {
         var available = inquiry.Results.Where(r => r.Status == ECreditInquiryResultStatus.Available).ToList();
 
-        // Consolidado = soma do MAIOR limite entre modalidades POR seguradora disponível.
+        // RN-029: consolidado = soma do MAIOR AvailableLimit entre grupos POR seguradora disponível.
         var consolidatedLimit = available
             .Sum(r =>
             {
-                var max = new[] { r.TraditionalLimit, r.JudicialLimit, r.FinancialLimit }
-                    .Where(l => l.HasValue)
+                var maxLimit = r.Limits
+                    .Select(l => l.AvailableLimit)
                     .DefaultIfEmpty(0)
                     .Max();
-                return max ?? 0;
+                return maxLimit;
             });
 
         var resultResponses = inquiry.Results
@@ -189,14 +195,15 @@ public sealed class ExecuteCreditInquiryUseCase(
                     insurerName,
                     result.Status.ToString(),
                     result.FailureReason,
-                    result.TraditionalLimit,
-                    result.TraditionalRate,
-                    result.JudicialLimit,
-                    result.JudicialRate,
-                    result.JudicialFiscalRate,
-                    result.FinancialLimit,
-                    result.FinancialRate,
-                    result.LimitValidUntil);
+                    inquiry.PolicyHolderName,
+                    result.Limits
+                        .Select(l => new CreditInquiryLimitGroupResponse(
+                            l.GroupName,
+                            l.GroupType,
+                            l.AvailableLimit,
+                            Math.Max(0, l.RevisedLimit - l.AvailableLimit),
+                            l.Rate))
+                        .ToList());
             })
             .ToList();
 
@@ -204,6 +211,7 @@ public sealed class ExecuteCreditInquiryUseCase(
             inquiry.Id,
             inquiry.QueriedAt,
             inquiry.PolicyHolderCnpj,
+            inquiry.PolicyHolderName,
             new CreditInquirySummary(
                 inquiry.Results.Count,
                 available.Count,

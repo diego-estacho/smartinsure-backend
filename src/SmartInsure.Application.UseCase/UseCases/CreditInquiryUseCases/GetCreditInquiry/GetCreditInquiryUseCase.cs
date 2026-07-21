@@ -26,15 +26,15 @@ public sealed class GetCreditInquiryUseCase(
 
         var available = inquiry.Results.Where(r => r.Status == ECreditInquiryResultStatus.Available).ToList();
 
-        // Consolidado = soma do MAIOR limite entre modalidades POR seguradora disponível.
+        // RN-029: consolidado = soma do MAIOR AvailableLimit entre grupos POR seguradora disponível.
         var consolidatedLimit = available
             .Sum(r =>
             {
-                var max = new[] { r.TraditionalLimit, r.JudicialLimit, r.FinancialLimit }
-                    .Where(l => l.HasValue)
+                var maxLimit = r.Limits
+                    .Select(l => l.AvailableLimit)
                     .DefaultIfEmpty(0)
                     .Max();
-                return max ?? 0;
+                return maxLimit;
             });
 
         var resultResponses = inquiry.Results
@@ -44,20 +44,22 @@ public sealed class GetCreditInquiryUseCase(
                     insurers.TryGetValue(result.InsurerId, out var name) ? name : "Seguradora desconhecida",
                     result.Status.ToString(),
                     result.FailureReason,
-                    result.TraditionalLimit,
-                    result.TraditionalRate,
-                    result.JudicialLimit,
-                    result.JudicialRate,
-                    result.JudicialFiscalRate,
-                    result.FinancialLimit,
-                    result.FinancialRate,
-                    result.LimitValidUntil))
+                    inquiry.PolicyHolderName,
+                    result.Limits
+                        .Select(l => new CreditInquiryLimitGroupResponse(
+                            l.GroupName,
+                            l.GroupType,
+                            l.AvailableLimit,
+                            Math.Max(0, l.RevisedLimit - l.AvailableLimit),
+                            l.Rate))
+                        .ToList()))
             .ToList();
 
         return new GetCreditInquiryResponse(
             inquiry.Id,
             inquiry.QueriedAt,
             inquiry.PolicyHolderCnpj,
+            inquiry.PolicyHolderName,
             new CreditInquirySummary(
                 inquiry.Results.Count,
                 available.Count,

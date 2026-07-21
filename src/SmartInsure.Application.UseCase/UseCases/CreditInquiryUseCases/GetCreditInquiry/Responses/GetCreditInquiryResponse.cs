@@ -7,5 +7,6 @@ public sealed record GetCreditInquiryResponse(
     Guid CreditInquiryId,
     DateTime QueriedAt,
     string PolicyHolderCnpj,
+    string? PolicyHolderName,
     CreditInquirySummary Summary,
     IReadOnlyList<CreditInquiryResultResponse> Results);

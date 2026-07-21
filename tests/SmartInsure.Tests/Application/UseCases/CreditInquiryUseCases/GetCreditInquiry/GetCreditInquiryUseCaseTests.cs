@@ -50,10 +50,16 @@ public class GetCreditInquiryUseCaseTests
         var inquiry = CreditInquiry.Create(BrokerageId, ValidCnpj);
         typeof(EntityBase).GetProperty("Id")!.SetValue(inquiry, inquiryId);
 
+        var resultId = Guid.CreateVersion7();
         var availableResult = CreditInquiryResult.Available(
             inquiryId, Insurer1Id,
-            1000m, 0.05m, 2000m, 0.06m, 0.07m, 3000m, 0.08m,
-            DateTime.UtcNow.AddMonths(12));
+            new[]
+            {
+                CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m),
+                CreditInquiryResultLimit.Create("Judicial", "GARANTIA_JUDICIAL", 2000m, 2000m, 0.06m),
+                CreditInquiryResultLimit.Create("JudicialFiscal", "GARANTIA_JUDICIAL_FISCAL", 2000m, 2000m, 0.07m),
+                CreditInquiryResultLimit.Create("Financial", "GARANTIA_FINANCEIRA", 3000m, 3000m, 0.08m)
+            });
 
         inquiry.AddResult(availableResult);
 
@@ -82,16 +88,28 @@ public class GetCreditInquiryUseCaseTests
         typeof(EntityBase).GetProperty("Id")!.SetValue(inquiry, inquiryId);
 
         // Insurer 1: Traditional=1000, Judicial=2000, Financial=500 -> max=2000
+        var resultId1 = Guid.CreateVersion7();
         var result1 = CreditInquiryResult.Available(
             inquiryId, Insurer1Id,
-            1000m, 0.05m, 2000m, 0.06m, 0.07m, 500m, 0.08m,
-            DateTime.UtcNow.AddMonths(12));
+            new[]
+            {
+                CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m),
+                CreditInquiryResultLimit.Create("Judicial", "GARANTIA_JUDICIAL", 2000m, 2000m, 0.06m),
+                CreditInquiryResultLimit.Create("JudicialFiscal", "GARANTIA_JUDICIAL_FISCAL", 2000m, 2000m, 0.07m),
+                CreditInquiryResultLimit.Create("Financial", "GARANTIA_FINANCEIRA", 500m, 500m, 0.08m)
+            });
 
         // Insurer 2: Traditional=3000, Judicial=1500, Financial=2500 -> max=3000
+        var resultId2 = Guid.CreateVersion7();
         var result2 = CreditInquiryResult.Available(
             inquiryId, Insurer2Id,
-            3000m, 0.05m, 1500m, 0.06m, 0.07m, 2500m, 0.08m,
-            DateTime.UtcNow.AddMonths(12));
+            new[]
+            {
+                CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 3000m, 3000m, 0.05m),
+                CreditInquiryResultLimit.Create("Judicial", "GARANTIA_JUDICIAL", 1500m, 1500m, 0.06m),
+                CreditInquiryResultLimit.Create("JudicialFiscal", "GARANTIA_JUDICIAL_FISCAL", 1500m, 1500m, 0.07m),
+                CreditInquiryResultLimit.Create("Financial", "GARANTIA_FINANCEIRA", 2500m, 2500m, 0.08m)
+            });
 
         inquiry.AddResult(result1);
         inquiry.AddResult(result2);
@@ -121,10 +139,13 @@ public class GetCreditInquiryUseCaseTests
         var inquiry = CreditInquiry.Create(BrokerageId, ValidCnpj);
         typeof(EntityBase).GetProperty("Id")!.SetValue(inquiry, inquiryId);
 
+        var resultId = Guid.CreateVersion7();
         var availableResult = CreditInquiryResult.Available(
             inquiryId, Insurer1Id,
-            1000m, 0.05m, null, null, null, null, null,
-            DateTime.UtcNow.AddMonths(6));
+            new[]
+            {
+                CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m)
+            });
 
         var unavailableResult = CreditInquiryResult.Unavailable(
             inquiryId, Insurer2Id,
@@ -158,10 +179,13 @@ public class GetCreditInquiryUseCaseTests
         var inquiry = CreditInquiry.Create(BrokerageId, ValidCnpj);
         typeof(EntityBase).GetProperty("Id")!.SetValue(inquiry, inquiryId);
 
+        var resultId = Guid.CreateVersion7();
         var result = CreditInquiryResult.Available(
             inquiryId, Insurer1Id,
-            1000m, 0.05m, null, null, null, null, null,
-            DateTime.UtcNow.AddMonths(6));
+            new[]
+            {
+                CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m)
+            });
 
         inquiry.AddResult(result);
 

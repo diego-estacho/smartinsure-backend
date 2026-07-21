@@ -15,52 +15,65 @@ public class CreditInquiryResultTests
     [Fact]
     public void Available_DeveCriarResultadoComStatus_QuandoChamaFactory()
     {
-        var validUntil = DateTime.UtcNow.AddMonths(12);
+        var resultId = Guid.CreateVersion7();
         var result = CreditInquiryResult.Available(
             CreditInquiryId, InsurerId,
-            1000m, 0.05m, 2000m, 0.06m, 0.07m, 3000m, 0.08m,
-            validUntil);
+            new[]
+            {
+                CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m),
+                CreditInquiryResultLimit.Create("Judicial", "GARANTIA_JUDICIAL", 2000m, 2000m, 0.06m),
+                CreditInquiryResultLimit.Create("JudicialFiscal", "GARANTIA_JUDICIAL_FISCAL", 2000m, 2000m, 0.07m),
+                CreditInquiryResultLimit.Create("Financial", "GARANTIA_FINANCEIRA", 3000m, 3000m, 0.08m)
+            });
 
         result.CreditInquiryId.Should().Be(CreditInquiryId);
         result.InsurerId.Should().Be(InsurerId);
         result.Status.Should().Be(ECreditInquiryResultStatus.Available);
         result.FailureReason.Should().BeNull();
-        result.TraditionalLimit.Should().Be(1000m);
-        result.TraditionalRate.Should().Be(0.05m);
-        result.JudicialLimit.Should().Be(2000m);
-        result.JudicialRate.Should().Be(0.06m);
-        result.JudicialFiscalRate.Should().Be(0.07m);
-        result.FinancialLimit.Should().Be(3000m);
-        result.FinancialRate.Should().Be(0.08m);
-        result.LimitValidUntil.Should().Be(validUntil);
+        result.Limits.First(l => l.GroupName == "Tradicional").AvailableLimit.Should().Be(1000m);
+        result.Limits.First(l => l.GroupName == "Tradicional").Rate.Should().Be(0.05m);
+        result.Limits.First(l => l.GroupName == "Judicial").AvailableLimit.Should().Be(2000m);
+        result.Limits.First(l => l.GroupName == "Judicial").Rate.Should().Be(0.06m);
+        result.Limits.First(l => l.GroupName == "JudicialFiscal").Rate.Should().Be(0.07m);
+        result.Limits.First(l => l.GroupName == "Financial").AvailableLimit.Should().Be(3000m);
+        result.Limits.First(l => l.GroupName == "Financial").Rate.Should().Be(0.08m);
     }
 
     [Fact]
     public void Available_DevePermitirModalidadesOpcionais_QuandoNullsPassados()
     {
+        var resultId = Guid.CreateVersion7();
         var result = CreditInquiryResult.Available(
             CreditInquiryId, InsurerId,
-            1000m, 0.05m,
-            null, null, null, // Judicial (optional)
-            null, null, // Financial (optional)
-            DateTime.UtcNow.AddMonths(6));
+            new[]
+            {
+                CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m)
+            });
 
         result.Status.Should().Be(ECreditInquiryResultStatus.Available);
-        result.TraditionalLimit.Should().Be(1000m);
-        result.JudicialLimit.Should().BeNull();
-        result.FinancialLimit.Should().BeNull();
+        result.Limits.First(l => l.GroupName == "Tradicional").AvailableLimit.Should().Be(1000m);
+        result.Limits.Any(l => l.GroupName == "Judicial").Should().BeFalse();
+        result.Limits.Any(l => l.GroupName == "Financial").Should().BeFalse();
     }
 
     [Fact]
     public void Available_DeveGerarIdUnico_QuandoMultiplosResultadosCriados()
     {
+        var resultId1 = Guid.CreateVersion7();
         var result1 = CreditInquiryResult.Available(
             CreditInquiryId, InsurerId,
-            1000m, 0.05m, null, null, null, null, null, null);
+            new[]
+            {
+                CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m)
+            });
 
+        var resultId2 = Guid.CreateVersion7();
         var result2 = CreditInquiryResult.Available(
             CreditInquiryId, InsurerId,
-            1000m, 0.05m, null, null, null, null, null, null);
+            new[]
+            {
+                CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m)
+            });
 
         result1.Id.Should().NotBe(result2.Id);
     }
@@ -75,11 +88,7 @@ public class CreditInquiryResultTests
         result.InsurerId.Should().Be(InsurerId);
         result.Status.Should().Be(ECreditInquiryResultStatus.Unavailable);
         result.FailureReason.Should().Be(failureReason);
-        result.TraditionalLimit.Should().BeNull();
-        result.TraditionalRate.Should().BeNull();
-        result.JudicialLimit.Should().BeNull();
-        result.FinancialLimit.Should().BeNull();
-        result.LimitValidUntil.Should().BeNull();
+        result.Limits.Should().BeEmpty();
     }
 
 }

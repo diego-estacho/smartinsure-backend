@@ -34,25 +34,14 @@ public sealed class CreditInquiryResultMapping : IEntityTypeConfiguration<Credit
         builder.Property(result => result.FailureReason)
             .HasMaxLength(500);
 
-        // Precisão monetária explícita (limites em DECIMAL(18,2), taxas em DECIMAL(9,4)).
-        builder.Property(result => result.TraditionalLimit)
-            .HasPrecision(18, 2);
-        builder.Property(result => result.TraditionalRate)
-            .HasPrecision(9, 4);
+        // Coleção filha de limites — mapeamento com acesso por field (RN-029).
+        builder.HasMany(result => result.Limits)
+            .WithOne()
+            .HasForeignKey(limit => limit.CreditInquiryResultId)
+            .IsRequired();
 
-        builder.Property(result => result.JudicialLimit)
-            .HasPrecision(18, 2);
-        builder.Property(result => result.JudicialRate)
-            .HasPrecision(9, 4);
-        builder.Property(result => result.JudicialFiscalRate)
-            .HasPrecision(9, 4);
-
-        builder.Property(result => result.FinancialLimit)
-            .HasPrecision(18, 2);
-        builder.Property(result => result.FinancialRate)
-            .HasPrecision(9, 4);
-
-        builder.Property(result => result.LimitValidUntil);
+        builder.Navigation(result => result.Limits)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // Auditoria (criação é imutável — nunca atualizado).
         builder.Property(result => result.CreatedAt).IsRequired();

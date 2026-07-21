@@ -1871,6 +1871,48 @@
           }
         }
       },
+      "CreditInquiryLimitGroupResponse": {
+        "required": [
+          "groupName",
+          "groupType",
+          "availableLimit",
+          "usedLimit",
+          "rate"
+        ],
+        "type": "object",
+        "properties": {
+          "groupName": {
+            "type": "string"
+          },
+          "groupType": {
+            "type": "string"
+          },
+          "availableLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "usedLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "rate": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
       "CreditInquiryListItemResponse": {
         "required": [
           "id",
@@ -1921,14 +1963,8 @@
           "insurerName",
           "status",
           "failureReason",
-          "traditionalLimit",
-          "traditionalRate",
-          "judicialLimit",
-          "judicialRate",
-          "judicialFiscalRate",
-          "financialLimit",
-          "financialRate",
-          "limitValidUntil"
+          "policyHolderName",
+          "limits"
         ],
         "type": "object",
         "properties": {
@@ -1948,75 +1984,17 @@
               "string"
             ]
           },
-          "traditionalLimit": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+          "policyHolderName": {
             "type": [
               "null",
-              "number",
               "string"
-            ],
-            "format": "double"
+            ]
           },
-          "traditionalRate": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "null",
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "judicialLimit": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "null",
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "judicialRate": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "null",
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "judicialFiscalRate": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "null",
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "financialLimit": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "null",
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "financialRate": {
-            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
-            "type": [
-              "null",
-              "number",
-              "string"
-            ],
-            "format": "double"
-          },
-          "limitValidUntil": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date-time"
+          "limits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditInquiryLimitGroupResponse"
+            }
           }
         }
       },
@@ -2075,6 +2053,7 @@
           "creditInquiryId",
           "queriedAt",
           "policyHolderCnpj",
+          "policyHolderName",
           "summary",
           "results"
         ],
@@ -2090,6 +2069,12 @@
           },
           "policyHolderCnpj": {
             "type": "string"
+          },
+          "policyHolderName": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "summary": {
             "$ref": "#/components/schemas/CreditInquirySummary"
@@ -2215,6 +2200,7 @@
           "creditInquiryId",
           "queriedAt",
           "policyHolderCnpj",
+          "policyHolderName",
           "summary",
           "results"
         ],
@@ -2230,6 +2216,12 @@
           },
           "policyHolderCnpj": {
             "type": "string"
+          },
+          "policyHolderName": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "summary": {
             "$ref": "#/components/schemas/CreditInquirySummary"
