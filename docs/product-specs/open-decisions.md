@@ -57,6 +57,16 @@ Bloqueia: a regra de qual credencial (PlugKey) usar na importação de uma Segur
 Status: aberta
 Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A Modalidade Importada é da Seguradora, não da Corretora (o `BrokerCnpj`/PlugKey é só credencial de busca), então a importação deduplica por Seguradora e faz uma chamada por Seguradora (RN-031). Falta a PO decidir qual credencial usar quando várias Corretoras habilitam a mesma Seguradora e o que fazer se o retorno divergir entre elas (hoje assume-se catálogo único por Seguradora).
 
+## OPEN-12 — Granularidade da Modalidade vs. Global Modality do motor (mapeamento por identificador)
+Dono: PO (gerente de projeto)
+Bloqueia: a semântica do mapeamento automático "por identificador do motor" (RN-032) quando a Global Modality do motor é mais grossa que a Modalidade desejada
+Status: aberta
+Contexto: levantado em 2026-07-22. O PlugV2/OnPoint agrupa várias ofertas sob uma mesma **Global Modality** (identificador do motor). Ex.: EngId 31 = "Judicial" reúne, só na Essor, 10 origens distintas — "Judicial - Cível", "Judicial - Execução Fiscal", várias "PGE …". A RN-032 herda o mapeamento **por identificador**: ao confirmar manualmente uma importada de EngId 31 para a Modalidade "Judicial (cível)", o job confirmou automaticamente **todas** as de EngId 31 (incl. Execução Fiscal) para essa mesma Modalidade — fiel à RN-032, mas semanticamente pode estar errado se o produto considera Cível e Execução Fiscal Modalidades distintas.
+Cerne: o identificador do motor É a granularidade máxima disponível para o automático; não dá para dividir uma Global Modality em duas Modalidades do Smart pela via do identificador. Falta a PO decidir:
+- (A) **Aceitar a granularidade do motor**: a Modalidade equivale à Global Modality (renomear "Judicial (cível)" → "Judicial"; a comparabilidade é no nível "Judicial"). Simples, alinhado à fonte.
+- (B) **Querer granularidade mais fina** que a do motor: então o "por identificador" é grosso demais — o mapeamento dessas subdivisões passa a ser **manual por importada** (não herdado), e a RN-032 precisa ser revista (ex.: identificador vira *sugestão* na Fila em vez de confirmação automática, ou "Modalidade" é definida como = Global Modality por contrato).
+Enquanto não decidido: nenhuma mudança de código; o comportamento atual segue a RN-032 literal. Corrigir os dados atuais (desfazer as associações indevidas de EngId 31) depende de uma ação de reclassificar/desmapear ainda não construída.
+
 ## OPEN-11 — Disponibilidade derivada por tipo de tomador (PF/PJ)
 Dono: PO (gerente de projeto)
 Bloqueia: a parte "pessoa física / jurídica" da disponibilidade derivada da Modalidade (RN-033)
