@@ -64,6 +64,12 @@ Status: **resolvida** em 2026-07-22 (ADR-061) — opção (A)
 Contexto: levantado em 2026-07-22. O PlugV2/OnPoint agrupa várias ofertas sob uma mesma **Global Modality** (identificador do motor). Ex.: id 31 = "Judicial" reúne, só na Essor, 10 origens distintas — "Judicial - Cível", "Judicial - Execução Fiscal", várias "PGE …". O modelo antigo (ADR-060) herdava o mapeamento por identificador a partir de uma semente confirmada, o que levava a lumping semanticamente questionável.
 Resolução: o time decidiu pela **opção (A)** — a **Modalidade equivale à Modalidade Global** da OnPoint (a fonte é a autoridade da granularidade). O ADR-061 formaliza: a Modalidade é derivada da Modalidade Global (find-or-create por id global), o vínculo é intrínseco, e não há semente/confirmação manual para propagar. Assim "Judicial" é uma única Modalidade por definição, e o problema de granularidade deixa de existir. Correção de dados legados (mapeamentos criados sob o ADR-060) será feita no retrabalho da implementação para o modelo do ADR-061.
 
+## OPEN-13 — Nome único da Modalidade vs. identidade por id de Modalidade Global
+Dono: PO (gerente de projeto)
+Bloqueia: importação de uma Seguradora cujo id de Modalidade Global traz um nome que colide com uma Modalidade manual já existente
+Status: aberta
+Contexto: levantado em 2026-07-22 (retrabalho ADR-061). A Modalidade tem identidade pelo id de Modalidade Global (derivada) e o nome é único no catálogo. Uma Modalidade **criada manualmente** com um nome que depois chega como nome de uma Modalidade Global (find-or-create por id global) **bloqueia** o create daquela derivada — a importação daquela Seguradora falha por conflito de nome. Ocorreu em dev com a "Licitante" manual legada (limpa como dado de dev). Falta a PO decidir o comportamento: (a) a derivada por id global tem precedência e "adota"/renomeia a manual homônima; (b) a manual é reatribuída à derivada; (c) permite nomes duplicados quando um lado é derivado; ou (d) alerta e deixa o Administrador resolver na Fila. Até decidir, evita-se criar Modalidade manual com nome de uma Global existente.
+
 ## OPEN-11 — Disponibilidade derivada por tipo de tomador (PF/PJ)
 Dono: PO (gerente de projeto)
 Bloqueia: a parte "pessoa física / jurídica" da disponibilidade derivada da Modalidade (RN-033)

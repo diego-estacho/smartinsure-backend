@@ -23,10 +23,10 @@ Passar de "dois mundos + Mapeamento próprio + Grupo no Smart + automação por 
 
 ## Frontend (sub-agente B, após contrato regenerado)
 
-- [ ] Remover a tela **Cadastro de Grupo de Modalidade** e a entrada de menu.
-- [ ] **Cadastro de Modalidade**: sem campo Grupo.
-- [ ] **Mapa de Modalidades**: consumir o novo contrato — matriz (uma badge por Seguradora, já corrigido) + Fila de **exceções** (importadas sem Modalidade) com ações **reatribuir/ignorar/reativar**; remover "mapear/promover" do modelo antigo onde não se aplica.
-- [ ] `pnpm types:gen` (contrato novo); `pnpm lint`/`typecheck`/`test` + E2E das jornadas.
+- [x] Removida a tela **Cadastro de Grupo de Modalidade** e a entrada de menu (páginas, componentes, composable, BFF, status, testes).
+- [x] **Cadastro de Modalidade**: sem campo Grupo (form, tabela, composable, payloads BFF).
+- [x] **Mapa de Modalidades**: consome o contrato novo — matriz com uma badge por Seguradora (agregada pelo backend; removido o agrupamento client-side) + Fila de **exceções** com ações **reatribuir/ignorar/reativar**; removidos mapear/promover.
+- [x] Types regenerados do contrato novo; `pnpm lint`/`typecheck` verdes, `pnpm test` 106/106, 2 E2E de modalidade verdes (6 testes).
 
 ## Critérios de aceite
 
@@ -46,6 +46,8 @@ Passar de "dois mundos + Mapeamento próprio + Grupo no Smart + automação por 
 - **Contrato**: `docs/generated/openapi.json` regenerado (servers normalizado p/ `http://127.0.0.1:5981/`). Rotas: `imported-modalities/{id}/reassign|ignore|restore`, `modalities` sem grupo, `modality-map`, `modality-imports/run`; sem `modality-groups`; `MapInsurerResponse` = insurerId/insurerName/count/origins.
 - **Reimport ao vivo** (`POST /api/v1/modality-imports/run`, admin@dev.local): `insurersProcessed 2, succeeded 2, failed 0`. "Judicial" é **uma** Modalidade (id global 31) com Essor (10 importadas) e Excelsior (2 importadas) vinculadas `Automatic`; Mapa agrega uma badge por Seguradora com contagem; Fila vazia. Cruft legado (4 Modalidades manuais do ADR-060 sem id global, ex.: "Licitante") removido do banco dev por colidir com o nome único das derivadas — superseded pela reimportação.
 
-### Frontend (sub-agente B)
+### Frontend (sub-agente B, 2026-07-22)
 
-- (pendente)
+- Worktree `smartinsure-frontend`, commit `65de640` (`AB#0002`, sem PR). Removidos: tela/menu de Grupo de Modalidade, `map.post` e o agrupamento client-side (`modalityMap.ts`). Adicionados: BFF `reassign`/`restore`, `ReassignDialog`. Ajustados: Mapa (badge por Seguradora do contrato agregado), Fila (reatribuir/ignorar/reativar), Cadastro de Modalidade sem Grupo, types regenerados.
+- Gates (re-verificados no run principal): `pnpm lint` exit 0, `pnpm typecheck` exit 0, `pnpm test` **106/106 (20 arquivos)**, E2E de modalidade **6 passed**. Falhas pré-existentes (login/smoke/tomadores) não tocadas.
+- **Edge registrado**: nome único de Modalidade × identidade por id global → OPEN-13.
