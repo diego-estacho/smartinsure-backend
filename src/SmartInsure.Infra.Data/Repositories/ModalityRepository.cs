@@ -18,6 +18,12 @@ public sealed class ModalityRepository(SmartInsureDbContext context)
                     && (exceptModalityId == null || modality.Id != exceptModalityId),
                 cancellationToken);
 
+    public async Task<Modality?> GetByGlobalExternalIdAsync(
+        string globalModalityExternalId, CancellationToken cancellationToken)
+        => await Set.FirstOrDefaultAsync(
+            modality => modality.GlobalModalityExternalId == globalModalityExternalId,
+            cancellationToken);
+
     public async Task<(IReadOnlyList<ModalityListItemDto> Items, long TotalCount)> ListAsync(
         int page, int pageSize, bool includeInactive, CancellationToken cancellationToken)
     {
@@ -34,17 +40,11 @@ public sealed class ModalityRepository(SmartInsureDbContext context)
             .OrderBy(modality => modality.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Join(
-                Context.Set<ModalityGroup>().AsNoTracking(),
-                modality => modality.ModalityGroupId,
-                group => group.Id,
-                (modality, group) => new ModalityListItemDto(
-                    modality.Id,
-                    modality.Name,
-                    modality.ModalityGroupId,
-                    group.Name,
-                    modality.Description,
-                    modality.Status.ToString()))
+            .Select(modality => new ModalityListItemDto(
+                modality.Id,
+                modality.Name,
+                modality.Description,
+                modality.Status.ToString()))
             .ToListAsync(cancellationToken);
 
         return (items, totalCount);
@@ -54,16 +54,10 @@ public sealed class ModalityRepository(SmartInsureDbContext context)
         => await Set.AsNoTracking()
             .Where(modality => modality.Status == EModalityStatus.Active)
             .OrderBy(modality => modality.Name)
-            .Join(
-                Context.Set<ModalityGroup>().AsNoTracking(),
-                modality => modality.ModalityGroupId,
-                group => group.Id,
-                (modality, group) => new ModalityListItemDto(
-                    modality.Id,
-                    modality.Name,
-                    modality.ModalityGroupId,
-                    group.Name,
-                    modality.Description,
-                    modality.Status.ToString()))
+            .Select(modality => new ModalityListItemDto(
+                modality.Id,
+                modality.Name,
+                modality.Description,
+                modality.Status.ToString()))
             .ToListAsync(cancellationToken);
 }

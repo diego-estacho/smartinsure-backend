@@ -4,6 +4,5 @@ namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.UpdateModali
 public sealed record UpdateModalityResponse(
     Guid Id,
     string Name,
-    Guid ModalityGroupId,
     string? Description,
     string Status);

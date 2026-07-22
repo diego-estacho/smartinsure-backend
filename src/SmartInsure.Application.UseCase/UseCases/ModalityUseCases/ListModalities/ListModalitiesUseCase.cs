@@ -23,7 +23,7 @@ public sealed class ListModalitiesUseCase(IModalityRepository modalityRepository
 
         var responses = items
             .Select(item => new ModalityListItemResponse(
-                item.Id, item.Name, item.ModalityGroupId, item.ModalityGroupName, item.Description, item.Status))
+                item.Id, item.Name, item.Description, item.Status))
             .ToList();
 
         return new PagedResponse<ModalityListItemResponse>(responses, page, pageSize, totalCount);

@@ -1,6 +1,5 @@
 using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Entities;
-using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Core.Abstractions.Repositories;
 
@@ -14,17 +13,9 @@ public interface IImportedModalityRepository : IRepository<ImportedModality>
     Task<IReadOnlyList<ImportedModality>> ListActiveByInsurerAsync(
         Guid insurerId, CancellationToken cancellationToken);
 
-    /// <summary>
-    /// RN-032: dado o identificador do motor e o ramo, retorna a Modalidade (Smart) que outra
-    /// Modalidade Importada do mesmo identificador e ramo já tem confirmada — nunca cruza ramos.
-    /// </summary>
-    Task<Guid?> FindConfirmedModalityIdByEngineAsync(
-        string engineModalityId, ESuretyBranch branch, CancellationToken cancellationToken);
+    /// <summary>RN-033: vínculos ativos (Importada Ativa, não Ignorada, com Modalidade) — a matriz do Mapa.</summary>
+    Task<IReadOnlyList<ModalityInsurerLinkDto>> ListActiveLinksAsync(CancellationToken cancellationToken);
 
-    /// <summary>RN-034: pendências da Fila — Ativas, não Ignoradas, sem mapeamento Confirmado.</summary>
+    /// <summary>RN-034: pendências da Fila — Ativas, não Ignoradas, sem vínculo (ModalityId nulo).</summary>
     Task<IReadOnlyList<PendingImportedModalityDto>> ListPendingAsync(CancellationToken cancellationToken);
-
-    /// <summary>RN-034 (trava de ramo): a Modalidade já tem Importada Ativa Confirmada de ramo diferente do informado?</summary>
-    Task<bool> HasConfirmedBranchConflictAsync(
-        Guid modalityId, ESuretyBranch branch, CancellationToken cancellationToken);
 }

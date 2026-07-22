@@ -23,29 +23,28 @@ public sealed class ImportedModalityRepository(SmartInsureDbContext context)
                 && modality.Status == EImportedModalityStatus.Active)
             .ToListAsync(cancellationToken);
 
-    public async Task<Guid?> FindConfirmedModalityIdByEngineAsync(
-        string engineModalityId, ESuretyBranch branch, CancellationToken cancellationToken)
-    {
-        var query =
-            from mapping in Context.Set<ModalityMapping>().AsNoTracking()
-            join imported in Context.Set<ImportedModality>().AsNoTracking()
-                on mapping.ImportedModalityId equals imported.Id
-            where mapping.Status == EModalityMappingStatus.Confirmed
-                && imported.EngineModalityId == engineModalityId
-                && imported.Branch == branch
-            select (Guid?)mapping.ModalityId;
-
-        return await query.FirstOrDefaultAsync(cancellationToken);
-    }
+    public async Task<IReadOnlyList<ModalityInsurerLinkDto>> ListActiveLinksAsync(CancellationToken cancellationToken)
+        => await (
+            from imported in Set.AsNoTracking()
+            where imported.Status == EImportedModalityStatus.Active
+                && !imported.IsIgnored
+                && imported.ModalityId != null
+            join insurer in Context.Set<Insurer>().AsNoTracking()
+                on imported.InsurerId equals insurer.Id
+            select new ModalityInsurerLinkDto(
+                imported.ModalityId!.Value,
+                insurer.Id,
+                insurer.CorporateName,
+                imported.OriginName,
+                imported.Branch.ToString()))
+            .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<PendingImportedModalityDto>> ListPendingAsync(CancellationToken cancellationToken)
         => await (
             from imported in Set.AsNoTracking()
             where imported.Status == EImportedModalityStatus.Active
                 && !imported.IsIgnored
-                && !Context.Set<ModalityMapping>().Any(
-                    mapping => mapping.ImportedModalityId == imported.Id
-                        && mapping.Status == EModalityMappingStatus.Confirmed)
+                && imported.ModalityId == null
             join insurer in Context.Set<Insurer>().AsNoTracking()
                 on imported.InsurerId equals insurer.Id
             select new PendingImportedModalityDto(
@@ -60,14 +59,4 @@ public sealed class ImportedModalityRepository(SmartInsureDbContext context)
                     .Select(ig => ig.Name)
                     .FirstOrDefault() ?? string.Empty))
             .ToListAsync(cancellationToken);
-
-    public async Task<bool> HasConfirmedBranchConflictAsync(
-        Guid modalityId, ESuretyBranch branch, CancellationToken cancellationToken)
-        => await (
-            from mapping in Context.Set<ModalityMapping>().AsNoTracking()
-            where mapping.ModalityId == modalityId && mapping.Status == EModalityMappingStatus.Confirmed
-            join imported in Set.AsNoTracking() on mapping.ImportedModalityId equals imported.Id
-            where imported.Status == EImportedModalityStatus.Active && imported.Branch != branch
-            select mapping.Id)
-            .AnyAsync(cancellationToken);
 }

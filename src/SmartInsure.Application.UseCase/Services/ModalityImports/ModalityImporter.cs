@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
-using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
@@ -11,15 +10,15 @@ namespace SmartInsure.Application.UseCase.Services.ModalityImports;
 /// <summary>
 /// Importação de modalidades (RN-031): por Corretora, chama o Motor de Cálculo resolvido pela
 /// Habilitação, casa as Seguradoras retornadas por Referência de origem, faz upsert do lado
-/// importado (RN-030), mapeia por identificador do motor dentro do mesmo ramo (RN-032), desativa
-/// o que sumiu numa importação bem-sucedida e isola a falha por Corretora/Seguradora (RN-035).
-/// Nunca cria Modalidade (lado Smart) — só o lado importado e mapeamentos por identificador (ADR-060).
+/// importado (RN-030), deriva a Modalidade da Modalidade Global por *find-or-create* pelo id
+/// global e vincula a Importada (RN-032), preservando override Manual (RN-034); desativa o que
+/// sumiu numa importação bem-sucedida e isola a falha por Corretora/Seguradora (RN-035) (ADR-061).
 /// </summary>
 public sealed class ModalityImporter(
     IBrokerageInsurerEnablementRepository enablementRepository,
     IImportedGroupRepository importedGroupRepository,
     IImportedModalityRepository importedModalityRepository,
-    IModalityMappingRepository modalityMappingRepository,
+    IModalityRepository modalityRepository,
     IServiceProvider serviceProvider,
     IUnitOfWork unitOfWork) : IModalityImporter
 {
@@ -30,6 +29,11 @@ public sealed class ModalityImporter(
         var processedInsurers = new HashSet<Guid>();
         var failures = new List<string>();
         int processed = 0, succeeded = 0, failed = 0;
+
+        // Cache de Modalidades por id global, ao longo de toda a execução: uma Modalidade Global é
+        // compartilhada entre Seguradoras e o find-or-create por consulta não enxerga o que ainda
+        // não foi commitado — sem o cache criaria Modalidades duplicadas para o mesmo id global.
+        var modalityCache = new Dictionary<string, Modality>();
 
         foreach (var broker in enablements.GroupBy(enablement => enablement.BrokerageId))
         {
@@ -86,7 +90,7 @@ public sealed class ModalityImporter(
 
                 try
                 {
-                    await ImportInsurerAsync(insurerId, insurerCatalog, nowUtc, cancellationToken);
+                    await ImportInsurerAsync(insurerId, insurerCatalog, modalityCache, nowUtc, cancellationToken);
                     await unitOfWork.CommitAsync(cancellationToken);
                     succeeded++;
                 }
@@ -102,7 +106,11 @@ public sealed class ModalityImporter(
     }
 
     private async Task ImportInsurerAsync(
-        Guid insurerId, ImportedInsurerCatalog insurerCatalog, DateTime nowUtc, CancellationToken cancellationToken)
+        Guid insurerId,
+        ImportedInsurerCatalog insurerCatalog,
+        Dictionary<string, Modality> modalityCache,
+        DateTime nowUtc,
+        CancellationToken cancellationToken)
     {
         var seenSourceIds = new HashSet<string>();
         // Cache in-batch: várias modalidades compartilham o mesmo Grupo Importado e o upsert por
@@ -120,7 +128,7 @@ public sealed class ModalityImporter(
             var importedGroupId = await UpsertGroupAsync(insurerId, data, groupCache, cancellationToken);
             var imported = await UpsertModalityAsync(insurerId, data, importedGroupId, nowUtc, cancellationToken);
 
-            await TryMapByIdentifierAsync(imported, data, cancellationToken);
+            await LinkToModalityAsync(imported, data, modalityCache, cancellationToken);
         }
 
         // RN-035: Modalidades Importadas Ativas que não vieram nesta importação bem-sucedida são desativadas.
@@ -183,24 +191,56 @@ public sealed class ModalityImporter(
         return imported;
     }
 
-    /// <summary>RN-032: confirma automaticamente só quando o identificador do motor já aponta para uma Modalidade, no mesmo ramo.</summary>
-    private async Task TryMapByIdentifierAsync(
-        ImportedModality imported, ImportedModalityData data, CancellationToken cancellationToken)
+    /// <summary>
+    /// RN-032: deriva a Modalidade da Modalidade Global (find-or-create pelo id global, nome da fonte)
+    /// e vincula a Importada como Automatic — o override Manual é preservado (RN-034). Importada sem
+    /// id de Modalidade Global (exceção) fica sem vínculo e vai à Fila (RN-034).
+    /// </summary>
+    private async Task LinkToModalityAsync(
+        ImportedModality imported,
+        ImportedModalityData data,
+        Dictionary<string, Modality> modalityCache,
+        CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(data.EngineModalityId)
-            || await modalityMappingRepository.HasConfirmedAsync(imported.Id, cancellationToken))
+        if (string.IsNullOrWhiteSpace(data.EngineModalityId))
         {
             return;
         }
 
-        var modalityId = await importedModalityRepository.FindConfirmedModalityIdByEngineAsync(
-            data.EngineModalityId, data.Branch, cancellationToken);
+        var globalName = string.IsNullOrWhiteSpace(data.EngineModalityName)
+            ? data.OriginName
+            : data.EngineModalityName;
 
-        if (modalityId is not null)
+        var modality = await FindOrCreateModalityAsync(
+            data.EngineModalityId, globalName, modalityCache, cancellationToken);
+
+        imported.LinkToModality(modality.Id, EModalityLinkSource.Automatic);
+    }
+
+    private async Task<Modality> FindOrCreateModalityAsync(
+        string globalModalityExternalId,
+        string globalName,
+        Dictionary<string, Modality> modalityCache,
+        CancellationToken cancellationToken)
+    {
+        if (modalityCache.TryGetValue(globalModalityExternalId, out var cached))
         {
-            await modalityMappingRepository.AddAsync(
-                ModalityMapping.CreateByIdentifier(imported.Id, modalityId.Value), cancellationToken);
+            return cached;
         }
+
+        var modality = await modalityRepository.GetByGlobalExternalIdAsync(globalModalityExternalId, cancellationToken)
+            ?? await CreateModalityAsync(globalModalityExternalId, globalName, cancellationToken);
+
+        modalityCache[globalModalityExternalId] = modality;
+        return modality;
+    }
+
+    private async Task<Modality> CreateModalityAsync(
+        string globalModalityExternalId, string globalName, CancellationToken cancellationToken)
+    {
+        var modality = Modality.CreateFromGlobal(globalModalityExternalId, globalName);
+        await modalityRepository.AddAsync(modality, cancellationToken);
+        return modality;
     }
 
     private ICalculationEngine ResolveEngine(string calculationEngine)

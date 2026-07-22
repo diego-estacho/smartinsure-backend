@@ -4,6 +4,5 @@ namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.GetModality.
 public sealed record GetModalityResponse(
     Guid Id,
     string Name,
-    Guid ModalityGroupId,
     string? Description,
     string Status);

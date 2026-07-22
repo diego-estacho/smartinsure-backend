@@ -76,7 +76,7 @@ public sealed class ModalitiesEndpoint : CarterModule
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
-            new UpdateModalityRequest(id, body.Name, body.ModalityGroupId, body.Description),
+            new UpdateModalityRequest(id, body.Name, body.Description),
             validator);
 
     private static async Task<IResult> ChangeStatusAsync(
@@ -120,7 +120,7 @@ public sealed class ModalitiesEndpoint : CarterModule
 }
 
 /// <summary>Corpo do PUT de Modalidade — o id vem da rota.</summary>
-public sealed record UpdateModalityBody(string Name, Guid ModalityGroupId, string? Description);
+public sealed record UpdateModalityBody(string Name, string? Description);
 
 /// <summary>Corpo do PATCH de situação de Modalidade — nome estável Active/Inactive.</summary>
 public sealed record ChangeModalityStatusBody(string Status);

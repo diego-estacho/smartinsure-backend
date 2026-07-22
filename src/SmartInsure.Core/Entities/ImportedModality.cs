@@ -22,12 +22,18 @@ public sealed class ImportedModality : EntityBase
 
     public ESuretyBranch Branch { get; private set; }
 
-    /// <summary>Identificador do motor (GlobalModalities[].Id no PlugV2) — mapeamento por identificador (RN-032).</summary>
+    /// <summary>Identificador da Modalidade Global (GlobalModalities[].Id no PlugV2) — resolve o vínculo (RN-032).</summary>
     public string? EngineModalityId { get; private set; }
 
     public string? EngineModalityName { get; private set; }
 
     public Guid? ImportedGroupId { get; private set; }
+
+    /// <summary>RN-032/RN-034: Modalidade (lado Smart) a que esta Importada está vinculada. Nulo = exceção sem vínculo (vai à Fila).</summary>
+    public Guid? ModalityId { get; private set; }
+
+    /// <summary>RN-032/RN-034: origem do vínculo — Automatic (id global) ou Manual (override do Administrador).</summary>
+    public EModalityLinkSource? ModalityLinkSource { get; private set; }
 
     /// <summary>Parâmetros comerciais preservados como recebidos da fonte (RN-030).</summary>
     public string? CommercialParameters { get; private set; }
@@ -79,6 +85,23 @@ public sealed class ImportedModality : EntityBase
             originName, branch, engineModalityId, engineModalityName, importedGroupId,
             commercialParameters, lastImportedAt);
         Status = EImportedModalityStatus.Active;
+    }
+
+    /// <summary>
+    /// RN-032/RN-034: vincula à Modalidade. A importação (Automatic) resolve pelo id da Modalidade
+    /// Global; um override Manual do Administrador é preservado — a automação nunca o sobrescreve.
+    /// </summary>
+    public void LinkToModality(Guid modalityId, EModalityLinkSource source)
+    {
+        if (ModalityId is not null
+            && ModalityLinkSource == EModalityLinkSource.Manual
+            && source == EModalityLinkSource.Automatic)
+        {
+            return;
+        }
+
+        ModalityId = modalityId;
+        ModalityLinkSource = source;
     }
 
     /// <summary>RN-035: ausência numa importação bem-sucedida da Seguradora desativa. Idempotente (automação).</summary>

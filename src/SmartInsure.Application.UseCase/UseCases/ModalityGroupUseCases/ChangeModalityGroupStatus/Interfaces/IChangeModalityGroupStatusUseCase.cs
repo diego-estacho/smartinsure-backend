@@ -1,8 +1,0 @@
-using SmartInsure.Application.UseCase.Common;
-using SmartInsure.Application.UseCase.UseCases.ModalityGroupUseCases.ChangeModalityGroupStatus.Requests;
-using SmartInsure.Application.UseCase.UseCases.ModalityGroupUseCases.ChangeModalityGroupStatus.Responses;
-
-namespace SmartInsure.Application.UseCase.UseCases.ModalityGroupUseCases.ChangeModalityGroupStatus.Interfaces;
-
-public interface IChangeModalityGroupStatusUseCase
-    : IUseCase<ChangeModalityGroupStatusRequest, ChangeModalityGroupStatusResponse>;

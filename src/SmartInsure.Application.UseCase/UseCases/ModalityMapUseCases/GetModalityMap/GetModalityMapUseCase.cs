@@ -8,43 +8,47 @@ namespace SmartInsure.Application.UseCase.UseCases.ModalityMapUseCases.GetModali
 
 /// <summary>
 /// RN-033/RN-034 — monta o Mapa: cada Modalidade Ativa com as Seguradoras que a oferecem
-/// (mapeamento Confirmado ativo), a disponibilidade por ramo derivada, e a Fila de pendências.
-/// Oferecida = tem ao menos uma Modalidade Importada Ativa Confirmada.
+/// (uma entrada por Seguradora distinta, com contagem — ADR-061), a disponibilidade por ramo
+/// derivada, e a Fila de exceções. Oferecida = tem ao menos uma Modalidade Importada Ativa,
+/// não Ignorada, vinculada.
 /// </summary>
 public sealed class GetModalityMapUseCase(
     IModalityRepository modalityRepository,
-    IModalityMappingRepository modalityMappingRepository,
     IImportedModalityRepository importedModalityRepository) : IGetModalityMapUseCase
 {
     public async Task<ModalityMapResponse> ExecuteAsync(
         GetModalityMapRequest request, CancellationToken cancellationToken)
     {
         var modalities = await modalityRepository.ListActiveForMapAsync(cancellationToken);
-        var confirmed = await modalityMappingRepository.ListConfirmedActiveAsync(cancellationToken);
+        var links = await importedModalityRepository.ListActiveLinksAsync(cancellationToken);
         var pending = await importedModalityRepository.ListPendingAsync(cancellationToken);
 
-        var confirmedByModality = confirmed
-            .GroupBy(mapping => mapping.ModalityId)
-            .ToDictionary(group => group.Key, group => (IReadOnlyList<ConfirmedMappingDto>)group.ToList());
+        var linksByModality = links
+            .GroupBy(link => link.ModalityId)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<ModalityInsurerLinkDto>)group.ToList());
 
         var entries = modalities
             .Select(modality =>
             {
-                var insurers = confirmedByModality.TryGetValue(modality.Id, out var list)
-                    ? list
-                    : [];
+                var modalityLinks = linksByModality.TryGetValue(modality.Id, out var list) ? list : [];
+
+                // RN-033: uma entrada por Seguradora distinta, preservando a ordem de primeira ocorrência.
+                var insurers = modalityLinks
+                    .GroupBy(link => link.InsurerId)
+                    .Select(group => new MapInsurerResponse(
+                        group.Key,
+                        group.First().InsurerName,
+                        group.Count(),
+                        group.Select(link => link.OriginName).ToList()))
+                    .ToList();
 
                 return new ModalityMapEntryResponse(
                     modality.Id,
                     modality.Name,
-                    modality.ModalityGroupName,
                     modality.Status,
                     insurers.Count > 0,
-                    insurers.Select(insurer => insurer.Branch).Distinct().OrderBy(branch => branch).ToList(),
-                    insurers
-                        .Select(insurer => new MapInsurerResponse(
-                            insurer.InsurerId, insurer.InsurerName, insurer.ImportedModalityId, insurer.OriginName))
-                        .ToList());
+                    modalityLinks.Select(link => link.Branch).Distinct().OrderBy(branch => branch).ToList(),
+                    insurers);
             })
             .ToList();
 

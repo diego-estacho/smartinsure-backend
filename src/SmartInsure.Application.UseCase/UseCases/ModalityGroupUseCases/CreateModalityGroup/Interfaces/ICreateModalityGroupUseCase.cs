@@ -1,7 +1,0 @@
-using SmartInsure.Application.UseCase.Common;
-using SmartInsure.Application.UseCase.UseCases.ModalityGroupUseCases.CreateModalityGroup.Requests;
-using SmartInsure.Application.UseCase.UseCases.ModalityGroupUseCases.CreateModalityGroup.Responses;
-
-namespace SmartInsure.Application.UseCase.UseCases.ModalityGroupUseCases.CreateModalityGroup.Interfaces;
-
-public interface ICreateModalityGroupUseCase : IUseCase<CreateModalityGroupRequest, CreateModalityGroupResponse>;

@@ -17,6 +17,6 @@ public sealed class GetModalityUseCase(IModalityRepository modalityRepository) :
             ?? throw new NotFoundException("Modalidade não encontrada no catálogo.");
 
         return new GetModalityResponse(
-            modality.Id, modality.Name, modality.ModalityGroupId, modality.Description, modality.Status.ToString());
+            modality.Id, modality.Name, modality.Description, modality.Status.ToString());
     }
 }

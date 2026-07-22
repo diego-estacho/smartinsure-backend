@@ -19,15 +19,13 @@ public sealed class ModalityMapping : IEntityTypeConfiguration<Modality>
         // RN-029: nome da Modalidade único no catálogo.
         builder.HasIndex(modality => modality.Name).IsUnique();
 
-        builder.Property(modality => modality.ModalityGroupId)
-            .IsRequired();
+        builder.Property(modality => modality.GlobalModalityExternalId)
+            .HasMaxLength(100);
 
-        // FK para o Grupo de Modalidade (Restrict por convenção global do DbContext, ADR-034).
-        builder.HasOne<ModalityGroup>()
-            .WithMany()
-            .HasForeignKey(modality => modality.ModalityGroupId);
-
-        builder.HasIndex(modality => modality.ModalityGroupId);
+        // RN-032: id da Modalidade Global único quando presente (find-or-create na importação).
+        builder.HasIndex(modality => modality.GlobalModalityExternalId)
+            .IsUnique()
+            .HasFilter("[GlobalModalityExternalId] IS NOT NULL");
 
         builder.Property(modality => modality.Description)
             .HasMaxLength(1000);
@@ -36,7 +34,7 @@ public sealed class ModalityMapping : IEntityTypeConfiguration<Modality>
             .HasMaxLength(20)
             .IsRequired();
 
-        // Alinhado 1:1 com a migration criar-tabelas-modality-catalog (evitar drift de constraint).
+        // Alinhado 1:1 com a migration derivada-da-global-modality (evitar drift de constraint).
         builder.Property(modality => modality.CreatedAt).IsRequired();
         builder.Property(modality => modality.CreatedBy).HasMaxLength(100).IsRequired();
         builder.Property(modality => modality.UpdatedBy).HasMaxLength(100);

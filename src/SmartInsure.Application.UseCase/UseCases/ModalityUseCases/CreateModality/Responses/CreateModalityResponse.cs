@@ -4,6 +4,5 @@ namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.CreateModali
 public sealed record CreateModalityResponse(
     Guid Id,
     string Name,
-    Guid ModalityGroupId,
     string? Description,
     string Status);

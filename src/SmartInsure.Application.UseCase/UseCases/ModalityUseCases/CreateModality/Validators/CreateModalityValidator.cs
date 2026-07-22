@@ -13,9 +13,6 @@ public sealed class CreateModalityValidator : AbstractValidator<CreateModalityRe
             .NotEmpty().WithMessage("O nome da modalidade é obrigatório.")
             .MaximumLength(200).WithMessage("O nome da modalidade deve ter no máximo 200 caracteres.");
 
-        RuleFor(request => request.ModalityGroupId)
-            .NotEmpty().WithMessage("O grupo de modalidade é obrigatório.");
-
         RuleFor(request => request.Description)
             .MaximumLength(1000).WithMessage("A descrição deve ter no máximo 1000 caracteres.");
 

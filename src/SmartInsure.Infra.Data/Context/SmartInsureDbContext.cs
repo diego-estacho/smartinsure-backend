@@ -19,15 +19,11 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<BrokerageInsurerEnablement> BrokerageInsurerEnablements => Set<BrokerageInsurerEnablement>();
 
-    public DbSet<ModalityGroup> ModalityGroups => Set<ModalityGroup>();
-
     public DbSet<Modality> Modalities => Set<Modality>();
 
     public DbSet<ImportedGroup> ImportedGroups => Set<ImportedGroup>();
 
     public DbSet<ImportedModality> ImportedModalities => Set<ImportedModality>();
-
-    public DbSet<ModalityMapping> ModalityMappings => Set<ModalityMapping>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
