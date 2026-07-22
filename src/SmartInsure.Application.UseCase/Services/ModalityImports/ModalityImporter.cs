@@ -105,12 +105,20 @@ public sealed class ModalityImporter(
         Guid insurerId, ImportedInsurerCatalog insurerCatalog, DateTime nowUtc, CancellationToken cancellationToken)
     {
         var seenSourceIds = new HashSet<string>();
+        // Cache in-batch: várias modalidades compartilham o mesmo Grupo Importado e o upsert por
+        // consulta não enxerga o que ainda não foi commitado — sem o cache criaria grupos duplicados.
+        var groupCache = new Dictionary<string, ImportedGroup>();
 
         foreach (var data in insurerCatalog.Modalities)
         {
-            var importedGroupId = await UpsertGroupAsync(insurerId, data, cancellationToken);
+            // Duplicata do mesmo identificador de origem no retorno: a primeira ocorrência vence.
+            if (!seenSourceIds.Add(data.SourceId))
+            {
+                continue;
+            }
+
+            var importedGroupId = await UpsertGroupAsync(insurerId, data, groupCache, cancellationToken);
             var imported = await UpsertModalityAsync(insurerId, data, importedGroupId, nowUtc, cancellationToken);
-            seenSourceIds.Add(imported.SourceId);
 
             await TryMapByIdentifierAsync(imported, data, cancellationToken);
         }
@@ -125,8 +133,16 @@ public sealed class ModalityImporter(
     }
 
     private async Task<Guid> UpsertGroupAsync(
-        Guid insurerId, ImportedModalityData data, CancellationToken cancellationToken)
+        Guid insurerId,
+        ImportedModalityData data,
+        Dictionary<string, ImportedGroup> groupCache,
+        CancellationToken cancellationToken)
     {
+        if (groupCache.TryGetValue(data.GroupSourceId, out var cached))
+        {
+            return cached.Id;
+        }
+
         var group = await importedGroupRepository.GetByInsurerAndSourceAsync(
             insurerId, data.GroupSourceId, cancellationToken);
 
@@ -140,6 +156,7 @@ public sealed class ModalityImporter(
             group.UpdateFromSource(data.GroupName, data.GroupType);
         }
 
+        groupCache[data.GroupSourceId] = group;
         return group.Id;
     }
 

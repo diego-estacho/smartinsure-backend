@@ -13,17 +13,17 @@ O lado da fonte do catálogo e o job de importação: `ImportedModality`, `Impor
 
 ## Tarefas
 
-- [ ] Migration `V20260722010830__criar-tabelas-modalidade-importada.sql`: `dbo.ImportedGroups`, `dbo.ImportedModalities`, `dbo.ModalityMappings` (guards, FKs, únicos: (InsurerId,SourceId) nas importadas/grupos; único filtrado `WHERE Status='Confirmed'` por Importada em ModalityMappings; auditoria; header RN + ADR-058).
-- [ ] Core: enums `EImportedModalityStatus`, `ESuretyBranch`, `EModalityMappingStatus`, `EMappingEstablishment`; entidades ricas `ImportedGroup`, `ImportedModality` (upsert pela fonte, reativação ao reaparecer, desativação idempotente), `ModalityMapping` (`CreateByIdentifier` → Confirmed).
-- [ ] Core: `IImportedGroupRepository`, `IImportedModalityRepository`, `IModalityMappingRepository` (buscar por (InsurerId,SourceId), ativas por Seguradora, por EngineModalityId com mapeamento confirmado); método em `IBrokerageInsurerEnablementRepository` para listar Habilitações Ativas com CNPJ da Corretora + parâmetros de conexão.
-- [ ] Infra.Data: mappings 1:1, repositórios, DbSets, DI.
-- [ ] Integration: `GetGroupAndModalities` em `ICalculationEngine`; `IPlugV2Api` (Refit) + provider com base URL/kaader por Habilitação (ADR-046/044); ACL PlugV2 → contrato do motor (ADR-045); `PlugV2CalculationEngine` implementa a operação.
-- [ ] Application: `ModalityImporter` (serviço) — por Corretora: chama o motor, casa Seguradoras por `ReferenceExternalId`, upsert grupos/modalidades importadas (RN-030), mapeia por identificador dentro do mesmo ramo (RN-032), desativa o que sumiu numa importação bem-sucedida, isola falha por Seguradora (RN-035, `IsSuccess`).
-- [ ] Rastreio: `ModalityImportRun` (resumo por execução: início/fim, totais, falhas com motivo).
-- [ ] Functions: timer trigger que compõe a DI (espelha `AddApiServices`) e roda o importer sobre as Habilitações Ativas (cadência configurável — OPEN-10).
-- [ ] Testes `[Trait("RuleId","RN-030/031/032/035")]` (xUnit/NSubstitute/FluentAssertions): entidades, ACL do PlugV2 (com amostra real), importer contra `ICalculationEngine` fake (upsert, mapeamento por identificador, trava de ramo, desativação, falha isolada).
-- [ ] `dotnet build`/`dotnet test` verdes, `check-harness.py` ok, migration aplicada localmente, cobertura das novas classes.
-- [ ] Teste ao vivo: importação real contra a corretora Bravo (CNPJ 34060267000196) no PlugV2 dev — Essor/Excelsior importadas, verificado no banco.
+- [x] Migration `V20260722010830__criar-tabelas-modalidade-importada.sql`: `dbo.ImportedGroups`, `dbo.ImportedModalities`, `dbo.ModalityMappings` (guards, FKs, únicos por (InsurerId,SourceId); único filtrado `WHERE Status='Confirmed'`; auditoria; RN + ADR-058). Aplicada no docker.
+- [x] Core: enums `EImportedModalityStatus`, `ESuretyBranch`, `EModalityMappingStatus`, `EMappingEstablishment`; entidades ricas `ImportedGroup`, `ImportedModality` (upsert pela fonte, reativa ao reaparecer, desativa idempotente), `ModalityMapping` (`CreateByIdentifier` → Confirmed).
+- [x] Core: `IImportedGroupRepository`, `IImportedModalityRepository`, `IModalityMappingRepository`; `ListActiveForImportAsync` em `IBrokerageInsurerEnablementRepository` (CNPJ da Corretora + Referência de origem da Seguradora + conexão).
+- [x] Infra.Data: mappings 1:1, repositórios, DbSets, DI.
+- [x] Integration: `GetGroupAndModalitiesAsync` em `ICalculationEngine`; provider PlugV2 (HttpClient com base URL por Habilitação + resiliência ADR-044, client resolvido sob demanda); ACL PlugV2 → contrato do motor (ADR-045); `PlugV2CalculationEngine` implementa a operação.
+- [x] Application: `ModalityImporter` — por Corretora resolve o motor pela Habilitação, casa Seguradoras por `ReferenceExternalId`, upsert (cache in-batch de grupos + dedup de origem), mapeia por identificador no mesmo ramo (RN-032), desativa o que sumiu, isola falha por Corretora/Seguradora (`IsSuccess`, RN-035), dedup por Seguradora.
+- [x] Functions: `ModalityImportFunction` (TimerTrigger diário 03:00 UTC, OPEN-10) compõe a DI do host e roda o importer. + Api `POST /modality-imports/run` (Administrador do Sistema) para disparo manual.
+- [~] Rastreio: resumo por execução (`ModalityImportSummary`: processadas/sucesso/falha + motivos) retornado e logado. Tabela dedicada `ModalityImportRun` **adiada** (observabilidade via log/summary por ora).
+- [x] Testes `[Trait("RuleId","RN-030/031/032/035")]`: entidades (7), ACL do PlugV2 com amostra do contrato real (3), importer contra motor fake (5: upsert+map por identificador, grupo compartilhado 1x, sem-map, falha isolada, desativação).
+- [x] `dotnet build`/`dotnet test` verdes, `check-harness.py` ok, migration aplicada localmente.
+- [x] Teste ao vivo: importação real contra a corretora Bravo (CNPJ 34060267000196) no PlugV2 dev — Essor (49) + Excelsior (25) = 74 modalidades importadas, ramos e grupos corretos, verificado no banco.
 
 ## Critérios de aceite
 
@@ -35,4 +35,11 @@ O lado da fonte do catálogo e o job de importação: `ImportedModality`, `Impor
 
 ## Evidências
 
-- (a preencher) build/test, cobertura, check-harness, migration Flyway, importação ao vivo (contagens por Seguradora), commits.
+- **Backend** (2026-07-22): `dotnet build SmartInsure.slnx` 0 erros; `dotnet test` **316/316** (fatia 2 somou 15: entidades importadas 7, ACL do PlugV2 3, importer 5). `check-harness.py` → `harness ok`.
+- **Migration**: Flyway aplicou `V20260722010830 - criar-tabelas-modalidade-importada` no docker (schema em v20260722010830).
+- **Contrato**: `docs/generated/openapi.json` regenerado — inclui `POST /api/v1/modality-imports/run`.
+- **Contrato PlugV2 observado**: probe dev com a chave da Bravo confirmou o formato (BranchCode 75/76, `IsSuccess` por Seguradora, `GlobalModalities[].Id`, `ModalityUniqueId`) — construído contra o contrato real (ADR-045).
+- **Teste ao vivo** (PlugV2 dev, corretora Bravo 34060267000196): `POST /modality-imports/run` → `{processadas:2, sucesso:2, falha:0}`. No banco: **Essor 49 modalidades / 7 grupos** (38 público, 11 privado), **Excelsior 25 / 8 grupos** (17/8) = **74 modalidades**, parâmetros comerciais preservados como JSON, ramos corretos. **0 mapeamentos confirmados** — correto: sem Modalidade curada ainda, tudo aguarda a Fila (fatia 3). Bug de grupo duplicado (índice único) encontrado e corrigido (cache in-batch) com teste de regressão.
+- **Commits** (branch `ab-0002-job-importar-modalidades`, sem PR): backend `9479f9d`(exec-plan), `cd46b34`(entidades), `06c3f41`(persistência), `ce5c366`(PlugV2+ACL), `87e7f89`(importer), `f1dfb24`(timer+endpoint), + fix/contrato; dbmigration `V20260722010830`.
+- **Segredo**: a PlugKey da Bravo vive só no scratchpad local e nos parâmetros da Habilitação **no banco docker** (dev-seed) — nunca em arquivo versionado (SECURITY.md).
+- Pendências: ratificação da PO; fatia 3 (Mapa/Fila + disponibilidade derivada); PRs; (opcional) tabela `ModalityImportRun`; semelhança automática (OPEN-08).

@@ -82,6 +82,30 @@ public class ModalityImporterTests
     }
 
     [Fact]
+    [Trait("RuleId", "RN-030")]
+    public async Task Run_DeveCriarGrupoUmaVez_QuandoModalidadesCompartilhamOGrupo()
+    {
+        GivenActiveEnablement();
+        GivenCatalog(
+            isSuccess: true,
+            Modality("m-1", "1", ESuretyBranch.Public),
+            Modality("m-2", "2", ESuretyBranch.Private)); // mesmo GroupSourceId "g-1"
+        _groups.GetByInsurerAndSourceAsync(InsurerId, "g-1", Arg.Any<CancellationToken>()).Returns((ImportedGroup?)null);
+        _modalities.GetByInsurerAndSourceAsync(InsurerId, Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((ImportedModality?)null);
+        _mappings.HasConfirmedAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(false);
+        _modalities.FindConfirmedModalityIdByEngineAsync(Arg.Any<string>(), Arg.Any<ESuretyBranch>(), Arg.Any<CancellationToken>())
+            .Returns((Guid?)null);
+        _modalities.ListActiveByInsurerAsync(InsurerId, Arg.Any<CancellationToken>())
+            .Returns(new List<ImportedModality>());
+
+        await BuildImporter().RunAsync(Now, CancellationToken.None);
+
+        // Grupo compartilhado é criado uma única vez (evita violar o índice único no commit).
+        await _groups.Received(1).AddAsync(Arg.Any<ImportedGroup>(), Arg.Any<CancellationToken>());
+        await _modalities.Received(2).AddAsync(Arg.Any<ImportedModality>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     [Trait("RuleId", "RN-032")]
     public async Task Run_NaoDeveMapear_QuandoIdentificadorSemModalidade()
     {

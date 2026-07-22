@@ -971,6 +971,25 @@
         }
       }
     },
+    "/api/v1/modality-imports/run": {
+      "post": {
+        "tags": [
+          "ModalityImportsEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModalityImportSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/persons": {
       "get": {
         "tags": [
@@ -2759,6 +2778,47 @@
           }
         }
       },
+      "ModalityImportSummaryResponse": {
+        "required": [
+          "insurersProcessed",
+          "insurersSucceeded",
+          "insurersFailed",
+          "failures"
+        ],
+        "type": "object",
+        "properties": {
+          "insurersProcessed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "insurersSucceeded": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "insurersFailed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "ModalityListItemResponse": {
         "required": [
           "id",
@@ -3746,6 +3806,9 @@
     },
     {
       "name": "ModalityGroupsEndpoint"
+    },
+    {
+      "name": "ModalityImportsEndpoint"
     },
     {
       "name": "PersonsEndpoint"
