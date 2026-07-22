@@ -34,6 +34,9 @@ public sealed class ImportedModality : EntityBase
 
     public EImportedModalityStatus Status { get; private set; }
 
+    /// <summary>RN-034: marcada como Ignorada na Fila — não é oferecida e não volta à fila. A importação não altera este marcador.</summary>
+    public bool IsIgnored { get; private set; }
+
     public DateTime LastImportedAt { get; private set; }
 
     public static ImportedModality Create(
@@ -80,6 +83,12 @@ public sealed class ImportedModality : EntityBase
 
     /// <summary>RN-035: ausência numa importação bem-sucedida da Seguradora desativa. Idempotente (automação).</summary>
     public void Deactivate() => Status = EImportedModalityStatus.Inactive;
+
+    /// <summary>RN-034: o Administrador marca a Modalidade Importada como Ignorada na Fila.</summary>
+    public void Ignore() => IsIgnored = true;
+
+    /// <summary>RN-034: reavaliar um item antes ignorado — volta a poder entrar na Fila.</summary>
+    public void Restore() => IsIgnored = false;
 
     private void SetFromSource(
         string originName,

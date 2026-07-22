@@ -49,4 +49,21 @@ public sealed class ModalityRepository(SmartInsureDbContext context)
 
         return (items, totalCount);
     }
+
+    public async Task<IReadOnlyList<ModalityListItemDto>> ListActiveForMapAsync(CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .Where(modality => modality.Status == EModalityStatus.Active)
+            .OrderBy(modality => modality.Name)
+            .Join(
+                Context.Set<ModalityGroup>().AsNoTracking(),
+                modality => modality.ModalityGroupId,
+                group => group.Id,
+                (modality, group) => new ModalityListItemDto(
+                    modality.Id,
+                    modality.Name,
+                    modality.ModalityGroupId,
+                    group.Name,
+                    modality.Description,
+                    modality.Status.ToString()))
+            .ToListAsync(cancellationToken);
 }

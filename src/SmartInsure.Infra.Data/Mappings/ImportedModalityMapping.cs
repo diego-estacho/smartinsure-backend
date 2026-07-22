@@ -20,6 +20,7 @@ public sealed class ImportedModalityMapping : IEntityTypeConfiguration<ImportedM
         builder.Property(modality => modality.EngineModalityName).HasMaxLength(300);
         builder.Property(modality => modality.CommercialParameters);
         builder.Property(modality => modality.Status).HasMaxLength(20).IsRequired();
+        builder.Property(modality => modality.IsIgnored).IsRequired();
         builder.Property(modality => modality.LastImportedAt).IsRequired();
 
         // RN-030: reencontro por (Seguradora, identificador de origem). RN-032: busca por identificador do motor.

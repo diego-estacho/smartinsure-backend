@@ -1,0 +1,7 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.MapImportedModality.Requests;
+using SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.MapImportedModality.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.MapImportedModality.Interfaces;
+
+public interface IMapImportedModalityUseCase : IUseCase<MapImportedModalityRequest, MapImportedModalityResponse>;

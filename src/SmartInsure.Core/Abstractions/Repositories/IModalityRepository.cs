@@ -11,4 +11,7 @@ public interface IModalityRepository : IRepository<Modality>
     /// <summary>RN-036: consulta padrão só Ativas; visão completa quando includeInactive.</summary>
     Task<(IReadOnlyList<ModalityListItemDto> Items, long TotalCount)> ListAsync(
         int page, int pageSize, bool includeInactive, CancellationToken cancellationToken);
+
+    /// <summary>RN-033: todas as Modalidades Ativas (sem paginação) para montar o Mapa.</summary>
+    Task<IReadOnlyList<ModalityListItemDto>> ListActiveForMapAsync(CancellationToken cancellationToken);
 }

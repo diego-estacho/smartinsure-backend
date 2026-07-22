@@ -1,3 +1,4 @@
+using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 
@@ -19,4 +20,11 @@ public interface IImportedModalityRepository : IRepository<ImportedModality>
     /// </summary>
     Task<Guid?> FindConfirmedModalityIdByEngineAsync(
         string engineModalityId, ESuretyBranch branch, CancellationToken cancellationToken);
+
+    /// <summary>RN-034: pendências da Fila — Ativas, não Ignoradas, sem mapeamento Confirmado.</summary>
+    Task<IReadOnlyList<PendingImportedModalityDto>> ListPendingAsync(CancellationToken cancellationToken);
+
+    /// <summary>RN-034 (trava de ramo): a Modalidade já tem Importada Ativa Confirmada de ramo diferente do informado?</summary>
+    Task<bool> HasConfirmedBranchConflictAsync(
+        Guid modalityId, ESuretyBranch branch, CancellationToken cancellationToken);
 }

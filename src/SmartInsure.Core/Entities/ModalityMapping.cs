@@ -44,4 +44,21 @@ public sealed class ModalityMapping : EntityBase
             ConfirmedBy = null,
             ConfirmedAt = null,
         };
+
+    /// <summary>
+    /// RN-034: mapeamento decidido por uma pessoa na Fila de Revisão — nasce Confirmado, marcado
+    /// como manual, com registro de quem confirmou e quando.
+    /// </summary>
+    public static ModalityMapping CreateManual(
+        Guid importedModalityId, Guid modalityId, string confirmedBy, DateTime confirmedAtUtc)
+        => new()
+        {
+            ImportedModalityId = importedModalityId,
+            ModalityId = modalityId,
+            Establishment = EMappingEstablishment.Manual,
+            Status = EModalityMappingStatus.Confirmed,
+            Confidence = null,
+            ConfirmedBy = confirmedBy,
+            ConfirmedAt = confirmedAtUtc,
+        };
 }
