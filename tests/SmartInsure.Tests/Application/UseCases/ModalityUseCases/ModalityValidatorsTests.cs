@@ -16,10 +16,9 @@ public class CreateModalityValidatorTests
 
     private static CreateModalityRequest Request(
         string name = "Garantia de Execução de Contrato",
-        Guid? modalityGroupId = null,
         string? description = "Performance",
         string initialStatus = "Active")
-        => new(name, modalityGroupId ?? Guid.CreateVersion7(), description, initialStatus);
+        => new(name, description, initialStatus);
 
     [Fact]
     public void Validate_DeveAprovar_QuandoRequestValido()
@@ -28,10 +27,6 @@ public class CreateModalityValidatorTests
     [Fact]
     public void Validate_DeveRecusar_QuandoNomeAusente()
         => _validator.Validate(Request(name: "")).IsValid.Should().BeFalse();
-
-    [Fact]
-    public void Validate_DeveRecusar_QuandoGrupoAusente()
-        => _validator.Validate(Request(modalityGroupId: Guid.Empty)).IsValid.Should().BeFalse();
 
     [Fact]
     public void Validate_DeveRecusar_QuandoSituacaoInicialDesconhecida()
@@ -46,12 +41,12 @@ public class UpdateModalityValidatorTests
 
     [Fact]
     public void Validate_DeveAprovar_QuandoRequestValido()
-        => _validator.Validate(new UpdateModalityRequest(Guid.CreateVersion7(), "Garantia", Guid.CreateVersion7(), null))
+        => _validator.Validate(new UpdateModalityRequest(Guid.CreateVersion7(), "Garantia", null))
             .IsValid.Should().BeTrue();
 
     [Fact]
-    public void Validate_DeveRecusar_QuandoGrupoAusente()
-        => _validator.Validate(new UpdateModalityRequest(Guid.CreateVersion7(), "Garantia", Guid.Empty, null))
+    public void Validate_DeveRecusar_QuandoNomeAusente()
+        => _validator.Validate(new UpdateModalityRequest(Guid.CreateVersion7(), "", null))
             .IsValid.Should().BeFalse();
 }
 

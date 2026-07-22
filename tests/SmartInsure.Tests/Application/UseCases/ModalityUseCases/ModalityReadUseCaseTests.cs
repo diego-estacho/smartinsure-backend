@@ -15,20 +15,19 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.ModalityUseCases;
 
-/// <summary>RN-029 — Edição de Modalidade: nome único e Grupo existente.</summary>
+/// <summary>RN-029 — Edição de Modalidade (nome/descrição): nome único.</summary>
 [Trait("RuleId", "RN-029")]
 public class UpdateModalityUseCaseTests
 {
     private readonly IModalityRepository _modalityRepository = Substitute.For<IModalityRepository>();
-    private readonly IModalityGroupRepository _groupRepository = Substitute.For<IModalityGroupRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly UpdateModalityUseCase _useCase;
 
     public UpdateModalityUseCaseTests()
-        => _useCase = new UpdateModalityUseCase(_modalityRepository, _groupRepository, _unitOfWork);
+        => _useCase = new UpdateModalityUseCase(_modalityRepository, _unitOfWork);
 
     private static Modality Existing()
-        => Modality.Create("Garantia Judicial", Guid.CreateVersion7(), null, EModalityStatus.Active);
+        => Modality.CreateManual("Garantia Judicial", null, EModalityStatus.Active);
 
     [Fact]
     public async Task Execute_DeveRecusar_QuandoModalidadeNaoEncontrada()
@@ -37,7 +36,7 @@ public class UpdateModalityUseCaseTests
         _modalityRepository.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns((Modality?)null);
 
         var act = () => _useCase.ExecuteAsync(
-            new UpdateModalityRequest(id, "Nova", Guid.CreateVersion7(), null), CancellationToken.None);
+            new UpdateModalityRequest(id, "Nova", null), CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
     }
@@ -51,41 +50,24 @@ public class UpdateModalityUseCaseTests
             .Returns(true);
 
         var act = () => _useCase.ExecuteAsync(
-            new UpdateModalityRequest(modality.Id, "Garantia de Execução", Guid.CreateVersion7(), null),
+            new UpdateModalityRequest(modality.Id, "Garantia de Execução", null),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>();
     }
 
     [Fact]
-    public async Task Execute_DeveRecusar_QuandoGrupoNaoExiste()
-    {
-        var modality = Existing();
-        var groupId = Guid.CreateVersion7();
-        _modalityRepository.GetByIdAsync(modality.Id, Arg.Any<CancellationToken>()).Returns(modality);
-        _modalityRepository.NameExistsAsync(Arg.Any<string>(), modality.Id, Arg.Any<CancellationToken>()).Returns(false);
-        _groupRepository.GetByIdAsync(groupId, Arg.Any<CancellationToken>()).Returns((ModalityGroup?)null);
-
-        var act = () => _useCase.ExecuteAsync(
-            new UpdateModalityRequest(modality.Id, "Garantia Judicial Nova", groupId, null), CancellationToken.None);
-
-        await act.Should().ThrowAsync<NotFoundException>();
-    }
-
-    [Fact]
     public async Task Execute_DeveEditar_QuandoDadosValidos()
     {
         var modality = Existing();
-        var group = ModalityGroup.Create("Garantias Judiciais", null, 1, EModalityGroupStatus.Active);
         _modalityRepository.GetByIdAsync(modality.Id, Arg.Any<CancellationToken>()).Returns(modality);
         _modalityRepository.NameExistsAsync(Arg.Any<string>(), modality.Id, Arg.Any<CancellationToken>()).Returns(false);
-        _groupRepository.GetByIdAsync(group.Id, Arg.Any<CancellationToken>()).Returns(group);
 
         var response = await _useCase.ExecuteAsync(
-            new UpdateModalityRequest(modality.Id, "Garantia Recursal", group.Id, "Recursos"), CancellationToken.None);
+            new UpdateModalityRequest(modality.Id, "Garantia Recursal", "Recursos"), CancellationToken.None);
 
         response.Name.Should().Be("Garantia Recursal");
-        response.ModalityGroupId.Should().Be(group.Id);
+        response.Description.Should().Be("Recursos");
         await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 }
@@ -102,7 +84,7 @@ public class GetModalityUseCaseTests
     [Fact]
     public async Task Execute_DeveRetornarDetalhe_QuandoEncontrada()
     {
-        var modality = Modality.Create("Garantia Judicial", Guid.CreateVersion7(), "Desc", EModalityStatus.Active);
+        var modality = Modality.CreateManual("Garantia Judicial", "Desc", EModalityStatus.Active);
         _repository.GetByIdAsync(modality.Id, Arg.Any<CancellationToken>()).Returns(modality);
 
         var response = await _useCase.ExecuteAsync(new GetModalityRequest(modality.Id), CancellationToken.None);

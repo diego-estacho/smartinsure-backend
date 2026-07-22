@@ -7,40 +7,46 @@ using SmartInsure.Core.Abstractions.Repositories.Dtos;
 
 namespace SmartInsure.Tests.Application.UseCases.ModalityMapUseCases;
 
-/// <summary>RN-033 — Mapa: oferecida só com ≥1 Importada Ativa Confirmada; disponibilidade por ramo.</summary>
+/// <summary>RN-033 — Mapa: oferecida só com ≥1 Importada Ativa vinculada; Seguradora distinta com contagem; ramo derivado.</summary>
 [Trait("RuleId", "RN-033")]
 public class GetModalityMapUseCaseTests
 {
     private readonly IModalityRepository _modalities = Substitute.For<IModalityRepository>();
-    private readonly IModalityMappingRepository _mappings = Substitute.For<IModalityMappingRepository>();
     private readonly IImportedModalityRepository _imported = Substitute.For<IImportedModalityRepository>();
 
     [Fact]
-    public async Task Execute_DeveDerivarOfertaEDisponibilidadePorRamo()
+    public async Task Execute_DeveDerivarOfertaDisponibilidadePorRamoEAgregarSeguradoras()
     {
         var mapped = Guid.CreateVersion7();
         var unmapped = Guid.CreateVersion7();
+        var essor = Guid.CreateVersion7();
+        var excelsior = Guid.CreateVersion7();
+
         _modalities.ListActiveForMapAsync(Arg.Any<CancellationToken>()).Returns(new List<ModalityListItemDto>
         {
-            new(mapped, "Garantia de Execução", Guid.CreateVersion7(), "Contrato", null, "Active"),
-            new(unmapped, "Garantia Judicial", Guid.CreateVersion7(), "Judiciais", null, "Active"),
+            new(mapped, "Garantia de Execução", null, "Active"),
+            new(unmapped, "Garantia Judicial", null, "Active"),
         });
-        _mappings.ListConfirmedActiveAsync(Arg.Any<CancellationToken>()).Returns(new List<ConfirmedMappingDto>
+        _imported.ListActiveLinksAsync(Arg.Any<CancellationToken>()).Returns(new List<ModalityInsurerLinkDto>
         {
-            new(mapped, Guid.CreateVersion7(), "Essor", Guid.CreateVersion7(), "Performance", "Public"),
-            new(mapped, Guid.CreateVersion7(), "Excelsior", Guid.CreateVersion7(), "Exec", "Private"),
+            // Duas Importadas da mesma Seguradora (Essor) sustentam a Modalidade — uma badge, contagem 2.
+            new(mapped, essor, "Essor", "Performance", "Public"),
+            new(mapped, essor, "Essor", "Execução PF", "Private"),
+            new(mapped, excelsior, "Excelsior", "Exec", "Private"),
         });
         _imported.ListPendingAsync(Arg.Any<CancellationToken>()).Returns(new List<PendingImportedModalityDto>
         {
-            new(Guid.CreateVersion7(), Guid.CreateVersion7(), "Essor", "Nova modalidade", "Public", "Eng", "Grupo"),
+            new(Guid.CreateVersion7(), Guid.CreateVersion7(), "Essor", "Sem global", "Public", null, "Grupo"),
         });
 
-        var response = await new GetModalityMapUseCase(_modalities, _mappings, _imported)
+        var response = await new GetModalityMapUseCase(_modalities, _imported)
             .ExecuteAsync(new GetModalityMapRequest(), CancellationToken.None);
 
         var offered = response.Modalities.Single(m => m.ModalityId == mapped);
         offered.Offered.Should().BeTrue();
         offered.Insurers.Should().HaveCount(2);
+        offered.Insurers.Single(i => i.InsurerId == essor).Count.Should().Be(2);
+        offered.Insurers.Single(i => i.InsurerId == essor).Origins.Should().BeEquivalentTo(["Performance", "Execução PF"]);
         offered.Branches.Should().BeEquivalentTo(["Private", "Public"]);
 
         response.Modalities.Single(m => m.ModalityId == unmapped).Offered.Should().BeFalse();

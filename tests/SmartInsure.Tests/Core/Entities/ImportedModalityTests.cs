@@ -85,4 +85,46 @@ public class ImportedModalityTests
 
         modality.Status.Should().Be(EImportedModalityStatus.Inactive);
     }
+
+    [Fact]
+    [Trait("RuleId", "RN-032")]
+    public void LinkToModality_DeveVincularAutomaticamente_QuandoSemVinculo()
+    {
+        var modality = New();
+        var modalityId = Guid.CreateVersion7();
+
+        modality.LinkToModality(modalityId, EModalityLinkSource.Automatic);
+
+        modality.ModalityId.Should().Be(modalityId);
+        modality.ModalityLinkSource.Should().Be(EModalityLinkSource.Automatic);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-034")]
+    public void LinkToModality_NaoDeveSobrescreverManual_QuandoImportacaoAutomatica()
+    {
+        var modality = New();
+        var manualTarget = Guid.CreateVersion7();
+        modality.LinkToModality(manualTarget, EModalityLinkSource.Manual);
+
+        // Reimportação automática não pode desfazer o override manual (RN-032/RN-034).
+        modality.LinkToModality(Guid.CreateVersion7(), EModalityLinkSource.Automatic);
+
+        modality.ModalityId.Should().Be(manualTarget);
+        modality.ModalityLinkSource.Should().Be(EModalityLinkSource.Manual);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-034")]
+    public void LinkToModality_DevePermitirOverrideManual_SobreVinculoAutomatico()
+    {
+        var modality = New();
+        modality.LinkToModality(Guid.CreateVersion7(), EModalityLinkSource.Automatic);
+        var manualTarget = Guid.CreateVersion7();
+
+        modality.LinkToModality(manualTarget, EModalityLinkSource.Manual);
+
+        modality.ModalityId.Should().Be(manualTarget);
+        modality.ModalityLinkSource.Should().Be(EModalityLinkSource.Manual);
+    }
 }
