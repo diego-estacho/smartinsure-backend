@@ -410,6 +410,76 @@
         }
       }
     },
+    "/api/v1/imported-modalities/{id}/map": {
+      "post": {
+        "tags": [
+          "ImportedModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapImportedModalityBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapImportedModalityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-modalities/{id}/ignore": {
+      "post": {
+        "tags": [
+          "ImportedModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IgnoreImportedModalityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/insurers": {
       "post": {
         "tags": [
@@ -983,6 +1053,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ModalityImportSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modality-map": {
+      "get": {
+        "tags": [
+          "ModalityMapEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModalityMapResponse"
                 }
               }
             }
@@ -2592,6 +2681,22 @@
           }
         }
       },
+      "IgnoreImportedModalityResponse": {
+        "required": [
+          "importedModalityId",
+          "ignored"
+        ],
+        "type": "object",
+        "properties": {
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ignored": {
+            "type": "boolean"
+          }
+        }
+      },
       "ImportedBrokerageAddressResponse": {
         "required": [
           "zipCode",
@@ -2742,6 +2847,64 @@
           }
         }
       },
+      "MapImportedModalityBody": {
+        "required": [
+          "modalityId"
+        ],
+        "type": "object",
+        "properties": {
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "MapImportedModalityResponse": {
+        "required": [
+          "importedModalityId",
+          "modalityId",
+          "mappingStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mappingStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "MapInsurerResponse": {
+        "required": [
+          "insurerId",
+          "insurerName",
+          "importedModalityId",
+          "originName"
+        ],
+        "type": "object",
+        "properties": {
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "originName": {
+            "type": "string"
+          }
+        }
+      },
       "ModalityGroupListItemResponse": {
         "required": [
           "id",
@@ -2852,6 +3015,69 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "ModalityMapEntryResponse": {
+        "required": [
+          "modalityId",
+          "name",
+          "groupName",
+          "status",
+          "offered",
+          "branches",
+          "insurers"
+        ],
+        "type": "object",
+        "properties": {
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "offered": {
+            "type": "boolean"
+          },
+          "branches": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "insurers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MapInsurerResponse"
+            }
+          }
+        }
+      },
+      "ModalityMapResponse": {
+        "required": [
+          "modalities",
+          "pending"
+        ],
+        "type": "object",
+        "properties": {
+          "modalities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModalityMapEntryResponse"
+            }
+          },
+          "pending": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendingImportedModalityResponse"
+            }
           }
         }
       },
@@ -3146,6 +3372,46 @@
               "string"
             ],
             "format": "int64"
+          }
+        }
+      },
+      "PendingImportedModalityResponse": {
+        "required": [
+          "importedModalityId",
+          "insurerId",
+          "insurerName",
+          "originName",
+          "branch",
+          "engineModalityName",
+          "groupName"
+        ],
+        "type": "object",
+        "properties": {
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "originName": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "engineModalityName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "groupName": {
+            "type": "string"
           }
         }
       },
@@ -3799,6 +4065,9 @@
       "name": "CalculationEnginesEndpoint"
     },
     {
+      "name": "ImportedModalitiesEndpoint"
+    },
+    {
       "name": "InsurersEndpoint"
     },
     {
@@ -3809,6 +4078,9 @@
     },
     {
       "name": "ModalityImportsEndpoint"
+    },
+    {
+      "name": "ModalityMapEndpoint"
     },
     {
       "name": "PersonsEndpoint"
