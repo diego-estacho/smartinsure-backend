@@ -18,4 +18,12 @@ public interface ICalculationEngine
     /// inválidos recusam a gravação da Habilitação. Lança exceção de regra de negócio.
     /// </summary>
     void EnsureValidConnectionParameters(string? connectionParameters);
+
+    /// <summary>
+    /// RN-031: obtém o catálogo de modalidades das Seguradoras habilitadas da Corretora,
+    /// usando os parâmetros de conexão da Habilitação e o CNPJ da Corretora. A tradução do
+    /// payload do fornecedor para o contrato acontece na ACL do provider (ADR-045).
+    /// </summary>
+    Task<ImportedCatalogResult> GetGroupAndModalitiesAsync(
+        string? connectionParameters, string brokerCnpj, CancellationToken cancellationToken);
 }
