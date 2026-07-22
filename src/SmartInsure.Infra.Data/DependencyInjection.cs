@@ -36,6 +36,9 @@ public static class DependencyInjection
         services.AddScoped<IPolicyHolderAppointmentRepository, PolicyHolderAppointmentRepository>();
         services.AddScoped<IModalityGroupRepository, ModalityGroupRepository>();
         services.AddScoped<IModalityRepository, ModalityRepository>();
+        services.AddScoped<IImportedGroupRepository, ImportedGroupRepository>();
+        services.AddScoped<IImportedModalityRepository, ImportedModalityRepository>();
+        services.AddScoped<IModalityMappingRepository, ModalityMappingRepository>();
 
         services.AddOptions<MongoOptions>()
             .BindConfiguration(MongoOptions.SectionName)

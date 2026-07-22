@@ -23,6 +23,12 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<Modality> Modalities => Set<Modality>();
 
+    public DbSet<ImportedGroup> ImportedGroups => Set<ImportedGroup>();
+
+    public DbSet<ImportedModality> ImportedModalities => Set<ImportedModality>();
+
+    public DbSet<ModalityMapping> ModalityMappings => Set<ModalityMapping>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartInsureDbContext).Assembly);

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Entities;
+using SmartInsure.Core.Enumerators;
 using SmartInsure.Infra.Data.Context;
 
 namespace SmartInsure.Infra.Data.Repositories;
@@ -84,4 +85,24 @@ public sealed class BrokerageInsurerEnablementRepository(SmartInsureDbContext co
 
         return (items, totalCount);
     }
+
+    public async Task<IReadOnlyList<ActiveEnablementImportDto>> ListActiveForImportAsync(
+        CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .Where(enablement => enablement.Status == EBrokerageInsurerEnablementStatus.Active)
+            .Select(enablement => new ActiveEnablementImportDto(
+                enablement.Id,
+                enablement.BrokerageId,
+                Context.Persons
+                    .Where(person => person.Id == enablement.BrokerageId)
+                    .Select(person => person.DocumentNumber)
+                    .First(),
+                enablement.InsurerId,
+                Context.Insurers
+                    .Where(insurer => insurer.Id == enablement.InsurerId)
+                    .Select(insurer => insurer.ReferenceExternalId)
+                    .First(),
+                enablement.CalculationEngine.ToString(),
+                enablement.ConnectionParameters))
+            .ToListAsync(cancellationToken);
 }
