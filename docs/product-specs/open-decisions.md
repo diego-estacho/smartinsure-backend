@@ -47,9 +47,9 @@ Contexto: decidido em 2026-07-19 que esta fase entrega apenas a infraestrutura d
 
 ## OPEN-08 — Mapeamento automático de modalidade "por semelhança"
 Dono: PO (gerente de projeto)
-Bloqueia: a confirmação automática de Mapeamento de Modalidade por aproximação de nome/descrição (forma `Similarity`)
-Status: aberta
-Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A importação confirma mapeamento automaticamente apenas "por identificador do motor" (RN-032); tudo o mais cai na Fila de Revisão como pendente (RN-034). A confirmação automática "por semelhança" — aproximar a Modalidade Importada das Modalidades do mesmo Ramo por nome/descrição e confirmar acima de um grau de confiança — fica fora desta fase. Falta a PO definir o método de aproximação e o grau de confiança mínimo (idealmente calibrados com dados reais após a primeira carga). Sem essa definição, "por semelhança" não é implementável.
+Bloqueia: —
+Status: **resolvida** em 2026-07-22 (ADR-061)
+Contexto: levantado em 2026-07-21. **Encerrada** com a revisão do modelo (ADR-061): o vínculo Modalidade Importada → Modalidade passa a ser intrínseco, pelo id da Modalidade Global da OnPoint — não há aproximação por nome/descrição em nenhuma forma. A "semelhança" deixa de existir no domínio de modalidades.
 
 ## OPEN-09 — Credencial e divergência de catálogo quando a Seguradora tem várias Corretoras habilitadas
 Dono: PO (gerente de projeto)
@@ -60,12 +60,9 @@ Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A
 ## OPEN-12 — Granularidade da Modalidade vs. Global Modality do motor (mapeamento por identificador)
 Dono: PO (gerente de projeto)
 Bloqueia: a semântica do mapeamento automático "por identificador do motor" (RN-032) quando a Global Modality do motor é mais grossa que a Modalidade desejada
-Status: aberta
-Contexto: levantado em 2026-07-22. O PlugV2/OnPoint agrupa várias ofertas sob uma mesma **Global Modality** (identificador do motor). Ex.: EngId 31 = "Judicial" reúne, só na Essor, 10 origens distintas — "Judicial - Cível", "Judicial - Execução Fiscal", várias "PGE …". A RN-032 herda o mapeamento **por identificador**: ao confirmar manualmente uma importada de EngId 31 para a Modalidade "Judicial (cível)", o job confirmou automaticamente **todas** as de EngId 31 (incl. Execução Fiscal) para essa mesma Modalidade — fiel à RN-032, mas semanticamente pode estar errado se o produto considera Cível e Execução Fiscal Modalidades distintas.
-Cerne: o identificador do motor É a granularidade máxima disponível para o automático; não dá para dividir uma Global Modality em duas Modalidades do Smart pela via do identificador. Falta a PO decidir:
-- (A) **Aceitar a granularidade do motor**: a Modalidade equivale à Global Modality (renomear "Judicial (cível)" → "Judicial"; a comparabilidade é no nível "Judicial"). Simples, alinhado à fonte.
-- (B) **Querer granularidade mais fina** que a do motor: então o "por identificador" é grosso demais — o mapeamento dessas subdivisões passa a ser **manual por importada** (não herdado), e a RN-032 precisa ser revista (ex.: identificador vira *sugestão* na Fila em vez de confirmação automática, ou "Modalidade" é definida como = Global Modality por contrato).
-Enquanto não decidido: nenhuma mudança de código; o comportamento atual segue a RN-032 literal. Corrigir os dados atuais (desfazer as associações indevidas de EngId 31) depende de uma ação de reclassificar/desmapear ainda não construída.
+Status: **resolvida** em 2026-07-22 (ADR-061) — opção (A)
+Contexto: levantado em 2026-07-22. O PlugV2/OnPoint agrupa várias ofertas sob uma mesma **Global Modality** (identificador do motor). Ex.: id 31 = "Judicial" reúne, só na Essor, 10 origens distintas — "Judicial - Cível", "Judicial - Execução Fiscal", várias "PGE …". O modelo antigo (ADR-060) herdava o mapeamento por identificador a partir de uma semente confirmada, o que levava a lumping semanticamente questionável.
+Resolução: o time decidiu pela **opção (A)** — a **Modalidade equivale à Modalidade Global** da OnPoint (a fonte é a autoridade da granularidade). O ADR-061 formaliza: a Modalidade é derivada da Modalidade Global (find-or-create por id global), o vínculo é intrínseco, e não há semente/confirmação manual para propagar. Assim "Judicial" é uma única Modalidade por definição, e o problema de granularidade deixa de existir. Correção de dados legados (mapeamentos criados sob o ADR-060) será feita no retrabalho da implementação para o modelo do ADR-061.
 
 ## OPEN-11 — Disponibilidade derivada por tipo de tomador (PF/PJ)
 Dono: PO (gerente de projeto)

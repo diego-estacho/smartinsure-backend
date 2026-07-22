@@ -1,7 +1,8 @@
 ---
 id: ADR-060
 title: Catálogo de Modalidades — dois mundos ligados por mapeamento, importação idempotente pela Habilitação
-status: accepted
+status: superseded
+superseded-by: ADR-061
 tags: [dominio, integracoes]
 applies-to: ["src/SmartInsure.Core/Entities/Modality*.cs", "src/SmartInsure.Core/Entities/ImportedModality.cs", "src/SmartInsure.Application.UseCase/UseCases/Modality*/**", "src/SmartInsure.Application.UseCase/Services/ModalityImports/**", "src/SmartInsure.Functions/**"]
 supersedes: []
@@ -12,7 +13,7 @@ evidence: []
 
 ## Status
 
-Aceito
+**Superseded pelo [ADR-061](061-modalidade-derivada-da-global-modality.md)** (2026-07-22). O modelo abaixo (Mapeamento próprio, curadoria de mapeamento, Grupo de Modalidade no Smart, automação por identificador/semelhança) foi substituído: a Modalidade passou a ser derivada da Modalidade Global da OnPoint, com vínculo intrínseco (ver ADR-061). Mantido como registro histórico.
 
 ## Decisão (normativa)
 
