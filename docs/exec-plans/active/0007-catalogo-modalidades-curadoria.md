@@ -18,7 +18,7 @@ Entregar a curadoria do catálogo de Modalidades end-to-end: as entidades curada
 - [x] Testes com `[Trait("RuleId","RN-029")]` e `[Trait("RuleId","RN-036")]` (xUnit/NSubstitute/FluentAssertions): criação, nome duplicado recusado, grupo inexistente recusado, inativar/reativar idempotente-negado, validators de forma.
 - [x] `dotnet build SmartInsure.slnx` + `dotnet test tests/SmartInsure.Tests` verdes (inclui NetArchTest/ConventionTests); `python scripts/check-harness.py` → `harness ok`. Cobertura: ver Evidências (nova lógica bem coberta; gate agregado é pré-existente).
 - [x] Validar migration localmente (`docker compose --profile migrations up -d` + `repair`/`migrate`).
-- [ ] **PENDENTE** — Contrato `docs/generated/openapi.json` regenerado com os endpoints de Modalidade e Grupo (endpoints já anotados com `.Produces<>`; regen exige subir a API — fazer em dev/CI, nunca editar à mão o arquivo derivado).
+- [x] Contrato `docs/generated/openapi.json` regenerado (API subida com config mockada + SQL do docker; `/openapi/v1.json` capturado) — inclui as 6 rotas de Modalidade/Grupo e os schemas Create/Update/ChangeStatus/Get/List.
 - [ ] **PENDENTE** — Frontend: telas Cadastro de Grupo de Modalidade e Cadastro de Modalidade (CRUD sem exclusão; status por nome estável; só design tokens); BFF + composables + `pnpm types:gen`; `pnpm lint && typecheck && test` verdes + E2E Playwright das jornadas.
 - [ ] **PENDENTE** — PRs vinculados por `AB#0002`: dbmigration (→ develop) antes do backend (→ main), depois frontend — não abrir até validação do Thiago.
 
@@ -36,6 +36,6 @@ Entregar a curadoria do catálogo de Modalidades end-to-end: as entidades curada
 - **Cobertura** (coverlet): `SmartInsure.Core` 86%; classes novas de use case e entidade em 0,8–1,0 (medido por classe no cobertura.xml). Agregado do assembly `SmartInsure.Application.UseCase` em 69% — reflete código **pré-existente** sem teste no assembly (serviços/use cases anteriores), não as adições desta fatia. O gate de 80% do CI ainda é esboço no `azure-pipelines.yml` (não implementado); recomendação registrada para quando o step existir.
 - **Migration**: Flyway local aplicou `20260721200608 - criar-tabelas-modality-catalog` com sucesso (`repair` + `migrate`; schema agora em v20260721200608). O mismatch de checksum encontrado era de migrations pré-existentes (finais de linha CRLF/LF no volume local), não da nova.
 - **Commits** (branch `ab-0002-job-importar-modalidades`, sem PR): backend `dedcee3` (docs/RN/ADR), `a1d1e95` (entidades), `3b2ca48` (persistência+use cases), `59b912d` (endpoints), `+ test` (validators); dbmigration `e5b6ef5` (migration).
-- **PENDENTE — Contrato**: `docs/generated/openapi.json` a regenerar (endpoints anotados com `.Produces<>`; arquivo é derivado — regen ao subir a API em dev/CI, nunca à mão).
+- **Contrato**: `docs/generated/openapi.json` regenerado subindo a `SmartInsure.Api` (Development, config mockada nas Options `ValidateOnStart`, SQL do docker) e capturando `/openapi/v1.json`. Publica `/api/v1/modality-groups` e `/api/v1/modalities` (GET list/detail, POST, PUT, PATCH /status) + schemas. JSON válido.
 - **PENDENTE — Front**: telas de cadastro + `pnpm types:gen` + `pnpm lint/typecheck/test` + E2E (gravação/screenshot no PR).
 - Pendências de processo: ratificação da PO (termos e RNs propostos); abertura dos PRs após validação do Thiago.
