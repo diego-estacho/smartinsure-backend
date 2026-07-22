@@ -22,7 +22,7 @@ Fechar o catálogo: o Mapa de Modalidades (matriz Seguradoras × Modalidades com
 - [ ] Api: `GET /modality-map`; `POST /imported-modalities/{id}/map`; `POST /imported-modalities/{id}/ignore` — escrita restrita ao Administrador do Sistema (RN-029/011).
 - [ ] Testes `[Trait("RuleId","RN-033/034")]`: mapear confirma manual; trava de ramo recusa; ignorar remove da fila e não é oferecida; leitura do Mapa (oferecida só com ≥1 confirmada ativa; disponibilidade por ramo).
 - [ ] `dotnet build`/`dotnet test` verdes, `check-harness.py` ok, migration aplicada, contrato regenerado.
-- [ ] Frontend (subagente): tela **Mapa de Modalidades** — matriz Seguradoras × Modalidades, pendências evidenciadas na própria exibição (Fila), ações mapear/promover/ignorar; consome types do contrato; `pnpm lint/typecheck/test` + E2E.
+- [x] Frontend: tela **Mapa de Modalidades** (`app/pages/mapa-de-modalidades/`) — matriz Seguradoras × Modalidades + Fila de Revisão na mesma tela, ações mapear/promover/ignorar; BFF proxiando, types regenerados do contrato; `pnpm lint`/`typecheck` verdes, `pnpm test` 113/113, 2 E2E novos verdes.
 
 ## Critérios de aceite
 
@@ -34,4 +34,10 @@ Fechar o catálogo: o Mapa de Modalidades (matriz Seguradoras × Modalidades com
 
 ## Evidências
 
-- (a preencher) build/test, migration, contrato, front (gates + E2E), commits.
+- **Backend** (2026-07-22): `dotnet build` 0 erros; `dotnet test` **322/322** (fatia 3 +6: mapear manual/trava de ramo/já-mapeada, ignorar/não-encontrada, Mapa oferta+ramo); `check-harness.py` → `harness ok`.
+- **Migration**: Flyway aplicou `V20260722084643 - adicionar-ignored-em-imported-modalities` no docker (schema v20260722084643).
+- **Contrato**: `docs/generated/openapi.json` (32 rotas) com `GET /modality-map`, `POST /imported-modalities/{id}/map` e `/ignore`.
+- **Front** (worktree `smartinsure-frontend`, branch `ab-0002-job-importar-modalidades`): tela Mapa de Modalidades + Fila espelhando o slice de fatia 1; BFF, composable, mapa de Ramo por nome estável, dialogs mapear/promover(reusa cadastro)/ignorar. Gates re-verificados no run principal: `pnpm lint` exit 0, `pnpm typecheck` exit 0, `pnpm test` **113/113 (22 arquivos)**, 2 E2E novos verdes. Falhas do E2E completo (login/smoke/tomadores) pré-existentes — branch não toca esses specs. 5 commits pt-BR `AB#0002`, sem PR.
+- **Corte honesto**: disponibilidade **PF/PJ** não implementada (semântica dos flags PlugV2 indefinida) → **OPEN-11**; disponibilidade **por ramo** entregue (derivada do `Branch`).
+- **Commits backend**: `feat: Mapa de Modalidades e Fila de Revisão` + contrato; dbmigration `V20260722084643`. Front: 5 commits (`13906f1`..`c9013e9`).
+- Pendências: ratificação da PO; abertura dos PRs (dbmigration → develop, backend → main, frontend); OPEN-11 (PF/PJ); OPEN-08 (semelhança automática).

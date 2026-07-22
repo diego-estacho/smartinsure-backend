@@ -57,6 +57,12 @@ Bloqueia: a regra de qual credencial (PlugKey) usar na importação de uma Segur
 Status: aberta
 Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A Modalidade Importada é da Seguradora, não da Corretora (o `BrokerCnpj`/PlugKey é só credencial de busca), então a importação deduplica por Seguradora e faz uma chamada por Seguradora (RN-031). Falta a PO decidir qual credencial usar quando várias Corretoras habilitam a mesma Seguradora e o que fazer se o retorno divergir entre elas (hoje assume-se catálogo único por Seguradora).
 
+## OPEN-11 — Disponibilidade derivada por tipo de tomador (PF/PJ)
+Dono: PO (gerente de projeto)
+Bloqueia: a parte "pessoa física / jurídica" da disponibilidade derivada da Modalidade (RN-033)
+Status: aberta
+Contexto: levantado em 2026-07-22 (fatia 3, Mapa de Modalidades). A disponibilidade **por ramo** (ente público/privado) é derivada com segurança do `Branch` das Modalidades Importadas ativas confirmadas. Já a disponibilidade **PF/PJ** dependeria de interpretar os flags do PlugV2 (`IgnoreBranchWhenInsuredIsPF`, `IgnoreBranchWhenInsuredIsPrivate`), cuja semântica exata (o que "ignorar ramo quando o segurado é PF" significa para "disponível para PF") não está definida. Não foi implementada para não inventar regra; falta a PO definir a semântica (e, se preciso, tipar público-alvo na Modalidade Importada). Até lá, o Mapa mostra a disponibilidade por ramo.
+
 ## OPEN-10 — Cadência do agendamento da importação de modalidades
 Dono: PO (gerente de projeto)
 Bloqueia: nada crítico (há default proposto); ajusta a frequência do job
