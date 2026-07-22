@@ -19,8 +19,8 @@ Entregar a curadoria do catálogo de Modalidades end-to-end: as entidades curada
 - [x] `dotnet build SmartInsure.slnx` + `dotnet test tests/SmartInsure.Tests` verdes (inclui NetArchTest/ConventionTests); `python scripts/check-harness.py` → `harness ok`. Cobertura: ver Evidências (nova lógica bem coberta; gate agregado é pré-existente).
 - [x] Validar migration localmente (`docker compose --profile migrations up -d` + `repair`/`migrate`).
 - [x] Contrato `docs/generated/openapi.json` regenerado (API subida com config mockada + SQL do docker; `/openapi/v1.json` capturado) — inclui as 6 rotas de Modalidade/Grupo e os schemas Create/Update/ChangeStatus/Get/List.
-- [ ] **PENDENTE** — Frontend: telas Cadastro de Grupo de Modalidade e Cadastro de Modalidade (CRUD sem exclusão; status por nome estável; só design tokens); BFF + composables + `pnpm types:gen`; `pnpm lint && typecheck && test` verdes + E2E Playwright das jornadas.
-- [ ] **PENDENTE** — PRs vinculados por `AB#0002`: dbmigration (→ develop) antes do backend (→ main), depois frontend — não abrir até validação do Thiago.
+- [x] Frontend: telas Cadastro de Grupo de Modalidade e Cadastro de Modalidade (CRUD sem exclusão; status por nome estável; só design tokens); BFF Nitro + composables + types regenerados do contrato; `pnpm lint`/`typecheck` verdes, `pnpm test` 104/104, 2 E2E Playwright novos verdes.
+- [ ] **PENDENTE (aguarda Thiago)** — PRs vinculados por `AB#0002`: dbmigration (→ develop) antes do backend (→ main), depois frontend — não abrir até validação final.
 
 ## Critérios de aceite
 
@@ -37,5 +37,6 @@ Entregar a curadoria do catálogo de Modalidades end-to-end: as entidades curada
 - **Migration**: Flyway local aplicou `20260721200608 - criar-tabelas-modality-catalog` com sucesso (`repair` + `migrate`; schema agora em v20260721200608). O mismatch de checksum encontrado era de migrations pré-existentes (finais de linha CRLF/LF no volume local), não da nova.
 - **Commits** (branch `ab-0002-job-importar-modalidades`, sem PR): backend `dedcee3` (docs/RN/ADR), `a1d1e95` (entidades), `3b2ca48` (persistência+use cases), `59b912d` (endpoints), `+ test` (validators); dbmigration `e5b6ef5` (migration).
 - **Contrato**: `docs/generated/openapi.json` regenerado subindo a `SmartInsure.Api` (Development, config mockada nas Options `ValidateOnStart`, SQL do docker) e capturando `/openapi/v1.json`. Publica `/api/v1/modality-groups` e `/api/v1/modalities` (GET list/detail, POST, PUT, PATCH /status) + schemas. JSON válido.
-- **PENDENTE — Front**: telas de cadastro + `pnpm types:gen` + `pnpm lint/typecheck/test` + E2E (gravação/screenshot no PR).
-- Pendências de processo: ratificação da PO (termos e RNs propostos); abertura dos PRs após validação do Thiago.
+- **Front** (2026-07-21, worktree `smartinsure-frontend`, branch `ab-0002-job-importar-modalidades`): telas Cadastro de Grupo de Modalidade e Cadastro de Modalidade espelhando o slice de Corretoras/Habilitações; BFF Nitro proxiando as 6 rotas, composables, mapas de status por nome estável, dropdown de Grupo no form de Modalidade; types regenerados do `openapi.json` (nunca à mão). Gates re-verificados no run principal: `pnpm lint` exit 0, `pnpm typecheck` exit 0, `pnpm test` **104/104 (19 arquivos)**, 2 E2E novos verdes (criar + inativar por tela). Falhas no E2E completo (login/smoke/tomadores) são pré-existentes — confirmado que a branch não toca esses specs (`git diff main...HEAD` vazio neles). 6 commits pt-BR com `AB#0002`, sem PR.
+- **Validação** (2026-07-21): Thiago validou RN/design e autorizou seguir com a implementação (inclui a escrita restrita ao Administrador do Sistema). O flip formal do status "proposto" no glossário/RN fica a cargo do dono quando for o caso.
+- Pendência de processo: abertura dos PRs (dbmigration → develop, backend → main, frontend) — deixada para o Thiago acionar após a revisão final.
