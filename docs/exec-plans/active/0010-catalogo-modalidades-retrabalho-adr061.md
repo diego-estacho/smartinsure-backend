@@ -37,4 +37,15 @@ Passar de "dois mundos + Mapeamento próprio + Grupo no Smart + automação por 
 
 ## Evidências
 
-- (a preencher) build/test, migration, contrato, front, reimport ao vivo, commits.
+### Backend (AB#0002) — concluído em 2026-07-22
+
+- **Build**: `dotnet build SmartInsure.slnx` → 0 erros.
+- **Testes**: `dotnet test tests/SmartInsure.Tests` → `Passed! - Failed: 0, Passed: 299, Skipped: 0, Total: 299` (inclui NetArchTest/ConventionTests). Testes de modalidades reescritos para o modelo novo; testes de `ModalityGroup`/`ModalityMapping` removidos.
+- **Harness**: `python scripts/check-harness.py` → `harness ok`.
+- **Migration**: `smartinsure-dbmigration/migrations/V20260722170658__modalidade-derivada-da-global-modality.sql` aplicada via `docker compose --profile migrations run --rm flyway repair` + `migrate` → `Successfully applied 1 migration ... now at version v20260722170658`. Schema conferido: `ModalityGroups`/`ModalityMappings` inexistentes; `Modalities.GlobalModalityExternalId` presente + `Modalities.ModalityGroupId` removido; `ImportedModalities.ModalityId`/`ModalityLinkSource` presentes.
+- **Contrato**: `docs/generated/openapi.json` regenerado (servers normalizado p/ `http://127.0.0.1:5981/`). Rotas: `imported-modalities/{id}/reassign|ignore|restore`, `modalities` sem grupo, `modality-map`, `modality-imports/run`; sem `modality-groups`; `MapInsurerResponse` = insurerId/insurerName/count/origins.
+- **Reimport ao vivo** (`POST /api/v1/modality-imports/run`, admin@dev.local): `insurersProcessed 2, succeeded 2, failed 0`. "Judicial" é **uma** Modalidade (id global 31) com Essor (10 importadas) e Excelsior (2 importadas) vinculadas `Automatic`; Mapa agrega uma badge por Seguradora com contagem; Fila vazia. Cruft legado (4 Modalidades manuais do ADR-060 sem id global, ex.: "Licitante") removido do banco dev por colidir com o nome único das derivadas — superseded pela reimportação.
+
+### Frontend (sub-agente B)
+
+- (pendente)

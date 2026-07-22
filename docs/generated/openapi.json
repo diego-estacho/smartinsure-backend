@@ -410,7 +410,7 @@
         }
       }
     },
-    "/api/v1/imported-modalities/{id}/map": {
+    "/api/v1/imported-modalities/{id}/reassign": {
       "post": {
         "tags": [
           "ImportedModalitiesEndpoint"
@@ -430,7 +430,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MapImportedModalityBody"
+                "$ref": "#/components/schemas/ReassignImportedModalityBody"
               }
             }
           },
@@ -442,7 +442,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MapImportedModalityResponse"
+                  "$ref": "#/components/schemas/ReassignImportedModalityResponse"
                 }
               }
             }
@@ -473,6 +473,36 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/IgnoreImportedModalityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-modalities/{id}/restore": {
+      "post": {
+        "tags": [
+          "ImportedModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreImportedModalityResponse"
                 }
               }
             }
@@ -847,193 +877,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ChangeModalityStatusResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/modality-groups": {
-      "post": {
-        "tags": [
-          "ModalityGroupsEndpoint"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateModalityGroupRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateModalityGroupResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "ModalityGroupsEndpoint"
-        ],
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
-            }
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
-            }
-          },
-          {
-            "name": "includeInactive",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfModalityGroupListItemResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/modality-groups/{id}": {
-      "put": {
-        "tags": [
-          "ModalityGroupsEndpoint"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateModalityGroupBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateModalityGroupResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "ModalityGroupsEndpoint"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GetModalityGroupResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/modality-groups/{id}/status": {
-      "patch": {
-        "tags": [
-          "ModalityGroupsEndpoint"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangeModalityGroupStatusBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeModalityGroupStatusResponse"
                 }
               }
             }
@@ -1825,33 +1668,6 @@
           }
         }
       },
-      "ChangeModalityGroupStatusBody": {
-        "required": [
-          "status"
-        ],
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string"
-          }
-        }
-      },
-      "ChangeModalityGroupStatusResponse": {
-        "required": [
-          "id",
-          "status"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string"
-          }
-        }
-      },
       "ChangeModalityStatusBody": {
         "required": [
           "status"
@@ -2102,77 +1918,9 @@
           }
         }
       },
-      "CreateModalityGroupRequest": {
-        "required": [
-          "name",
-          "description",
-          "displayOrder",
-          "initialStatus"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "displayOrder": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "initialStatus": {
-            "type": "string"
-          }
-        }
-      },
-      "CreateModalityGroupResponse": {
-        "required": [
-          "id",
-          "name",
-          "description",
-          "displayOrder",
-          "status"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "displayOrder": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "status": {
-            "type": "string"
-          }
-        }
-      },
       "CreateModalityRequest": {
         "required": [
           "name",
-          "modalityGroupId",
           "description",
           "initialStatus"
         ],
@@ -2180,10 +1928,6 @@
         "properties": {
           "name": {
             "type": "string"
-          },
-          "modalityGroupId": {
-            "type": "string",
-            "format": "uuid"
           },
           "description": {
             "type": [
@@ -2200,7 +1944,6 @@
         "required": [
           "id",
           "name",
-          "modalityGroupId",
           "description",
           "status"
         ],
@@ -2212,10 +1955,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "modalityGroupId": {
-            "type": "string",
-            "format": "uuid"
           },
           "description": {
             "type": [
@@ -2551,47 +2290,10 @@
           }
         }
       },
-      "GetModalityGroupResponse": {
-        "required": [
-          "id",
-          "name",
-          "description",
-          "displayOrder",
-          "status"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "displayOrder": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "status": {
-            "type": "string"
-          }
-        }
-      },
       "GetModalityResponse": {
         "required": [
           "id",
           "name",
-          "modalityGroupId",
           "description",
           "status"
         ],
@@ -2603,10 +2305,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "modalityGroupId": {
-            "type": "string",
-            "format": "uuid"
           },
           "description": {
             "type": [
@@ -2847,45 +2545,12 @@
           }
         }
       },
-      "MapImportedModalityBody": {
-        "required": [
-          "modalityId"
-        ],
-        "type": "object",
-        "properties": {
-          "modalityId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        }
-      },
-      "MapImportedModalityResponse": {
-        "required": [
-          "importedModalityId",
-          "modalityId",
-          "mappingStatus"
-        ],
-        "type": "object",
-        "properties": {
-          "importedModalityId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "modalityId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "mappingStatus": {
-            "type": "string"
-          }
-        }
-      },
       "MapInsurerResponse": {
         "required": [
           "insurerId",
           "insurerName",
-          "importedModalityId",
-          "originName"
+          "count",
+          "origins"
         ],
         "type": "object",
         "properties": {
@@ -2896,39 +2561,7 @@
           "insurerName": {
             "type": "string"
           },
-          "importedModalityId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "originName": {
-            "type": "string"
-          }
-        }
-      },
-      "ModalityGroupListItemResponse": {
-        "required": [
-          "id",
-          "name",
-          "description",
-          "displayOrder",
-          "status"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "displayOrder": {
+          "count": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -2936,8 +2569,11 @@
             ],
             "format": "int32"
           },
-          "status": {
-            "type": "string"
+          "origins": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -2986,8 +2622,6 @@
         "required": [
           "id",
           "name",
-          "modalityGroupId",
-          "modalityGroupName",
           "description",
           "status"
         ],
@@ -2998,13 +2632,6 @@
             "format": "uuid"
           },
           "name": {
-            "type": "string"
-          },
-          "modalityGroupId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "modalityGroupName": {
             "type": "string"
           },
           "description": {
@@ -3022,7 +2649,6 @@
         "required": [
           "modalityId",
           "name",
-          "groupName",
           "status",
           "offered",
           "branches",
@@ -3035,9 +2661,6 @@
             "format": "uuid"
           },
           "name": {
-            "type": "string"
-          },
-          "groupName": {
             "type": "string"
           },
           "status": {
@@ -3192,55 +2815,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/InsurerListItemResponse"
-            }
-          },
-          "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          },
-          "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          }
-        }
-      },
-      "PagedResponseOfModalityGroupListItemResponse": {
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "totalCount"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ModalityGroupListItemResponse"
             }
           },
           "page": {
@@ -3687,6 +3261,55 @@
           }
         }
       },
+      "ReassignImportedModalityBody": {
+        "required": [
+          "modalityId"
+        ],
+        "type": "object",
+        "properties": {
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ReassignImportedModalityResponse": {
+        "required": [
+          "importedModalityId",
+          "modalityId",
+          "linkSource"
+        ],
+        "type": "object",
+        "properties": {
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "linkSource": {
+            "type": "string"
+          }
+        }
+      },
+      "RestoreImportedModalityResponse": {
+        "required": [
+          "importedModalityId",
+          "ignored"
+        ],
+        "type": "object",
+        "properties": {
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ignored": {
+            "type": "boolean"
+          }
+        }
+      },
       "SearchPersonsResponse": {
         "required": [
           "items"
@@ -3878,7 +3501,6 @@
       "UpdateModalityBody": {
         "required": [
           "name",
-          "modalityGroupId",
           "description"
         ],
         "type": "object",
@@ -3886,78 +3508,11 @@
           "name": {
             "type": "string"
           },
-          "modalityGroupId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "description": {
             "type": [
               "null",
               "string"
             ]
-          }
-        }
-      },
-      "UpdateModalityGroupBody": {
-        "required": [
-          "name",
-          "description",
-          "displayOrder"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "displayOrder": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          }
-        }
-      },
-      "UpdateModalityGroupResponse": {
-        "required": [
-          "id",
-          "name",
-          "description",
-          "displayOrder",
-          "status"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "displayOrder": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "status": {
-            "type": "string"
           }
         }
       },
@@ -3965,7 +3520,6 @@
         "required": [
           "id",
           "name",
-          "modalityGroupId",
           "description",
           "status"
         ],
@@ -3977,10 +3531,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "modalityGroupId": {
-            "type": "string",
-            "format": "uuid"
           },
           "description": {
             "type": [
@@ -4072,9 +3622,6 @@
     },
     {
       "name": "ModalitiesEndpoint"
-    },
-    {
-      "name": "ModalityGroupsEndpoint"
     },
     {
       "name": "ModalityImportsEndpoint"
