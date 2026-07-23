@@ -8,6 +8,7 @@ Sai 0 sempre; imprime [ok]/[!] por checagem.
 
 Uso: python scripts/doctor.py
 """
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -17,6 +18,30 @@ NOME = ROOT.name
 PAR = "smartinsure-frontend" if NOME == "smartinsure-backend" else "smartinsure-backend"
 # o front depende dos ponteiros ../smartinsure-backend; para ele o par é essencial.
 PAR_ESSENCIAL = NOME == "smartinsure-frontend"
+
+
+def _merged(base, branch):
+    """True se `branch` já está em `base` por merge commit, squash OU rebase (mesma regra do
+    worktree-gc). Squash/rebase: sintetiza um commit da árvore da branch sobre o merge-base e
+    checa `git cherry` — git-native, sem depender de `gh`/rede."""
+    if subprocess.run(["git", "merge-base", "--is-ancestor", branch, base],
+                      cwd=ROOT, capture_output=True, text=True).returncode == 0:
+        return True
+    mb = subprocess.run(["git", "merge-base", base, branch], cwd=ROOT, capture_output=True, text=True)
+    if mb.returncode != 0 or not mb.stdout.strip():
+        return False
+    tree = subprocess.run(["git", "rev-parse", f"{branch}^{{tree}}"], cwd=ROOT, capture_output=True, text=True)
+    if tree.returncode != 0 or not tree.stdout.strip():
+        return False
+    env = {**os.environ, "GIT_AUTHOR_NAME": "gc", "GIT_AUTHOR_EMAIL": "gc@local",
+           "GIT_COMMITTER_NAME": "gc", "GIT_COMMITTER_EMAIL": "gc@local"}
+    synth = subprocess.run(
+        ["git", "commit-tree", tree.stdout.strip(), "-p", mb.stdout.strip(), "-m", "_gc_probe"],
+        cwd=ROOT, capture_output=True, text=True, env=env)
+    if synth.returncode != 0 or not synth.stdout.strip():
+        return False
+    cherry = subprocess.run(["git", "cherry", base, synth.stdout.strip()], cwd=ROOT, capture_output=True, text=True)
+    return cherry.returncode == 0 and cherry.stdout.strip().startswith("-")
 
 oks, avisos = [], []
 
@@ -72,9 +97,7 @@ try:
         for _linha in _wl.splitlines():
             if _linha.startswith("branch "):
                 _br = _linha[len("branch "):].replace("refs/heads/", "")
-                if _br not in ("main", "master") and subprocess.run(
-                        ["git", "merge-base", "--is-ancestor", f"refs/heads/{_br}", _base],
-                        cwd=ROOT, capture_output=True, text=True).returncode == 0:
+                if _br not in ("main", "master") and _merged(_base, f"refs/heads/{_br}"):
                     _orfas += 1
         if _orfas:
             avisos.append(f"{_orfas} worktree(s) com branch já mergeada ocupando disco — "
