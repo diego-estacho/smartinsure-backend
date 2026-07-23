@@ -198,6 +198,32 @@ public class ModalityTagImportTests
 
     [Fact]
     [Trait("RuleId", "RN-042")]
+    public async Task DeveInativarTagEClausulas_QuandoModalidadeSaiuDeAtiva()
+    {
+        GivenSingleModalityCatalog();
+        GivenModalityObject(new ModalityObjectResult(false, "{}", null, Array.Empty<ModalityClauseData>()));
+        var vanished = ImportedModality.Create(
+            InsurerId, "m-old", "Antiga", ESuretyBranch.Public, "9", "X", null, null, Now);
+        var importer = BuildImporter();
+        // Override do default (vazio) configurado dentro de BuildImporter(): precisa vir depois dela,
+        // senão o NSubstitute reconfigura a mesma correspondência de argumentos de volta para vazio.
+        _modalities.ListActiveByInsurerAsync(InsurerId, Arg.Any<CancellationToken>())
+            .Returns(new List<ImportedModality> { vanished });
+        var tag = ImportedModalityTag.Create(vanished.Id, "{\"v\":1}", null);
+        _tags.GetByImportedModalityAsync(vanished.Id, Arg.Any<CancellationToken>()).Returns(tag);
+        var clause = ImportedModalityParticularClause.Create(vanished.Id, "c1", "C", null, null);
+        _clauses.ListByImportedModalityAsync(vanished.Id, Arg.Any<CancellationToken>())
+            .Returns(new List<ImportedModalityParticularClause> { clause });
+
+        await importer.RunAsync(Now, CancellationToken.None);
+
+        vanished.Status.Should().Be(EImportedModalityStatus.Inactive);
+        tag.Status.Should().Be(EImportedModalityTagStatus.Inactive);
+        clause.Status.Should().Be(EImportedModalityClauseStatus.Inactive);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-042")]
     public async Task NaoDeveInativarNada_QuandoConsultaDaModalidadeLancaExcecao()
     {
         GivenSingleModalityCatalog();

@@ -39,7 +39,8 @@ public static class PlugV2ModalityObjectAclMapper
         foreach (var clause in envelope.Response.ParticularClauses ?? [])
         {
             // RN-041 (caso limite): cláusula sem id é descartada — não vira item órfão.
-            if (clause.Id is not { } id || id == 0)
+            // Id == 0 é um id externo válido (não é "ausente") e deve ser mantido.
+            if (clause.Id is not { } id)
             {
                 continue;
             }
