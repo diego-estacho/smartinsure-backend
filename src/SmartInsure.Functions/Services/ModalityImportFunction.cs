@@ -5,9 +5,18 @@ using SmartInsure.Application.UseCase.Services.ModalityImports;
 namespace SmartInsure.Functions.Services;
 
 /// <summary>
-/// Importação agendada de modalidades (RN-034): varre as Habilitações Ativas e importa pelo
-/// Motor de Cálculo resolvido em cada vínculo. Falha por Corretora/Seguradora é isolada (RN-038).
-/// Cadência default diária às 03:00 UTC — OPEN-10 (tornar configurável por app setting).
+/// Importação agendada do ciclo de catálogo (RN-034): varre as Habilitações Ativas, importa pelo
+/// Motor de Cálculo resolvido em cada vínculo e, no mesmo ciclo, importa a Tag e as Cláusulas
+/// particulares de cada Modalidade Importada Ativa (RN-040/041/042). Falha por Corretora/Seguradora
+/// é isolada (RN-038).
+/// Cadência configurável por app setting <c>ModalityImport:Schedule</c> (OPEN-10, não crítico —
+/// há default): commitado em <c>appsettings.json</c> deste projeto como <c>0 */30 * * * *</c>
+/// (a cada 30 min, dev/QA). Produção deve sobrescrever via app setting/variável de ambiente do
+/// Function App para <c>0 0 5 * * *</c> (1x/dia às 05:00) — nunca hardcodar cron por ambiente
+/// no código. Atenção: a resolução de <c>%ModalityImport:Schedule%</c> é feita pelo host de
+/// Functions via application settings (variável de ambiente/local.settings.json), não pelo
+/// appsettings.json do worker isolado — infra deve garantir a variável de ambiente
+/// <c>ModalityImport__Schedule</c> em todo ambiente que rodar este agendamento (ver report OPEN-10).
 /// </summary>
 public sealed class ModalityImportFunction(
     IModalityImporter modalityImporter,
@@ -15,7 +24,7 @@ public sealed class ModalityImportFunction(
 {
     [Function(nameof(ModalityImportFunction))]
     public async Task RunAsync(
-        [TimerTrigger("0 0 3 * * *")] TimerInfo timer, CancellationToken cancellationToken)
+        [TimerTrigger("%ModalityImport:Schedule%")] TimerInfo timer, CancellationToken cancellationToken)
     {
         var summary = await modalityImporter.RunAsync(DateTime.UtcNow, cancellationToken);
 
