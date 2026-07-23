@@ -1,6 +1,6 @@
 # Exec-plan 0007 — Catálogo de Modalidades, Fatia 1: Curadoria (RN-029, RN-036)
 
-Status: ativo — AB#0002 (`ab-0002-job-importar-modalidades`). Em execução; PRs pendentes de validação.
+Status: **superseded** (2026-07-23) — substituído pelo exec-plan `0010-catalogo-modalidades-retrabalho-adr061.md` (retrabalho para o modelo do ADR-061). Entregue sob o **ADR-060** e depois retrabalhado; mantido como histórico. **O modelo descrito abaixo (Grupo de Modalidade, Mapeamento) NÃO é mais o vigente** — ver [ADR-061](../../adr/061-modalidade-derivada-da-global-modality.md) e RN-029..036 (revistas 2026-07-22).
 Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/SECURITY.md`, `docs/adr/060-catalogo-modalidades-dois-mundos.md`, RNs em `docs/product-specs/regras-de-negocio/modalidades.md` (RN-029, RN-036), glossário (termos Modalidade, Grupo de Modalidade e status/enums — propostos 2026-07-21), OPEN-08/09/10 (fora desta fatia). Módulo análogo: catálogo de Seguradoras (exec-plan `completed/0003-catalogo-seguradoras.md`, `Insurer`/`InsurersEndpoint`).
 
 ## Objetivo

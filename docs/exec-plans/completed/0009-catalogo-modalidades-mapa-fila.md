@@ -1,6 +1,6 @@
 # Exec-plan 0009 — Catálogo de Modalidades, Fatia 3: Mapa e Fila de Revisão (RN-033, RN-034)
 
-Status: ativo — AB#0002 (`ab-0002-job-importar-modalidades`). Em execução.
+Status: **superseded** (2026-07-23) — substituído pelo exec-plan `0010-catalogo-modalidades-retrabalho-adr061.md` (retrabalho para o modelo do ADR-061). Entregue sob o **ADR-060** e depois retrabalhado; mantido como histórico. **O modelo descrito abaixo (Fila de mapeamento, "mapeamento confirmado") NÃO é mais o vigente** — a Fila passou a tratar só exceções/curadoria; ver [ADR-061](../../adr/061-modalidade-derivada-da-global-modality.md) e RN-033/RN-034 (revistas 2026-07-22).
 Contexto obrigatório: `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/adr/060-catalogo-modalidades-dois-mundos.md`, RNs em `docs/product-specs/regras-de-negocio/modalidades.md` (RN-033/RN-034), OPEN-08 (semelhança fora), fatias 1 (`Modality`/`ModalityGroup`) e 2 (`ImportedModality`/`ModalityMapping`, importação).
 
 ## Objetivo

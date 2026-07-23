@@ -1,6 +1,6 @@
 # Exec-plan 0008 — Catálogo de Modalidades, Fatia 2: Importação (RN-030, RN-031, RN-032, RN-035)
 
-Status: ativo — AB#0002 (`ab-0002-job-importar-modalidades`). Em execução.
+Status: **superseded** (2026-07-23) — substituído pelo exec-plan `0010-catalogo-modalidades-retrabalho-adr061.md` (retrabalho para o modelo do ADR-061). Entregue sob o **ADR-060** e depois retrabalhado; mantido como histórico. **O modelo descrito abaixo (Mapeamento próprio, automação por identificador/semelhança) NÃO é mais o vigente** — ver [ADR-061](../../adr/061-modalidade-derivada-da-global-modality.md) e RN-030/031/032/035 (revistas 2026-07-22).
 Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/adr/060-catalogo-modalidades-dois-mundos.md`, RNs em `docs/product-specs/regras-de-negocio/modalidades.md` (RN-030/031/032/035), spec de produto (Anexo A — contrato PlugV2), OPEN-08 (semelhança fora de escopo), OPEN-09 (credencial multi-corretora), OPEN-10 (cadência). Base: fatia 1 (exec-plan 0007, entidades `Modality`/`ModalityGroup`) e Motor de Cálculo (exec-plan `completed/0005`, `PlugV2CalculationEngine`, `ICalculationEngineResolver`, `BrokerageInsurerEnablement`).
 
 ## Objetivo
