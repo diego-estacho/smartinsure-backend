@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Enumerators;
+using SmartInsure.Integration.CalculationEngines.PlugV2;
 using SmartInsure.Integration.CalculationEngines.Services;
 
 namespace SmartInsure.Integration.CalculationEngines;
@@ -19,6 +20,11 @@ public static class DependencyInjection
         services.AddKeyedScoped<ICalculationEngine, PlugV2CalculationEngine>(ECalculationEngine.PlugV2);
 
         services.AddScoped<ICalculationEngineResolver, CalculationEngineResolver>();
+
+        // RN-034/ADR-044: base URL por Habilitação (montada por chamada), resiliência no client nomeado.
+        services.AddHttpClient(PlugV2ModalityImportClient.HttpClientName)
+            .AddStandardResilienceHandler();
+        services.AddScoped<PlugV2ModalityImportClient>();
 
         return services;
     }

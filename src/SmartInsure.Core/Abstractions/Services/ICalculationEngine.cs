@@ -20,6 +20,14 @@ public interface ICalculationEngine
     void EnsureValidConnectionParameters(string? connectionParameters);
 
     /// <summary>
+    /// RN-034: obtém o catálogo de modalidades das Seguradoras habilitadas da Corretora,
+    /// usando os parâmetros de conexão da Habilitação e o CNPJ da Corretora. A tradução do
+    /// payload do fornecedor para o contrato acontece na ACL do provider (ADR-045).
+    /// </summary>
+    Task<ImportedCatalogResult> GetGroupAndModalitiesAsync(
+        string? connectionParameters, string brokerCnpj, CancellationToken cancellationToken);
+
+    /// <summary>
     /// RN-029: consulta os Limites de Crédito de um tomador junto à Seguradora.
     /// Retorna limites e taxas agrupados por grupo de modalidade (dinâmicos conforme retorno da Seguradora),
     /// ou null se indisponível. Exceções são do tipo CalculationEngineException.

@@ -50,3 +50,46 @@ Dono: PO (gerente de projeto)
 Bloqueia: exibição da validade do limite na Consulta de Crédito (RN-029); Registro Manual de Limite; Solicitação de Análise de Crédito pela assessoria
 Status: aberta
 Contexto: decidido em 2026-07-20 que esta fase entrega apenas a consulta online de Limites de Crédito com histórico (RN-029..RN-031). Parcialmente resolvida em 2026-07-21: o retorno real do motor traz limite revisado e disponível por modalidade — o limite utilizado passou a ser derivado (revisado − disponível) e incluído na RN-029; os grupos de modalidade são dinâmicos, informados pela Seguradora. Segue em aberto: a validade do limite não tem fonte no retorno do motor (a tela apresenta como ausente) — decidir fonte ou remoção. O registro manual de limite (informado por portal, telefone ou e-mail da seguradora) e a solicitação de análise pela assessoria ficaram fora desta entrega e serão especificados em demanda própria. A lista de "tomadores pesquisados recentemente" foi decidida como conveniência de tela, sem persistência — não gera RN. Pendência adicional (2026-07-20, apontada em code review): a RN-029 não define a fórmula do "limite consolidado" do resumo — a implementação usa a soma, por Seguradora disponível, do maior limite entre as modalidades; confirmar a fórmula com a PO (documentada no contrato do endpoint).
+
+## OPEN-09 — Credencial e divergência de catálogo quando a Seguradora tem várias Corretoras habilitadas
+Dono: PO (gerente de projeto)
+Bloqueia: a regra de qual credencial (PlugKey) usar na importação de uma Seguradora habilitada por mais de uma Corretora, e o tratamento caso o catálogo retornado divirja entre Corretoras
+Status: aberta
+Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A Modalidade Importada é da Seguradora, não da Corretora (o `BrokerCnpj`/PlugKey é só credencial de busca), então a importação deduplica por Seguradora e faz uma chamada por Seguradora (RN-034). Falta a PO decidir qual credencial usar quando várias Corretoras habilitam a mesma Seguradora e o que fazer se o retorno divergir entre elas (hoje assume-se catálogo único por Seguradora).
+
+## OPEN-10 — Cadência do agendamento da importação de modalidades
+Dono: PO (gerente de projeto)
+Bloqueia: nada crítico (há default proposto); ajusta a frequência do job
+Status: aberta
+Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A importação roda periodicamente por agendamento (RN-034). Proposta de default: diária, em horário de baixo pico, com a cadência configurável (não fixa no código). Falta a PO confirmar se há requisito de frequência específico (ex.: mais de uma vez ao dia, ou alinhado a janela da Seguradora).
+
+## OPEN-11 — Disponibilidade derivada por tipo de tomador (PF/PJ)
+Dono: PO (gerente de projeto)
+Bloqueia: a parte "pessoa física / jurídica" da disponibilidade derivada da Modalidade (RN-036)
+Status: aberta
+Contexto: levantado em 2026-07-22 (fatia 3, Mapa de Modalidades). A disponibilidade **por ramo** (ente público/privado) é derivada com segurança do `Branch` das Modalidades Importadas ativas confirmadas. Já a disponibilidade **PF/PJ** dependeria de interpretar os flags do PlugV2 (`IgnoreBranchWhenInsuredIsPF`, `IgnoreBranchWhenInsuredIsPrivate`), cuja semântica exata (o que "ignorar ramo quando o segurado é PF" significa para "disponível para PF") não está definida. Não foi implementada para não inventar regra; falta a PO definir a semântica (e, se preciso, tipar público-alvo na Modalidade Importada). Até lá, o Mapa mostra a disponibilidade por ramo.
+
+## OPEN-12 — Granularidade da Modalidade vs. Global Modality do motor (mapeamento por identificador)
+Dono: PO (gerente de projeto)
+Bloqueia: a semântica do mapeamento automático "por identificador do motor" (RN-035) quando a Global Modality do motor é mais grossa que a Modalidade desejada
+Status: **resolvida** em 2026-07-22 (ADR-061) — opção (A)
+Contexto: levantado em 2026-07-22. O PlugV2/OnPoint agrupa várias ofertas sob uma mesma **Global Modality** (identificador do motor). Ex.: id 31 = "Judicial" reúne, só na Essor, 10 origens distintas — "Judicial - Cível", "Judicial - Execução Fiscal", várias "PGE …". O modelo antigo (ADR-060) herdava o mapeamento por identificador a partir de uma semente confirmada, o que levava a lumping semanticamente questionável.
+Resolução: o time decidiu pela **opção (A)** — a **Modalidade equivale à Modalidade Global** da OnPoint (a fonte é a autoridade da granularidade). O ADR-061 formaliza: a Modalidade é derivada da Modalidade Global (find-or-create por id global), o vínculo é intrínseco, e não há semente/confirmação manual para propagar. Assim "Judicial" é uma única Modalidade por definição, e o problema de granularidade deixa de existir. Correção de dados legados (mapeamentos criados sob o ADR-060) será feita no retrabalho da implementação para o modelo do ADR-061.
+
+## OPEN-13 — Nome único da Modalidade vs. identidade por id de Modalidade Global
+Dono: PO (gerente de projeto)
+Bloqueia: importação de uma Seguradora cujo id de Modalidade Global traz um nome que colide com uma Modalidade manual já existente
+Status: aberta
+Contexto: levantado em 2026-07-22 (retrabalho ADR-061). A Modalidade tem identidade pelo id de Modalidade Global (derivada) e o nome é único no catálogo. Uma Modalidade **criada manualmente** com um nome que depois chega como nome de uma Modalidade Global (find-or-create por id global) **bloqueia** o create daquela derivada — a importação daquela Seguradora falha por conflito de nome. Ocorreu em dev com a "Licitante" manual legada (limpa como dado de dev). Falta a PO decidir o comportamento: (a) a derivada por id global tem precedência e "adota"/renomeia a manual homônima; (b) a manual é reatribuída à derivada; (c) permite nomes duplicados quando um lado é derivado; ou (d) alerta e deixa o Administrador resolver na Fila. Até decidir, evita-se criar Modalidade manual com nome de uma Global existente.
+
+## OPEN-14 — Exibição da Fila de Revisão (feature-flag)
+Dono: PO (gerente de projeto)
+Bloqueia: a exibição da Fila de Revisão no Mapa de Modalidades (front)
+Status: aberta
+Contexto: levantado em 2026-07-22. Como o vínculo Modalidade Importada → Modalidade vem pronto pela Modalidade Global (ADR-061), no fluxo normal não há pendências de curadoria (toda importada tem id global). Por isso a **Fila de Revisão foi ocultada no front por feature-flag** (`NUXT_PUBLIC_MODALITY_REVIEW_QUEUE`, default `false`) — **a implementação permanece intacta e testada** (Reatribuir/Ignorar/Reativar no composable/BFF/endpoints + dialogs). Falta a PO decidir se/quando reexibir: reativar a flag (`true`) quando o **cadastro manual de Modalidades** e/ou o **tratamento de exceções** (importadas sem id de Modalidade Global) for decidido e fizer sentido operacional. Relacionada a OPEN-13. Enquanto isso, a Fila não aparece; o Mapa mostra só a matriz Seguradoras × Modalidades.
+
+## OPEN-15 — Mapeamento automático de modalidade "por semelhança"
+Dono: PO (gerente de projeto)
+Bloqueia: —
+Status: **resolvida** em 2026-07-22 (ADR-061)
+Contexto: levantado em 2026-07-21 (originalmente OPEN-08; renumerado para OPEN-15 na integração com a jornada Consulta de Crédito, que passou a ocupar o OPEN-08 no tronco). **Encerrada** com a revisão do modelo (ADR-061): o vínculo Modalidade Importada → Modalidade passa a ser intrínseco, pelo id da Modalidade Global da OnPoint — não há aproximação por nome/descrição em nenhuma forma. A "semelhança" deixa de existir no domínio de modalidades.

@@ -1,0 +1,8 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.RestoreImportedModality.Requests;
+using SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.RestoreImportedModality.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.RestoreImportedModality.Interfaces;
+
+public interface IRestoreImportedModalityUseCase
+    : IUseCase<RestoreImportedModalityRequest, RestoreImportedModalityResponse>;
