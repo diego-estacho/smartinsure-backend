@@ -38,6 +38,6 @@ internal sealed class PlugV2GlobalModality
 
     public string? Name { get; set; }
 
-    /// <summary>Cada modalidade é preservada como veio (RN-030) — mantida como JSON cru.</summary>
+    /// <summary>Cada modalidade é preservada como veio (RN-033) — mantida como JSON cru.</summary>
     public List<JsonElement>? Modalities { get; set; }
 }

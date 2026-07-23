@@ -17,7 +17,7 @@ public sealed class ImportedGroupMapping : IEntityTypeConfiguration<ImportedGrou
         builder.Property(group => group.Name).HasMaxLength(200).IsRequired();
         builder.Property(group => group.Type).HasMaxLength(100);
 
-        // RN-030: reencontro por (Seguradora, identificador de origem). 1:1 com a migration.
+        // RN-033: reencontro por (Seguradora, identificador de origem). 1:1 com a migration.
         builder.HasIndex(group => new { group.InsurerId, group.SourceId }).IsUnique();
 
         builder.Property(group => group.CreatedAt).IsRequired();

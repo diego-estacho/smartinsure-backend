@@ -4,7 +4,7 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-030/RN-035 — Modalidade Importada reflete a fonte; inativa/reativa pela importação.</summary>
+/// <summary>RN-033/RN-038 — Modalidade Importada reflete a fonte; inativa/reativa pela importação.</summary>
 public class ImportedModalityTests
 {
     private static readonly DateTime Now = new(2026, 7, 22, 3, 0, 0, DateTimeKind.Utc);
@@ -23,7 +23,7 @@ public class ImportedModalityTests
             lastImportedAt: Now);
 
     [Fact]
-    [Trait("RuleId", "RN-030")]
+    [Trait("RuleId", "RN-033")]
     public void Create_DeveNascerAtivaComDadosDaFonte()
     {
         var groupId = Guid.CreateVersion7();
@@ -41,7 +41,7 @@ public class ImportedModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-030")]
+    [Trait("RuleId", "RN-033")]
     public void UpdateFromSource_DeveAtualizarDadosEManterAtiva()
     {
         var modality = New();
@@ -61,7 +61,7 @@ public class ImportedModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-035")]
+    [Trait("RuleId", "RN-038")]
     public void UpdateFromSource_DeveReativar_QuandoReapareceInativa()
     {
         var modality = New();
@@ -75,7 +75,7 @@ public class ImportedModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-035")]
+    [Trait("RuleId", "RN-038")]
     public void Deactivate_DeveInativar_EhIdempotente()
     {
         var modality = New();
@@ -87,7 +87,7 @@ public class ImportedModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-032")]
+    [Trait("RuleId", "RN-035")]
     public void LinkToModality_DeveVincularAutomaticamente_QuandoSemVinculo()
     {
         var modality = New();
@@ -100,14 +100,14 @@ public class ImportedModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-034")]
+    [Trait("RuleId", "RN-037")]
     public void LinkToModality_NaoDeveSobrescreverManual_QuandoImportacaoAutomatica()
     {
         var modality = New();
         var manualTarget = Guid.CreateVersion7();
         modality.LinkToModality(manualTarget, EModalityLinkSource.Manual);
 
-        // Reimportação automática não pode desfazer o override manual (RN-032/RN-034).
+        // Reimportação automática não pode desfazer o override manual (RN-035/RN-037).
         modality.LinkToModality(Guid.CreateVersion7(), EModalityLinkSource.Automatic);
 
         modality.ModalityId.Should().Be(manualTarget);
@@ -115,7 +115,7 @@ public class ImportedModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-034")]
+    [Trait("RuleId", "RN-037")]
     public void LinkToModality_DevePermitirOverrideManual_SobreVinculoAutomatico()
     {
         var modality = New();

@@ -9,7 +9,7 @@ namespace SmartInsure.Integration.CalculationEngines.PlugV2;
 /// Camada anticorrupção (ADR-045): traduz o payload do PlugV2 (GetGroupAndModalities) para o
 /// contrato do motor (`ImportedCatalogResult`). Nada do modelo do fornecedor sai daqui.
 /// Ramo pelo BranchCode: 75 = Público, 76 = Privado (dev observado 2026-07-22). Modalidade de
-/// ramo desconhecido é descartada (não há como posicioná-la com segurança — RN-032).
+/// ramo desconhecido é descartada (não há como posicioná-la com segurança — RN-035).
 /// </summary>
 public static class PlugV2ModalityAclMapper
 {

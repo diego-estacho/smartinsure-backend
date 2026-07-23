@@ -14,7 +14,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.ImportedModalityUseCases;
 
-/// <summary>RN-034 — curadoria da Fila: reatribuir (override Manual), ignorar e reativar.</summary>
+/// <summary>RN-037 — curadoria da Fila: reatribuir (override Manual), ignorar e reativar.</summary>
 public class ImportedModalityResolutionTests
 {
     private static readonly DateTime Now = new(2026, 7, 22, 3, 0, 0, DateTimeKind.Utc);
@@ -34,7 +34,7 @@ public class ImportedModalityResolutionTests
         => SmartInsure.Core.Entities.Modality.CreateManual("Garantia de Execução", null, EModalityStatus.Active);
 
     [Fact]
-    [Trait("RuleId", "RN-034")]
+    [Trait("RuleId", "RN-037")]
     public async Task Reassign_DeveVincularComoManual_QuandoValido()
     {
         var imported = Imported();
@@ -53,7 +53,7 @@ public class ImportedModalityResolutionTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-034")]
+    [Trait("RuleId", "RN-037")]
     public async Task Reassign_DeveRecusar_QuandoModalidadeDestinoNaoExiste()
     {
         var imported = Imported();
@@ -69,7 +69,7 @@ public class ImportedModalityResolutionTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-034")]
+    [Trait("RuleId", "RN-037")]
     public async Task Reassign_DeveRecusar_QuandoImportadaNaoEncontrada()
     {
         var id = Guid.CreateVersion7();
@@ -82,7 +82,7 @@ public class ImportedModalityResolutionTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-034")]
+    [Trait("RuleId", "RN-037")]
     public async Task Ignore_DeveMarcarIgnorada()
     {
         var imported = Imported();
@@ -98,7 +98,7 @@ public class ImportedModalityResolutionTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-034")]
+    [Trait("RuleId", "RN-037")]
     public async Task Ignore_DeveRecusar_QuandoNaoEncontrada()
     {
         var id = Guid.CreateVersion7();
@@ -111,7 +111,7 @@ public class ImportedModalityResolutionTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-034")]
+    [Trait("RuleId", "RN-037")]
     public async Task Restore_DeveDesfazerIgnorar()
     {
         var imported = Imported();

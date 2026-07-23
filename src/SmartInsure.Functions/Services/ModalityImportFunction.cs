@@ -5,8 +5,8 @@ using SmartInsure.Application.UseCase.Services.ModalityImports;
 namespace SmartInsure.Functions.Services;
 
 /// <summary>
-/// Importação agendada de modalidades (RN-031): varre as Habilitações Ativas e importa pelo
-/// Motor de Cálculo resolvido em cada vínculo. Falha por Corretora/Seguradora é isolada (RN-035).
+/// Importação agendada de modalidades (RN-034): varre as Habilitações Ativas e importa pelo
+/// Motor de Cálculo resolvido em cada vínculo. Falha por Corretora/Seguradora é isolada (RN-038).
 /// Cadência default diária às 03:00 UTC — OPEN-10 (tornar configurável por app setting).
 /// </summary>
 public sealed class ModalityImportFunction(

@@ -24,7 +24,7 @@ public sealed class ImportedModalityMapping : IEntityTypeConfiguration<ImportedM
         builder.Property(modality => modality.ModalityLinkSource).HasMaxLength(20);
         builder.Property(modality => modality.LastImportedAt).IsRequired();
 
-        // RN-030: reencontro por (Seguradora, identificador de origem). RN-032: busca pelo id da Modalidade Global.
+        // RN-033: reencontro por (Seguradora, identificador de origem). RN-035: busca pelo id da Modalidade Global.
         builder.HasIndex(modality => new { modality.InsurerId, modality.SourceId }).IsUnique();
         builder.HasIndex(modality => modality.EngineModalityId);
         builder.HasIndex(modality => modality.ModalityId);
@@ -33,7 +33,7 @@ public sealed class ImportedModalityMapping : IEntityTypeConfiguration<ImportedM
             .WithMany()
             .HasForeignKey(modality => modality.ImportedGroupId);
 
-        // RN-032/RN-034: vínculo direto com a Modalidade (Restrict por convenção global, ADR-034).
+        // RN-035/RN-037: vínculo direto com a Modalidade (Restrict por convenção global, ADR-034).
         builder.HasOne<Modality>()
             .WithMany()
             .HasForeignKey(modality => modality.ModalityId);

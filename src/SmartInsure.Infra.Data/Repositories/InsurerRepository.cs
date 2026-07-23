@@ -48,4 +48,18 @@ public sealed class InsurerRepository(SmartInsureDbContext context)
 
     public async Task<Insurer?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken)
         => await Set.FirstOrDefaultAsync(insurer => insurer.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyDictionary<Guid, string>> GetCorporateNamesByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        return await Set.AsNoTracking()
+            .Where(insurer => ids.Contains(insurer.Id))
+            .Select(insurer => new { insurer.Id, insurer.CorporateName })
+            .ToDictionaryAsync(x => x.Id, x => x.CorporateName, cancellationToken);
+    }
 }

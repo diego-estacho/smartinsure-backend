@@ -15,7 +15,7 @@ using SmartInsure.Core.Constants;
 namespace SmartInsure.Api.Endpoints;
 
 /// <summary>
-/// Curadoria da Fila de Revisão (RN-034): reatribuir manualmente uma Modalidade Importada a uma
+/// Curadoria da Fila de Revisão (RN-037): reatribuir manualmente uma Modalidade Importada a uma
 /// Modalidade (override Manual), ignorá-la ou reativá-la. Escrita restrita ao Administrador do Sistema.
 /// </summary>
 public sealed class ImportedModalitiesEndpoint : CarterModule

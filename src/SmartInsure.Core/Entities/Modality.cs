@@ -4,10 +4,10 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Modalidade (RN-029/RN-036): o item do catálogo que o corretor vê e o eixo de comparação entre
+/// Modalidade (RN-032/RN-039): o item do catálogo que o corretor vê e o eixo de comparação entre
 /// Seguradoras. Derivada da Modalidade Global da OnPoint na importação — identidade pelo id global
 /// (<see cref="GlobalModalityExternalId"/>), nome da fonte — ou criada manualmente pelo Administrador
-/// (ADR-061). Não há Grupo no lado Smart; nunca é excluída (RN-036).
+/// (ADR-061). Não há Grupo no lado Smart; nunca é excluída (RN-039).
 /// </summary>
 public sealed class Modality : EntityBase
 {
@@ -18,7 +18,7 @@ public sealed class Modality : EntityBase
     public string Name { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Id da Modalidade Global da OnPoint (RN-032). Presente nas Modalidades derivadas da importação
+    /// Id da Modalidade Global da OnPoint (RN-035). Presente nas Modalidades derivadas da importação
     /// (único quando presente); nulo nas criadas manualmente.
     /// </summary>
     public string? GlobalModalityExternalId { get; private set; }
@@ -27,7 +27,7 @@ public sealed class Modality : EntityBase
 
     public EModalityStatus Status { get; private set; }
 
-    /// <summary>RN-029: Modalidade criada manualmente pelo Administrador do Sistema (sem id global).</summary>
+    /// <summary>RN-032: Modalidade criada manualmente pelo Administrador do Sistema (sem id global).</summary>
     public static Modality CreateManual(string name, string? description, EModalityStatus initialStatus)
     {
         var modality = new Modality { Status = initialStatus };
@@ -36,7 +36,7 @@ public sealed class Modality : EntityBase
     }
 
     /// <summary>
-    /// RN-029/RN-032: Modalidade derivada da Modalidade Global na importação. Nasce Ativa, com a
+    /// RN-032/RN-035: Modalidade derivada da Modalidade Global na importação. Nasce Ativa, com a
     /// identidade (id global) e o nome vindos da fonte.
     /// </summary>
     public static Modality CreateFromGlobal(string globalModalityExternalId, string name)
@@ -50,11 +50,11 @@ public sealed class Modality : EntityBase
         return modality;
     }
 
-    /// <summary>RN-029: edição de curadoria (nome/descrição); a situação e o id global não mudam aqui.</summary>
+    /// <summary>RN-032: edição de curadoria (nome/descrição); a situação e o id global não mudam aqui.</summary>
     public void Update(string name, string? description)
         => SetDetails(name, description);
 
-    /// <summary>RN-036: Inativa → Ativa; ativar quem já está Ativa é conflito de estado.</summary>
+    /// <summary>RN-039: Inativa → Ativa; ativar quem já está Ativa é conflito de estado.</summary>
     public void Activate()
     {
         if (Status == EModalityStatus.Active)
@@ -65,7 +65,7 @@ public sealed class Modality : EntityBase
         Status = EModalityStatus.Active;
     }
 
-    /// <summary>RN-036: Ativa → Inativa (fora de operação, nunca excluída).</summary>
+    /// <summary>RN-039: Ativa → Inativa (fora de operação, nunca excluída).</summary>
     public void Deactivate()
     {
         if (Status == EModalityStatus.Inactive)

@@ -7,7 +7,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.UpdateModality;
 
-/// <summary>RN-029 — Edição de Modalidade (nome/descrição): nome permanece único; situação e id global intactos.</summary>
+/// <summary>RN-032 — Edição de Modalidade (nome/descrição): nome permanece único; situação e id global intactos.</summary>
 public sealed class UpdateModalityUseCase(
     IModalityRepository modalityRepository,
     IUnitOfWork unitOfWork) : IUpdateModalityUseCase

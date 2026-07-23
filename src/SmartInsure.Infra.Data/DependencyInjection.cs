@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IModalityRepository, ModalityRepository>();
         services.AddScoped<IImportedGroupRepository, ImportedGroupRepository>();
         services.AddScoped<IImportedModalityRepository, ImportedModalityRepository>();
+        services.AddScoped<ICreditInquiryRepository, CreditInquiryRepository>();
 
         services.AddOptions<MongoOptions>()
             .BindConfiguration(MongoOptions.SectionName)

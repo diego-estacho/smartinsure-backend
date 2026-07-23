@@ -6,7 +6,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.GetModality;
 
-/// <summary>Detalhe de Modalidade do catálogo (leitura, RN-029).</summary>
+/// <summary>Detalhe de Modalidade do catálogo (leitura, RN-032).</summary>
 public sealed class GetModalityUseCase(IModalityRepository modalityRepository) : IGetModalityUseCase
 {
     public async Task<GetModalityResponse> ExecuteAsync(

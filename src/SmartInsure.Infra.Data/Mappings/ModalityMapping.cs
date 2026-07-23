@@ -16,13 +16,13 @@ public sealed class ModalityMapping : IEntityTypeConfiguration<Modality>
             .HasMaxLength(200)
             .IsRequired();
 
-        // RN-029: nome da Modalidade único no catálogo.
+        // RN-032: nome da Modalidade único no catálogo.
         builder.HasIndex(modality => modality.Name).IsUnique();
 
         builder.Property(modality => modality.GlobalModalityExternalId)
             .HasMaxLength(100);
 
-        // RN-032: id da Modalidade Global único quando presente (find-or-create na importação).
+        // RN-035: id da Modalidade Global único quando presente (find-or-create na importação).
         builder.HasIndex(modality => modality.GlobalModalityExternalId)
             .IsUnique()
             .HasFilter("[GlobalModalityExternalId] IS NOT NULL");

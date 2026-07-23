@@ -4,7 +4,7 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.CreateModality.Validators;
 
-/// <summary>RN-029 — validação de forma do cadastro de Modalidade.</summary>
+/// <summary>RN-032 — validação de forma do cadastro de Modalidade.</summary>
 public sealed class CreateModalityValidator : AbstractValidator<CreateModalityRequest>
 {
     public CreateModalityValidator()

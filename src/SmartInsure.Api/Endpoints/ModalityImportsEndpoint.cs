@@ -8,7 +8,7 @@ using SmartInsure.Core.Constants;
 namespace SmartInsure.Api.Endpoints;
 
 /// <summary>
-/// Importação de modalidades (RN-031): disparo manual restrito ao Administrador do Sistema
+/// Importação de modalidades (RN-034): disparo manual restrito ao Administrador do Sistema
 /// (operação/teste). O agendado roda pelo timer das Functions (OPEN-10).
 /// </summary>
 public sealed class ModalityImportsEndpoint : CarterModule

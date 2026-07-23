@@ -5,7 +5,7 @@ using SmartInsure.Application.UseCase.UseCases.ModalityImportUseCases.RunModalit
 
 namespace SmartInsure.Application.UseCase.UseCases.ModalityImportUseCases.RunModalityImport;
 
-/// <summary>RN-031 — disparo manual da importação (operação/teste); o agendado roda pelo timer das Functions.</summary>
+/// <summary>RN-034 — disparo manual da importação (operação/teste); o agendado roda pelo timer das Functions.</summary>
 public sealed class RunModalityImportUseCase(IModalityImporter modalityImporter) : IRunModalityImportUseCase
 {
     public async Task<ModalityImportSummaryResponse> ExecuteAsync(

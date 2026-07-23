@@ -5,14 +5,14 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-029/RN-036 — criação (manual e derivada da Global), edição e transições de situação.</summary>
+/// <summary>RN-032/RN-039 — criação (manual e derivada da Global), edição e transições de situação.</summary>
 public class ModalityTests
 {
     private static Modality NewManual(EModalityStatus status = EModalityStatus.Active)
         => Modality.CreateManual(" Garantia de Execução de Contrato ", " Performance ", status);
 
     [Fact]
-    [Trait("RuleId", "RN-029")]
+    [Trait("RuleId", "RN-032")]
     public void CreateManual_DeveNormalizarDadosENascerSemIdGlobal_QuandoDadosValidos()
     {
         var modality = Modality.CreateManual(" Garantia de Execução de Contrato ", " Performance ", EModalityStatus.Active);
@@ -24,7 +24,7 @@ public class ModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-029")]
+    [Trait("RuleId", "RN-032")]
     public void CreateManual_DeveAceitarDescricaoAusente_QuandoDescricaoVazia()
     {
         var modality = Modality.CreateManual("Garantia Judicial", null, EModalityStatus.Active);
@@ -33,7 +33,7 @@ public class ModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-032")]
+    [Trait("RuleId", "RN-035")]
     public void CreateFromGlobal_DeveNascerAtivaComIdGlobalENomeDaFonte()
     {
         var modality = Modality.CreateFromGlobal(" 12 ", " Garantia Judicial ");
@@ -45,7 +45,7 @@ public class ModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-029")]
+    [Trait("RuleId", "RN-032")]
     public void Update_DeveAlterarNomeEDescricaoSemMudarSituacao()
     {
         var modality = NewManual(EModalityStatus.Inactive);
@@ -58,7 +58,7 @@ public class ModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-036")]
+    [Trait("RuleId", "RN-039")]
     public void Activate_DeveRecusar_QuandoJaAtiva()
     {
         var modality = NewManual();
@@ -69,7 +69,7 @@ public class ModalityTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-036")]
+    [Trait("RuleId", "RN-039")]
     public void Deactivate_DeveRecusar_QuandoJaInativa()
     {
         var modality = NewManual(EModalityStatus.Inactive);

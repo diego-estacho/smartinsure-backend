@@ -8,11 +8,11 @@ using SmartInsure.Core.Enumerators;
 namespace SmartInsure.Application.UseCase.Services.ModalityImports;
 
 /// <summary>
-/// Importação de modalidades (RN-031): por Corretora, chama o Motor de Cálculo resolvido pela
+/// Importação de modalidades (RN-034): por Corretora, chama o Motor de Cálculo resolvido pela
 /// Habilitação, casa as Seguradoras retornadas por Referência de origem, faz upsert do lado
-/// importado (RN-030), deriva a Modalidade da Modalidade Global por *find-or-create* pelo id
-/// global e vincula a Importada (RN-032), preservando override Manual (RN-034); desativa o que
-/// sumiu numa importação bem-sucedida e isola a falha por Corretora/Seguradora (RN-035) (ADR-061).
+/// importado (RN-033), deriva a Modalidade da Modalidade Global por *find-or-create* pelo id
+/// global e vincula a Importada (RN-035), preservando override Manual (RN-037); desativa o que
+/// sumiu numa importação bem-sucedida e isola a falha por Corretora/Seguradora (RN-038) (ADR-061).
 /// </summary>
 public sealed class ModalityImporter(
     IBrokerageInsurerEnablementRepository enablementRepository,
@@ -58,7 +58,7 @@ public sealed class ModalityImporter(
             }
             catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
             {
-                // RN-035: falha da Corretora não desativa nada e não afeta as demais.
+                // RN-038: falha da Corretora não desativa nada e não afeta as demais.
                 foreach (var _ in insurerByReference)
                 {
                     processed++;
@@ -82,7 +82,7 @@ public sealed class ModalityImporter(
 
                 if (!insurerCatalog.IsSuccess)
                 {
-                    // RN-035: falha da Seguradora não desativa nada dela.
+                    // RN-038: falha da Seguradora não desativa nada dela.
                     failed++;
                     failures.Add($"Seguradora {insurerCatalog.InsuranceName} ({brokerCnpj}): falha na origem (IsSuccess=false).");
                     continue;
@@ -131,7 +131,7 @@ public sealed class ModalityImporter(
             await LinkToModalityAsync(imported, data, modalityCache, cancellationToken);
         }
 
-        // RN-035: Modalidades Importadas Ativas que não vieram nesta importação bem-sucedida são desativadas.
+        // RN-038: Modalidades Importadas Ativas que não vieram nesta importação bem-sucedida são desativadas.
         var active = await importedModalityRepository.ListActiveByInsurerAsync(insurerId, cancellationToken);
 
         foreach (var modality in active.Where(modality => !seenSourceIds.Contains(modality.SourceId)))
@@ -192,9 +192,9 @@ public sealed class ModalityImporter(
     }
 
     /// <summary>
-    /// RN-032: deriva a Modalidade da Modalidade Global (find-or-create pelo id global, nome da fonte)
-    /// e vincula a Importada como Automatic — o override Manual é preservado (RN-034). Importada sem
-    /// id de Modalidade Global (exceção) fica sem vínculo e vai à Fila (RN-034).
+    /// RN-035: deriva a Modalidade da Modalidade Global (find-or-create pelo id global, nome da fonte)
+    /// e vincula a Importada como Automatic — o override Manual é preservado (RN-037). Importada sem
+    /// id de Modalidade Global (exceção) fica sem vínculo e vai à Fila (RN-037).
     /// </summary>
     private async Task LinkToModalityAsync(
         ImportedModality imported,

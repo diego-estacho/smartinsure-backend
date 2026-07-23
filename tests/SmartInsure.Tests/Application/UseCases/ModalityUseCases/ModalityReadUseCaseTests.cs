@@ -15,8 +15,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.ModalityUseCases;
 
-/// <summary>RN-029 — Edição de Modalidade (nome/descrição): nome único.</summary>
-[Trait("RuleId", "RN-029")]
+/// <summary>RN-032 — Edição de Modalidade (nome/descrição): nome único.</summary>
+[Trait("RuleId", "RN-032")]
 public class UpdateModalityUseCaseTests
 {
     private readonly IModalityRepository _modalityRepository = Substitute.For<IModalityRepository>();
@@ -72,8 +72,8 @@ public class UpdateModalityUseCaseTests
     }
 }
 
-/// <summary>RN-029 — Detalhe de Modalidade.</summary>
-[Trait("RuleId", "RN-029")]
+/// <summary>RN-032 — Detalhe de Modalidade.</summary>
+[Trait("RuleId", "RN-032")]
 public class GetModalityUseCaseTests
 {
     private readonly IModalityRepository _repository = Substitute.For<IModalityRepository>();
@@ -105,8 +105,8 @@ public class GetModalityUseCaseTests
     }
 }
 
-/// <summary>RN-033/RN-036 — Listagem de Modalidades: inativas só para o Administrador.</summary>
-[Trait("RuleId", "RN-033")]
+/// <summary>RN-036/RN-039 — Listagem de Modalidades: inativas só para o Administrador.</summary>
+[Trait("RuleId", "RN-036")]
 public class ListModalitiesUseCaseTests
 {
     private readonly IModalityRepository _repository = Substitute.For<IModalityRepository>();

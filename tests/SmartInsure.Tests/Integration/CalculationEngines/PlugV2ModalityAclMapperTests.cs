@@ -4,8 +4,8 @@ using SmartInsure.Integration.CalculationEngines.PlugV2;
 
 namespace SmartInsure.Tests.Integration.CalculationEngines;
 
-/// <summary>RN-030/RN-031 — ACL do PlugV2: traduz GetGroupAndModalities para o contrato do motor.</summary>
-[Trait("RuleId", "RN-031")]
+/// <summary>RN-033/RN-034 — ACL do PlugV2: traduz GetGroupAndModalities para o contrato do motor.</summary>
+[Trait("RuleId", "RN-034")]
 public class PlugV2ModalityAclMapperTests
 {
     // Amostra fiel ao contrato dev observado (2026-07-22): BranchCode 75=Público, 76=Privado;

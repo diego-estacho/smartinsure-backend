@@ -22,7 +22,7 @@ using SmartInsure.Core.Constants;
 namespace SmartInsure.Api.Endpoints;
 
 /// <summary>
-/// Catálogo de Modalidades (RN-029/RN-036): escrita exclusiva do Administrador do Sistema
+/// Catálogo de Modalidades (RN-032/RN-039): escrita exclusiva do Administrador do Sistema
 /// (policy fail-closed); leitura para qualquer autenticado. Nunca há exclusão — só inativação.
 /// </summary>
 public sealed class ModalitiesEndpoint : CarterModule
@@ -92,7 +92,7 @@ public sealed class ModalitiesEndpoint : CarterModule
             new ChangeModalityStatusRequest(id, body.Status),
             validator);
 
-    /// <summary>RN-033/RN-036: visão completa só surte efeito para o Administrador do Sistema.</summary>
+    /// <summary>RN-036/RN-039: visão completa só surte efeito para o Administrador do Sistema.</summary>
     private static async Task<IResult> ListAsync(
         HttpContext httpContext,
         RequestHandler handler,

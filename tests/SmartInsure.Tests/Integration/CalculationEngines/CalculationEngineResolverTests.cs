@@ -32,6 +32,7 @@ public class CalculationEngineResolverTests
     private CalculationEngineResolver BuildResolver(bool registerPlugV2 = true)
     {
         var services = new ServiceCollection();
+        services.AddHttpClient("PlugV2");
 
         if (registerPlugV2)
         {

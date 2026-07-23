@@ -9,8 +9,8 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.ReassignImportedModality;
 
 /// <summary>
-/// RN-034 — reatribui manualmente uma Modalidade Importada a uma Modalidade: o vínculo passa a
-/// Manual e é preservado na reimportação (RN-032). A Modalidade de destino precisa existir.
+/// RN-037 — reatribui manualmente uma Modalidade Importada a uma Modalidade: o vínculo passa a
+/// Manual e é preservado na reimportação (RN-035). A Modalidade de destino precisa existir.
 /// </summary>
 public sealed class ReassignImportedModalityUseCase(
     IImportedModalityRepository importedModalityRepository,

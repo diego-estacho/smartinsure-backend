@@ -20,10 +20,57 @@ public interface ICalculationEngine
     void EnsureValidConnectionParameters(string? connectionParameters);
 
     /// <summary>
-    /// RN-031: obtém o catálogo de modalidades das Seguradoras habilitadas da Corretora,
+    /// RN-034: obtém o catálogo de modalidades das Seguradoras habilitadas da Corretora,
     /// usando os parâmetros de conexão da Habilitação e o CNPJ da Corretora. A tradução do
     /// payload do fornecedor para o contrato acontece na ACL do provider (ADR-045).
     /// </summary>
     Task<ImportedCatalogResult> GetGroupAndModalitiesAsync(
         string? connectionParameters, string brokerCnpj, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-029: consulta os Limites de Crédito de um tomador junto à Seguradora.
+    /// Retorna limites e taxas agrupados por grupo de modalidade (dinâmicos conforme retorno da Seguradora),
+    /// ou null se indisponível. Exceções são do tipo CalculationEngineException.
+    /// </summary>
+    Task<PolicyHolderLimitsAndRates?> GetPolicyHolderLimitsAndRatesAsync(
+        string? connectionParameters,
+        string brokerageCnpj,
+        string policyHolderCnpj,
+        string insurerExternalId,
+        CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// Resposta da consulta de limites de crédito agrupados por grupo de modalidade (RN-029).
+/// Cada grupo contém o maior limite disponível entre as modalidades que o compõem.
+/// </summary>
+public sealed record PolicyHolderLimitsAndRates
+{
+    /// <summary>Razão social do tomador, quando informada pela Seguradora.</summary>
+    public string? PolicyHolderName { get; init; }
+
+    /// <summary>Grupos de modalidade com limites e taxas (ex.: Tradicional, Judicial, Financeira).</summary>
+    public required IReadOnlyList<PolicyHolderLimitGroup> Groups { get; init; }
+}
+
+/// <summary>
+/// Grupo de modalidades com limites agregados (RN-029).
+/// Valor do grupo = maior AvailableLimit entre modalidades que o compõem.
+/// </summary>
+public sealed record PolicyHolderLimitGroup
+{
+    /// <summary>Nome do grupo (ex.: "Tradicional", "Judiciais", "Financeira").</summary>
+    public required string GroupName { get; init; }
+
+    /// <summary>Tipo do grupo (ex.: "GARANTIA_TRADICIONAL").</summary>
+    public required string GroupType { get; init; }
+
+    /// <summary>Limite disponível — maior AvailableLimit do grupo.</summary>
+    public required decimal AvailableLimit { get; init; }
+
+    /// <summary>Limite revisado — maior LimitRevised do grupo.</summary>
+    public required decimal RevisedLimit { get; init; }
+
+    /// <summary>Taxa — da modalidade com maior AvailableLimit do grupo.</summary>
+    public required decimal Rate { get; init; }
 }

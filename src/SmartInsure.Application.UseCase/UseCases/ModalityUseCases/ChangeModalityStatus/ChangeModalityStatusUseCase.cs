@@ -8,7 +8,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.ChangeModalityStatus;
 
-/// <summary>RN-036 — transição Ativa ↔ Inativa da Modalidade; mesma situação é conflito de estado.</summary>
+/// <summary>RN-039 — transição Ativa ↔ Inativa da Modalidade; mesma situação é conflito de estado.</summary>
 public sealed class ChangeModalityStatusUseCase(
     IModalityRepository modalityRepository,
     IUnitOfWork unitOfWork) : IChangeModalityStatusUseCase

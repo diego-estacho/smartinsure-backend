@@ -37,7 +37,7 @@ public static class DependencyInjection
         // Serviço compartilhado por use cases; fora da convenção I{Ação}UseCase → {Ação}UseCase.
         services.AddScoped<IPersonBureauImporter, PersonBureauImporter>();
 
-        // Serviço de importação de modalidades (RN-031), orquestrado pelo timer das Functions.
+        // Serviço de importação de modalidades (RN-034), orquestrado pelo timer das Functions.
         services.AddScoped<IModalityImporter, ModalityImporter>();
 
         return services;

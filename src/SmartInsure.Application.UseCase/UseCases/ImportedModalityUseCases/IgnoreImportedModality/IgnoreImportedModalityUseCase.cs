@@ -7,7 +7,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.IgnoreImportedModality;
 
-/// <summary>RN-034 — marca a Modalidade Importada como Ignorada: sai da Fila e da operação; não volta à fila.</summary>
+/// <summary>RN-037 — marca a Modalidade Importada como Ignorada: sai da Fila e da operação; não volta à fila.</summary>
 public sealed class IgnoreImportedModalityUseCase(
     IImportedModalityRepository importedModalityRepository,
     IUnitOfWork unitOfWork) : IIgnoreImportedModalityUseCase

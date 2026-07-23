@@ -1,7 +1,7 @@
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Grupo Importado (RN-030): o agrupador tal como a Seguradora o manda, preservado como veio,
+/// Grupo Importado (RN-033): o agrupador tal como a Seguradora o manda, preservado como veio,
 /// para conferência e rastreio. Reencontrado pelo identificador de origem, por Seguradora.
 /// </summary>
 public sealed class ImportedGroup : EntityBase
@@ -25,7 +25,7 @@ public sealed class ImportedGroup : EntityBase
         return group;
     }
 
-    /// <summary>RN-030: nome e tipo refletem sempre a última importação da Seguradora.</summary>
+    /// <summary>RN-033: nome e tipo refletem sempre a última importação da Seguradora.</summary>
     public void UpdateFromSource(string name, string? type) => SetDetails(name, type);
 
     private void SetDetails(string name, string? type)

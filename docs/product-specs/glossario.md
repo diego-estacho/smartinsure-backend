@@ -30,6 +30,8 @@ Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de enti
 | **Motor de Cálculo** | `CalculationEngine` | Serviço que executa as operações junto a uma Seguradora (cotar, calcular prêmio, consultar modalidades/cláusulas/coberturas, emitir, cancelar); cada Seguradora habilitada usa um motor definido na Habilitação de Seguradora — nesta fase o único motor disponível é o PlugV2 (proposto em 2026-07-19 — aguardando ratificação da PO) | 1 por Habilitação de Seguradora | a Seguradora; a integração do Birô |
 | **Habilitação de Seguradora** | `BrokerageInsurerEnablement` | Vínculo entre Corretora e Seguradora que autoriza a operação do par e registra o Motor de Cálculo e os parâmetros de conexão usados (proposto em 2026-07-19 — aguardando ratificação da PO) | 0..1 por par Corretora×Seguradora | o cadastro da Seguradora; a Cotação |
 | **Nomeação de Tomador** | `PolicyHolderAppointment` | Vínculo que nomeia uma Corretora para atuar por um Tomador junto a uma Seguradora; independe da Habilitação de Seguradora (proposto em 2026-07-20 — aguardando ratificação da PO) | 0..1 vigente por par Tomador×Seguradora | a Habilitação de Seguradora; o Papel da Pessoa |
+| **Limite de Crédito** | `CreditLimit` | Capacidade de contratação que uma Seguradora concede a um tomador, informada por modalidade (Tradicional, Judicial, Financeiro), com taxa e validade; obtida junto à Seguradora pelo Motor de Cálculo (ratificado pela PO em 2026-07-20) | N por Consulta de Crédito (um por Seguradora×modalidade) | o limite da apólice; a Cotação |
+| **Consulta de Crédito** | `CreditInquiry` | Operação em que o usuário, por uma Corretora, consulta os Limites de Crédito de um CNPJ de tomador junto às Seguradoras habilitadas; cada execução gera um registro histórico com data/hora e resultados (ratificado pela PO em 2026-07-20) | N por CNPJ (uma por execução) | a consulta ao Birô; a Oferta |
 | **Matriz / Filial** | `Headquarters` / `Branch` | O estabelecimento principal da empresa (ordem `/0001` no CNPJ) / os demais estabelecimentos da mesma raiz de CNPJ (proposto em 2026-07-16 — aguardando ratificação da PO) | — | empresas distintas |
 | **Modalidade Global (OnPoint)** | `GlobalModality` (referência de origem) | Modalidade canônica da OnPoint, compartilhada entre Seguradoras e identificada por um id global; conceito da fonte (não é entidade própria) — na importação vira a Modalidade do Smart e é o vínculo intrínseco com as Modalidades Importadas (proposto em 2026-07-22 — aguardando ratificação da PO) | 1 por id global | a Modalidade Importada (a versão de cada Seguradora) |
 | **Modalidade** | `Modality` | Modalidade de Seguro Garantia no vocabulário do Smart, sem dono de Seguradora; o item que o corretor escolhe e o eixo de comparação entre Seguradoras. Derivada da Modalidade Global da OnPoint na importação (identidade pelo id global, nome da fonte) ou criada manualmente; curada pelo Administrador do Sistema — criar, editar, ativar/inativar (proposto/revisto em 2026-07-22 — aguardando ratificação da PO) | catálogo (importado + curado) | a Modalidade Importada (a versão de cada Seguradora); um Grupo (não existe Grupo no lado Smart) |
@@ -84,13 +86,13 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 
 ### Modalidade e Modalidade Importada (proposto/revisto em 2026-07-22 — aguardando ratificação da PO)
 
-Mesma situação de operação. Nada é excluído; sai de operação por Inativação (RN-036).
+Mesma situação de operação. Nada é excluído; sai de operação por Inativação (RN-039).
 
 | Status | Nome estável (API) | Significado | Transições permitidas |
 |---|---|---|---|
-| **Ativa** | `Active` | Item em operação no catálogo | Ativa → Inativa (RN-036) |
-| **Inativa** | `Inactive` | Item fora de operação, mantido no catálogo para histórico e retorno | Inativa → Ativa (RN-036) |
+| **Ativa** | `Active` | Item em operação no catálogo | Ativa → Inativa (RN-039) |
+| **Inativa** | `Inactive` | Item fora de operação, mantido no catálogo para histórico e retorno | Inativa → Ativa (RN-039) |
 
-> A Modalidade Importada passa a Inativa **automaticamente** quando deixa de vir numa importação bem-sucedida da Seguradora (RN-035); reaparecendo, é reativada.
+> A Modalidade Importada passa a Inativa **automaticamente** quando deixa de vir numa importação bem-sucedida da Seguradora (RN-038); reaparecendo, é reativada.
 
-**Enums e marcadores do domínio de Modalidades** (expostos por nome estável): **Ramo** (`SuretyBranch`) — `Public` / `Private`. **Origem do vínculo** Modalidade Importada → Modalidade — `Automatic` (pelo id da Modalidade Global) / `Manual` (override do Administrador; preservado na reimportação). **Ignorada** (`Ignored`) é um marcador da Modalidade Importada: item que o Administrador decidiu não oferecer; não volta à Fila nas próximas importações, mas fica registrado (RN-034).
+**Enums e marcadores do domínio de Modalidades** (expostos por nome estável): **Ramo** (`SuretyBranch`) — `Public` / `Private`. **Origem do vínculo** Modalidade Importada → Modalidade — `Automatic` (pelo id da Modalidade Global) / `Manual` (override do Administrador; preservado na reimportação). **Ignorada** (`Ignored`) é um marcador da Modalidade Importada: item que o Administrador decidiu não oferecer; não volta à Fila nas próximas importações, mas fica registrado (RN-037).

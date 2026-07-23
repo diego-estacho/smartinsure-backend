@@ -7,7 +7,7 @@ using SmartInsure.Core.Abstractions.Repositories.Dtos;
 namespace SmartInsure.Application.UseCase.UseCases.ModalityMapUseCases.GetModalityMap;
 
 /// <summary>
-/// RN-033/RN-034 — monta o Mapa: cada Modalidade Ativa com as Seguradoras que a oferecem
+/// RN-036/RN-037 — monta o Mapa: cada Modalidade Ativa com as Seguradoras que a oferecem
 /// (uma entrada por Seguradora distinta, com contagem — ADR-061), a disponibilidade por ramo
 /// derivada, e a Fila de exceções. Oferecida = tem ao menos uma Modalidade Importada Ativa,
 /// não Ignorada, vinculada.
@@ -32,7 +32,7 @@ public sealed class GetModalityMapUseCase(
             {
                 var modalityLinks = linksByModality.TryGetValue(modality.Id, out var list) ? list : [];
 
-                // RN-033: uma entrada por Seguradora distinta, preservando a ordem de primeira ocorrência.
+                // RN-036: uma entrada por Seguradora distinta, preservando a ordem de primeira ocorrência.
                 var insurers = modalityLinks
                     .GroupBy(link => link.InsurerId)
                     .Select(group => new MapInsurerResponse(

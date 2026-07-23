@@ -7,8 +7,8 @@ using SmartInsure.Core.Abstractions.Repositories.Dtos;
 
 namespace SmartInsure.Tests.Application.UseCases.ModalityMapUseCases;
 
-/// <summary>RN-033 — Mapa: oferecida só com ≥1 Importada Ativa vinculada; Seguradora distinta com contagem; ramo derivado.</summary>
-[Trait("RuleId", "RN-033")]
+/// <summary>RN-036 — Mapa: oferecida só com ≥1 Importada Ativa vinculada; Seguradora distinta com contagem; ramo derivado.</summary>
+[Trait("RuleId", "RN-036")]
 public class GetModalityMapUseCaseTests
 {
     private readonly IModalityRepository _modalities = Substitute.For<IModalityRepository>();

@@ -6,7 +6,7 @@ using SmartInsure.Core.Abstractions.Repositories;
 
 namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.ListModalities;
 
-/// <summary>RN-033/RN-036 — consulta padrão retorna somente Ativas; visão completa só para o Administrador.</summary>
+/// <summary>RN-036/RN-039 — consulta padrão retorna somente Ativas; visão completa só para o Administrador.</summary>
 public sealed class ListModalitiesUseCase(IModalityRepository modalityRepository) : IListModalitiesUseCase
 {
     public async Task<PagedResponse<ModalityListItemResponse>> ExecuteAsync(

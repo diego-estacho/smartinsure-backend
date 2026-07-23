@@ -11,7 +11,7 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Application.Services.ModalityImports;
 
-/// <summary>RN-030/RN-031/RN-032/RN-035 — importação de modalidades pelo Motor de Cálculo (ADR-061).</summary>
+/// <summary>RN-033/RN-034/RN-035/RN-038 — importação de modalidades pelo Motor de Cálculo (ADR-061).</summary>
 public class ModalityImporterTests
 {
     private static readonly DateTime Now = new(2026, 7, 22, 3, 0, 0, DateTimeKind.Utc);
@@ -54,7 +54,7 @@ public class ModalityImporterTests
         => new(sourceId, "Garantia", branch, engineId, "Execução", "g-1", "Financeira", "GARANTIA_FINANCEIRA", "{}");
 
     [Fact]
-    [Trait("RuleId", "RN-032")]
+    [Trait("RuleId", "RN-035")]
     public async Task Run_DeveCriarModalidadeGlobalEVincularAutomaticamente_QuandoSucesso()
     {
         GivenActiveEnablement();
@@ -80,7 +80,7 @@ public class ModalityImporterTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-032")]
+    [Trait("RuleId", "RN-035")]
     public async Task Run_DeveReusarModalidadeExistente_QuandoIdGlobalJaConhecido()
     {
         GivenActiveEnablement();
@@ -98,7 +98,7 @@ public class ModalityImporterTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-032")]
+    [Trait("RuleId", "RN-035")]
     public async Task Run_DeveCriarModalidadeUmaVez_QuandoImportadasCompartilhamOIdGlobal()
     {
         GivenActiveEnablement();
@@ -119,7 +119,7 @@ public class ModalityImporterTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-032")]
+    [Trait("RuleId", "RN-035")]
     public async Task Run_NaoDeveVincular_QuandoImportadaSemIdGlobal()
     {
         GivenActiveEnablement();
@@ -141,7 +141,7 @@ public class ModalityImporterTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-030")]
+    [Trait("RuleId", "RN-033")]
     public async Task Run_DeveCriarGrupoUmaVez_QuandoModalidadesCompartilhamOGrupo()
     {
         GivenActiveEnablement();
@@ -162,7 +162,7 @@ public class ModalityImporterTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-032")]
+    [Trait("RuleId", "RN-035")]
     public async Task Run_DevePreservarOverrideManual_NaReimportacao()
     {
         GivenActiveEnablement();
@@ -187,7 +187,7 @@ public class ModalityImporterTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-035")]
+    [Trait("RuleId", "RN-038")]
     public async Task Run_NaoDeveImportarNemDesativar_QuandoSeguradoraFalha()
     {
         GivenActiveEnablement();
@@ -202,7 +202,7 @@ public class ModalityImporterTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-035")]
+    [Trait("RuleId", "RN-038")]
     public async Task Run_DeveDesativar_QuandoImportadaSumiuNaImportacaoBemSucedida()
     {
         GivenActiveEnablement();

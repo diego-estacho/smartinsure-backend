@@ -3,11 +3,11 @@ using SmartInsure.Core.Entities;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-030 — Grupo Importado preservado como veio da fonte.</summary>
+/// <summary>RN-033 — Grupo Importado preservado como veio da fonte.</summary>
 public class ImportedGroupTests
 {
     [Fact]
-    [Trait("RuleId", "RN-030")]
+    [Trait("RuleId", "RN-033")]
     public void Create_DevePreservarDadosDaFonte()
     {
         var insurerId = Guid.CreateVersion7();
@@ -21,7 +21,7 @@ public class ImportedGroupTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-030")]
+    [Trait("RuleId", "RN-033")]
     public void UpdateFromSource_DeveAtualizarNomeETipo()
     {
         var group = ImportedGroup.Create(Guid.CreateVersion7(), "grp-uid-1", "Judiciais", "GARANTIA_JUDICIAIS");

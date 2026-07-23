@@ -7,7 +7,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.RestoreImportedModality;
 
-/// <summary>RN-034 — reativar: desfaz o Ignorar de uma Modalidade Importada, que volta a poder ser oferecida.</summary>
+/// <summary>RN-037 — reativar: desfaz o Ignorar de uma Modalidade Importada, que volta a poder ser oferecida.</summary>
 public sealed class RestoreImportedModalityUseCase(
     IImportedModalityRepository importedModalityRepository,
     IUnitOfWork unitOfWork) : IRestoreImportedModalityUseCase

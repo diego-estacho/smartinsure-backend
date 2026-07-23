@@ -9,7 +9,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.CreateModality;
 
-/// <summary>RN-029 — Criação manual de Modalidade (curadoria): nome único no catálogo.</summary>
+/// <summary>RN-032 — Criação manual de Modalidade (curadoria): nome único no catálogo.</summary>
 public sealed class CreateModalityUseCase(
     IModalityRepository modalityRepository,
     IUnitOfWork unitOfWork) : ICreateModalityUseCase

@@ -1,15 +1,15 @@
-# Exec-plan 0008 — Catálogo de Modalidades, Fatia 2: Importação (RN-030, RN-031, RN-032, RN-035)
+# Exec-plan 0008 — Catálogo de Modalidades, Fatia 2: Importação (RN-033, RN-034, RN-035, RN-038)
 
-Status: **superseded** (2026-07-23) — substituído pelo exec-plan `0010-catalogo-modalidades-retrabalho-adr061.md` (retrabalho para o modelo do ADR-061). Entregue sob o **ADR-060** e depois retrabalhado; mantido como histórico. **O modelo descrito abaixo (Mapeamento próprio, automação por identificador/semelhança) NÃO é mais o vigente** — ver [ADR-061](../../adr/061-modalidade-derivada-da-global-modality.md) e RN-030/031/032/035 (revistas 2026-07-22).
-Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/adr/060-catalogo-modalidades-dois-mundos.md`, RNs em `docs/product-specs/regras-de-negocio/modalidades.md` (RN-030/031/032/035), spec de produto (Anexo A — contrato PlugV2), OPEN-08 (semelhança fora de escopo), OPEN-09 (credencial multi-corretora), OPEN-10 (cadência). Base: fatia 1 (exec-plan 0007, entidades `Modality`/`ModalityGroup`) e Motor de Cálculo (exec-plan `completed/0005`, `PlugV2CalculationEngine`, `ICalculationEngineResolver`, `BrokerageInsurerEnablement`).
+Status: **superseded** (2026-07-23) — substituído pelo exec-plan `0010-catalogo-modalidades-retrabalho-adr061.md` (retrabalho para o modelo do ADR-061). Entregue sob o **ADR-060** e depois retrabalhado; mantido como histórico. **O modelo descrito abaixo (Mapeamento próprio, automação por identificador/semelhança) NÃO é mais o vigente** — ver [ADR-061](../../adr/061-modalidade-derivada-da-global-modality.md) e RN-033/031/032/035 (revistas 2026-07-22).
+Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/adr/060-catalogo-modalidades-dois-mundos.md`, RNs em `docs/product-specs/regras-de-negocio/modalidades.md` (RN-033/031/032/035), spec de produto (Anexo A — contrato PlugV2), OPEN-08 (semelhança fora de escopo), OPEN-09 (credencial multi-corretora), OPEN-10 (cadência). Base: fatia 1 (exec-plan 0007, entidades `Modality`/`ModalityGroup`) e Motor de Cálculo (exec-plan `completed/0005`, `PlugV2CalculationEngine`, `ICalculationEngineResolver`, `BrokerageInsurerEnablement`).
 
 ## Objetivo
 
-O lado da fonte do catálogo e o job de importação: `ImportedModality`, `ImportedGroup`, `ModalityMapping`; importação periódica pelo Motor de Cálculo resolvido pela Habilitação (RN-031), upsert idempotente por identificador de origem (RN-030), mapeamento automático **só por identificador do motor**, dentro do mesmo ramo (RN-032), desativação do que sumiu e resiliência por Seguradora (RN-035). Semelhança automática NÃO entra (OPEN-08). Mapa/Fila e disponibilidade derivada são fatia 3.
+O lado da fonte do catálogo e o job de importação: `ImportedModality`, `ImportedGroup`, `ModalityMapping`; importação periódica pelo Motor de Cálculo resolvido pela Habilitação (RN-034), upsert idempotente por identificador de origem (RN-033), mapeamento automático **só por identificador do motor**, dentro do mesmo ramo (RN-035), desativação do que sumiu e resiliência por Seguradora (RN-038). Semelhança automática NÃO entra (OPEN-08). Mapa/Fila e disponibilidade derivada são fatia 3.
 
 ## Contrato PlugV2 observado (dev, 2026-07-22)
 
-`POST /GetGroupAndModalities` com `{ BrokerCnpj }` (chave `application-key-v2` por Habilitação) retorna `BaseResponse` com `Response: GroupsAndModalities[]` — **uma entrada por Seguradora habilitada da corretora** (o Anexo A previa uma chamada por Seguradora; o contrato observado retorna todas — Anexo A autoriza adaptar). Campos usados: `Insurance.{Id,Name,InsuranceUniqueId}`, `IsSuccess` (resiliência por Seguradora, RN-035), `GlobalModalities[].{Id,Name}` (identificador do motor), `Modalities[].{ModalityUniqueId (reencontro), Name, BranchCode (75=Público,76=Privado), ModalityGroupUniqueId/Name/Type, e parâmetros comerciais}`. A Seguradora casa por `InsuranceUniqueId` = `Insurer.ReferenceExternalId`.
+`POST /GetGroupAndModalities` com `{ BrokerCnpj }` (chave `application-key-v2` por Habilitação) retorna `BaseResponse` com `Response: GroupsAndModalities[]` — **uma entrada por Seguradora habilitada da corretora** (o Anexo A previa uma chamada por Seguradora; o contrato observado retorna todas — Anexo A autoriza adaptar). Campos usados: `Insurance.{Id,Name,InsuranceUniqueId}`, `IsSuccess` (resiliência por Seguradora, RN-038), `GlobalModalities[].{Id,Name}` (identificador do motor), `Modalities[].{ModalityUniqueId (reencontro), Name, BranchCode (75=Público,76=Privado), ModalityGroupUniqueId/Name/Type, e parâmetros comerciais}`. A Seguradora casa por `InsuranceUniqueId` = `Insurer.ReferenceExternalId`.
 
 ## Tarefas
 
@@ -18,19 +18,19 @@ O lado da fonte do catálogo e o job de importação: `ImportedModality`, `Impor
 - [x] Core: `IImportedGroupRepository`, `IImportedModalityRepository`, `IModalityMappingRepository`; `ListActiveForImportAsync` em `IBrokerageInsurerEnablementRepository` (CNPJ da Corretora + Referência de origem da Seguradora + conexão).
 - [x] Infra.Data: mappings 1:1, repositórios, DbSets, DI.
 - [x] Integration: `GetGroupAndModalitiesAsync` em `ICalculationEngine`; provider PlugV2 (HttpClient com base URL por Habilitação + resiliência ADR-044, client resolvido sob demanda); ACL PlugV2 → contrato do motor (ADR-045); `PlugV2CalculationEngine` implementa a operação.
-- [x] Application: `ModalityImporter` — por Corretora resolve o motor pela Habilitação, casa Seguradoras por `ReferenceExternalId`, upsert (cache in-batch de grupos + dedup de origem), mapeia por identificador no mesmo ramo (RN-032), desativa o que sumiu, isola falha por Corretora/Seguradora (`IsSuccess`, RN-035), dedup por Seguradora.
+- [x] Application: `ModalityImporter` — por Corretora resolve o motor pela Habilitação, casa Seguradoras por `ReferenceExternalId`, upsert (cache in-batch de grupos + dedup de origem), mapeia por identificador no mesmo ramo (RN-035), desativa o que sumiu, isola falha por Corretora/Seguradora (`IsSuccess`, RN-038), dedup por Seguradora.
 - [x] Functions: `ModalityImportFunction` (TimerTrigger diário 03:00 UTC, OPEN-10) compõe a DI do host e roda o importer. + Api `POST /modality-imports/run` (Administrador do Sistema) para disparo manual.
 - [~] Rastreio: resumo por execução (`ModalityImportSummary`: processadas/sucesso/falha + motivos) retornado e logado. Tabela dedicada `ModalityImportRun` **adiada** (observabilidade via log/summary por ora).
-- [x] Testes `[Trait("RuleId","RN-030/031/032/035")]`: entidades (7), ACL do PlugV2 com amostra do contrato real (3), importer contra motor fake (5: upsert+map por identificador, grupo compartilhado 1x, sem-map, falha isolada, desativação).
+- [x] Testes `[Trait("RuleId","RN-033/031/032/035")]`: entidades (7), ACL do PlugV2 com amostra do contrato real (3), importer contra motor fake (5: upsert+map por identificador, grupo compartilhado 1x, sem-map, falha isolada, desativação).
 - [x] `dotnet build`/`dotnet test` verdes, `check-harness.py` ok, migration aplicada localmente.
 - [x] Teste ao vivo: importação real contra a corretora Bravo (CNPJ 34060267000196) no PlugV2 dev — Essor (49) + Excelsior (25) = 74 modalidades importadas, ramos e grupos corretos, verificado no banco.
 
 ## Critérios de aceite
 
-- Importação bem-sucedida cria/atualiza Modalidades Importadas por identificador de origem, preservando identidade e mapeamento (RN-030); nome/ramo/parâmetros refletem a fonte, sem edição à mão.
-- Mapeamento automático só confirma quando o identificador do motor já aponta para uma Modalidade, no mesmo ramo (RN-032); o resto fica sem mapeamento confirmado (Fila, fatia 3). Semelhança não roda (OPEN-08).
-- Importada Ativa ausente numa importação bem-sucedida da Seguradora vira Inativa; reaparecendo, reativa (RN-035). Falha/`IsSuccess=false` de uma Seguradora não desativa nada dela nem afeta as demais.
-- A importação nunca cria Modalidade (lado Smart) — só o lado importado e mapeamentos por identificador (RN-032/ADR-060).
+- Importação bem-sucedida cria/atualiza Modalidades Importadas por identificador de origem, preservando identidade e mapeamento (RN-033); nome/ramo/parâmetros refletem a fonte, sem edição à mão.
+- Mapeamento automático só confirma quando o identificador do motor já aponta para uma Modalidade, no mesmo ramo (RN-035); o resto fica sem mapeamento confirmado (Fila, fatia 3). Semelhança não roda (OPEN-08).
+- Importada Ativa ausente numa importação bem-sucedida da Seguradora vira Inativa; reaparecendo, reativa (RN-038). Falha/`IsSuccess=false` de uma Seguradora não desativa nada dela nem afeta as demais.
+- A importação nunca cria Modalidade (lado Smart) — só o lado importado e mapeamentos por identificador (RN-035/ADR-060).
 - Gates verdes; migration aplicada; teste ao vivo com Bravo dev evidenciado.
 
 ## Evidências

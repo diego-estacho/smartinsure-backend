@@ -3,7 +3,7 @@ using SmartInsure.Application.UseCase.UseCases.ModalityUseCases.UpdateModality.R
 
 namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.UpdateModality.Validators;
 
-/// <summary>RN-029 — validação de forma da edição de Modalidade.</summary>
+/// <summary>RN-032 — validação de forma da edição de Modalidade.</summary>
 public sealed class UpdateModalityValidator : AbstractValidator<UpdateModalityRequest>
 {
     public UpdateModalityValidator()

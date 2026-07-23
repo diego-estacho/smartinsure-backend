@@ -12,8 +12,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.ModalityUseCases;
 
-/// <summary>RN-029 — Criação manual de Modalidade: nome único no catálogo.</summary>
-[Trait("RuleId", "RN-029")]
+/// <summary>RN-032 — Criação manual de Modalidade: nome único no catálogo.</summary>
+[Trait("RuleId", "RN-032")]
 public class CreateModalityUseCaseTests
 {
     private readonly IModalityRepository _modalityRepository = Substitute.For<IModalityRepository>();
@@ -54,8 +54,8 @@ public class CreateModalityUseCaseTests
     }
 }
 
-/// <summary>RN-036 — Transição de situação da Modalidade; mesma situação é conflito.</summary>
-[Trait("RuleId", "RN-036")]
+/// <summary>RN-039 — Transição de situação da Modalidade; mesma situação é conflito.</summary>
+[Trait("RuleId", "RN-039")]
 public class ChangeModalityStatusUseCaseTests
 {
     private readonly IModalityRepository _repository = Substitute.For<IModalityRepository>();

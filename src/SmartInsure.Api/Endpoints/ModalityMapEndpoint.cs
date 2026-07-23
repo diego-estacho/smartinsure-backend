@@ -8,7 +8,7 @@ using SmartInsure.Core.Constants;
 namespace SmartInsure.Api.Endpoints;
 
 /// <summary>
-/// Mapa de Modalidades (RN-033/RN-034): matriz Seguradoras × Modalidades com a Fila de pendências.
+/// Mapa de Modalidades (RN-036/RN-037): matriz Seguradoras × Modalidades com a Fila de pendências.
 /// Restrito ao Administrador do Sistema (curadoria).
 /// </summary>
 public sealed class ModalityMapEndpoint : CarterModule

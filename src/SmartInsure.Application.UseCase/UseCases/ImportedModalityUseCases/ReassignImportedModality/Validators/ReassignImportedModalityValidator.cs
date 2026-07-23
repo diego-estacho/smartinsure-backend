@@ -3,7 +3,7 @@ using SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.Reassign
 
 namespace SmartInsure.Application.UseCase.UseCases.ImportedModalityUseCases.ReassignImportedModality.Validators;
 
-/// <summary>RN-034 — validação de forma da reatribuição manual.</summary>
+/// <summary>RN-037 — validação de forma da reatribuição manual.</summary>
 public sealed class ReassignImportedModalityValidator : AbstractValidator<ReassignImportedModalityRequest>
 {
     public ReassignImportedModalityValidator()

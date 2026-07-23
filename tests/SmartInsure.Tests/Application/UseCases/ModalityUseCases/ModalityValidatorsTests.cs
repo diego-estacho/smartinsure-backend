@@ -8,8 +8,8 @@ using SmartInsure.Application.UseCase.UseCases.ModalityUseCases.UpdateModality.V
 
 namespace SmartInsure.Tests.Application.UseCases.ModalityUseCases;
 
-/// <summary>RN-029 — validação de forma do cadastro de Modalidade.</summary>
-[Trait("RuleId", "RN-029")]
+/// <summary>RN-032 — validação de forma do cadastro de Modalidade.</summary>
+[Trait("RuleId", "RN-032")]
 public class CreateModalityValidatorTests
 {
     private readonly CreateModalityValidator _validator = new();
@@ -33,8 +33,8 @@ public class CreateModalityValidatorTests
         => _validator.Validate(Request(initialStatus: "Rascunho")).IsValid.Should().BeFalse();
 }
 
-/// <summary>RN-029 — validação de forma da edição de Modalidade.</summary>
-[Trait("RuleId", "RN-029")]
+/// <summary>RN-032 — validação de forma da edição de Modalidade.</summary>
+[Trait("RuleId", "RN-032")]
 public class UpdateModalityValidatorTests
 {
     private readonly UpdateModalityValidator _validator = new();
@@ -50,8 +50,8 @@ public class UpdateModalityValidatorTests
             .IsValid.Should().BeFalse();
 }
 
-/// <summary>RN-036 — validação de forma da alteração de situação de Modalidade.</summary>
-[Trait("RuleId", "RN-036")]
+/// <summary>RN-039 — validação de forma da alteração de situação de Modalidade.</summary>
+[Trait("RuleId", "RN-039")]
 public class ChangeModalityStatusValidatorTests
 {
     private readonly ChangeModalityStatusValidator _validator = new();

@@ -20,13 +20,13 @@ O ADR-060 modelava dois mundos (Modalidade curada × Modalidade Importada) ligad
 
 ## Decisão (normativa)
 
-- A **Modalidade** (`Modality`) é derivada da **Modalidade Global** da OnPoint: a importação faz *find-or-create* por identificador global (`GlobalModalityExternalId` único) usando o nome da fonte. A Modalidade também pode ser **criada manualmente** pelo Administrador do Sistema (curadoria mantida); em ambos os casos o Administrador ativa/inativa (RN-036).
+- A **Modalidade** (`Modality`) é derivada da **Modalidade Global** da OnPoint: a importação faz *find-or-create* por identificador global (`GlobalModalityExternalId` único) usando o nome da fonte. A Modalidade também pode ser **criada manualmente** pelo Administrador do Sistema (curadoria mantida); em ambos os casos o Administrador ativa/inativa (RN-039).
 - **Não existe Grupo de Modalidade no lado Smart** — o antigo `ModalityGroup` é removido. O `ImportedGroup` (grupo da Seguradora) permanece como detalhe de origem.
-- **Não existe entidade de Mapeamento** — o antigo `ModalityMapping` é removido. O vínculo `ImportedModality → Modality` é uma **referência direta**, resolvida automaticamente pelo id da Modalidade Global na importação; a origem do vínculo é registrada (`Automatic` × `Manual`) e o **override manual é preservado na reimportação** (RN-032/RN-034).
+- **Não existe entidade de Mapeamento** — o antigo `ModalityMapping` é removido. O vínculo `ImportedModality → Modality` é uma **referência direta**, resolvida automaticamente pelo id da Modalidade Global na importação; a origem do vínculo é registrada (`Automatic` × `Manual`) e o **override manual é preservado na reimportação** (RN-035/RN-037).
 - A automação "por semelhança" (nome) **não existe** (encerra a OPEN-08 no contexto de modalidades). A "por identificador" deixa de ser uma etapa de confirmação e passa a ser o próprio vínculo intrínseco.
-- **Nada opera sem vínculo**, mas o vínculo vem por construção (id global): uma Modalidade é oferecida com ≥1 Modalidade Importada Ativa e não Ignorada vinculada (RN-033); disponibilidade por ramo derivada; PF/PJ fica em aberto (OPEN-11).
-- A **Fila de Revisão** trata apenas exceções (Importada sem id de Modalidade Global — hoje inexistente, defensivo) e curadoria: ignorar/reativar e override manual (RN-034).
-- **Preservação** (RN-036) e **resiliência por Seguradora** (RN-035) permanecem como no ADR-060. A importação segue como Azure Function idempotente com motor resolvido pela Habilitação (RN-031).
+- **Nada opera sem vínculo**, mas o vínculo vem por construção (id global): uma Modalidade é oferecida com ≥1 Modalidade Importada Ativa e não Ignorada vinculada (RN-036); disponibilidade por ramo derivada; PF/PJ fica em aberto (OPEN-11).
+- A **Fila de Revisão** trata apenas exceções (Importada sem id de Modalidade Global — hoje inexistente, defensivo) e curadoria: ignorar/reativar e override manual (RN-037).
+- **Preservação** (RN-039) e **resiliência por Seguradora** (RN-038) permanecem como no ADR-060. A importação segue como Azure Function idempotente com motor resolvido pela Habilitação (RN-034).
 
 ## Consequências
 

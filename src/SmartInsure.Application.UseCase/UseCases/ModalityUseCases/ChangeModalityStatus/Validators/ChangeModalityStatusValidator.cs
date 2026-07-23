@@ -4,7 +4,7 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Application.UseCase.UseCases.ModalityUseCases.ChangeModalityStatus.Validators;
 
-/// <summary>RN-036 — validação de forma da alteração de situação de Modalidade.</summary>
+/// <summary>RN-039 — validação de forma da alteração de situação de Modalidade.</summary>
 public sealed class ChangeModalityStatusValidator : AbstractValidator<ChangeModalityStatusRequest>
 {
     public ChangeModalityStatusValidator()
