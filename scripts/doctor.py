@@ -24,6 +24,14 @@ def _merged(base, branch):
     """True se `branch` já está em `base` por merge commit, squash OU rebase (mesma regra do
     worktree-gc). Squash/rebase: sintetiza um commit da árvore da branch sobre o merge-base e
     checa `git cherry` — git-native, sem depender de `gh`/rede."""
+    # Branch recém-criada, ainda na ponta de `base` (sem commits próprios): não é mergeada —
+    # é worktree de tarefa nova. Sem esta guarda, `--is-ancestor` a marcaria como órfã.
+    _tip = subprocess.run(["git", "rev-parse", "--verify", "--quiet", branch],
+                          cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    _base_tip = subprocess.run(["git", "rev-parse", "--verify", "--quiet", base],
+                               cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    if _tip and _tip == _base_tip:
+        return False
     if subprocess.run(["git", "merge-base", "--is-ancestor", branch, base],
                       cwd=ROOT, capture_output=True, text=True).returncode == 0:
         return True
@@ -94,10 +102,15 @@ try:
         _wl = subprocess.run(["git", "worktree", "list", "--porcelain"], cwd=ROOT,
                              capture_output=True, text=True, check=True).stdout
         _orfas = 0
+        _wt_path = None
         for _linha in _wl.splitlines():
-            if _linha.startswith("branch "):
+            if _linha.startswith("worktree "):
+                _wt_path = _linha[len("worktree "):]
+            elif _linha.startswith("branch "):
                 _br = _linha[len("branch "):].replace("refs/heads/", "")
-                if _br not in ("main", "master") and _merged(_base, f"refs/heads/{_br}"):
+                # a worktree atual nunca é órfã (o gc nunca a remove) — não contar.
+                _atual = _wt_path is not None and Path(_wt_path).resolve() == ROOT
+                if _br not in ("main", "master") and not _atual and _merged(_base, f"refs/heads/{_br}"):
                     _orfas += 1
         if _orfas:
             avisos.append(f"{_orfas} worktree(s) com branch já mergeada ocupando disco — "

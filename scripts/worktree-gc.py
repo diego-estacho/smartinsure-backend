@@ -46,6 +46,17 @@ def _merged(base, branch):
       aplicada sobre o merge-base, tem patch equivalente já em `base`. Sintetizamos um
       commit dessa árvore e checamos `git cherry` (git-native, sem depender de `gh`/rede).
     """
+    # Branch recém-criada, ainda na ponta de `base` (sem commits próprios): NÃO é mergeada —
+    # é uma worktree de tarefa nova que ainda não commitou. `--is-ancestor` diria True (a ponta
+    # está contida em `base`), o que faria o gc reapar uma worktree recém-criada — justo o
+    # estado do Passo 0. No fluxo do GitHub o merge gera commit de merge em origin/main, então
+    # uma branch de fato mergeada nunca fica com a ponta igual à de `base`.
+    tip = subprocess.run(["git", "rev-parse", "--verify", "--quiet", branch],
+                         cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    base_tip = subprocess.run(["git", "rev-parse", "--verify", "--quiet", base],
+                              cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    if tip and tip == base_tip:
+        return False
     anc = subprocess.run(["git", "merge-base", "--is-ancestor", branch, base],
                          cwd=ROOT, capture_output=True, text=True)
     if anc.returncode == 0:
@@ -138,9 +149,28 @@ def main():
         print("  sem origin/main — nada a avaliar")
         return 0
 
+    # A branch da worktree atual está atrás de origin/main? Aviso para sincronizar antes de
+    # commitar/abrir PR (ADR-002 — nenhuma branch abre PR atrás da main). Reaproveita o
+    # `git fetch --prune` feito acima; não altera nada, só avisa.
+    atual = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                           cwd=ROOT, capture_output=True, text=True)
+    branch_atual = atual.stdout.strip() if atual.returncode == 0 else ""
+    if branch_atual and branch_atual not in ("main", "master", "HEAD"):
+        r = subprocess.run(["git", "rev-list", "--count", f"HEAD..{base}"],
+                           cwd=ROOT, capture_output=True, text=True)
+        atras = r.stdout.strip() if r.returncode == 0 else ""
+        if atras.isdigit() and int(atras) > 0:
+            print(f"  [sync] a branch atual '{branch_atual}' está {atras} commit(s) atrás de "
+                  f"{base} — rode: git pull origin main (sincronize antes de commitar/abrir PR).")
+
     removidas, preservadas, parciais = [], [], []
     for path, branch in worktrees():
         if not branch or branch in ("main", "master"):
+            continue
+        # NUNCA a worktree atual (de onde o gc roda): mesmo com a branch mergeada, remover a
+        # worktree onde você está apagaria seu diretório de trabalho. O `git worktree remove`
+        # recusaria a atual, mas a limpeza de resíduo (rmdir) rodaria mesmo assim — então pulamos.
+        if Path(path).resolve() == ROOT:
             continue
         if not _merged(base, f"refs/heads/{branch}"):
             continue
