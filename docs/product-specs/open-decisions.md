@@ -61,7 +61,7 @@ Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A
 Dono: PO (gerente de projeto)
 Bloqueia: nada crítico (há default proposto); ajusta a frequência do job
 Status: aberta
-Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A importação roda periodicamente por agendamento (RN-034). Proposta de default: diária, em horário de baixo pico, com a cadência configurável (não fixa no código). Falta a PO confirmar se há requisito de frequência específico (ex.: mais de uma vez ao dia, ou alinhado a janela da Seguradora).
+Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A importação roda periodicamente por agendamento (RN-034). Proposta de default: diária, em horário de baixo pico, com a cadência configurável (não fixa no código). Falta a PO confirmar se há requisito de frequência específico (ex.: mais de uma vez ao dia, ou alinhado a janela da Seguradora). Atualização 2026-07-23 (jornada Tags e Cláusulas, AB#0004): a importação de Tags e Cláusulas roda no mesmo ciclo de catálogo (RN-040..RN-042), então a cadência é única. O PRD de Tags propõe **cadência configurável com default por ambiente**: produção 1x/dia às 05:00; demais ambientes a cada 30min. Decisão de implementação nesta entrega: cadência configurável (não fixa no código) com esses defaults. Segue aberto para a PO confirmar os valores definitivos e se há janela específica por Seguradora.
 
 ## OPEN-11 — Disponibilidade derivada por tipo de tomador (PF/PJ)
 Dono: PO (gerente de projeto)
