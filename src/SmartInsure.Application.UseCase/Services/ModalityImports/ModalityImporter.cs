@@ -13,6 +13,8 @@ namespace SmartInsure.Application.UseCase.Services.ModalityImports;
 /// importado (RN-033), deriva a Modalidade da Modalidade Global por *find-or-create* pelo id
 /// global e vincula a Importada (RN-035), preservando override Manual (RN-037); desativa o que
 /// sumiu numa importação bem-sucedida e isola a falha por Corretora/Seguradora (RN-038) (ADR-061).
+/// Após o upsert, importa a Tag (RN-040) e as Cláusulas particulares (RN-041) de cada Modalidade
+/// Importada Ativa pelo objeto da modalidade, com resiliência e reconciliação (RN-042).
 /// </summary>
 public sealed class ModalityImporter(
     IBrokerageInsurerEnablementRepository enablementRepository,

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using SmartInsure.Application.UseCase.Services.ModalityImports;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
@@ -174,5 +175,44 @@ public class ModalityTagImportTests
         tag.Status.Should().Be(EImportedModalityTagStatus.Active);       // RN-042: falha não inativa
         clause.Status.Should().Be(EImportedModalityClauseStatus.Active);
         await _tags.DidNotReceive().AddAsync(Arg.Any<ImportedModalityTag>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-041")]
+    public async Task DeveManterAPrimeira_QuandoIdExternoDuplicadoNaMesmaResposta()
+    {
+        GivenSingleModalityCatalog();
+        GivenModalityObject(new ModalityObjectResult(false, "{}", null,
+            new List<ModalityClauseData> { new("123", "Primeira", "t", "{}"), new("123", "Segunda", "t2", "{}") }));
+        _tags.GetByImportedModalityAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((ImportedModalityTag?)null);
+
+        await BuildImporter().RunAsync(Now, CancellationToken.None);
+
+        await _clauses.Received(1).AddAsync(
+            Arg.Is<ImportedModalityParticularClause>(c => c.ExternalId == "123" && c.Name == "Primeira"),
+            Arg.Any<CancellationToken>());
+        await _clauses.DidNotReceive().AddAsync(
+            Arg.Is<ImportedModalityParticularClause>(c => c.Name == "Segunda"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-042")]
+    public async Task NaoDeveInativarNada_QuandoConsultaDaModalidadeLancaExcecao()
+    {
+        GivenSingleModalityCatalog();
+        _engine.GetModalityObjectAsync(Arg.Any<string?>(), "34060267000196", "m-1", Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException("timeout"));
+        var importer = BuildImporter();
+        var tag = ImportedModalityTag.Create(Guid.CreateVersion7(), "{\"v\":1}", null);
+        _tags.GetByImportedModalityAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(tag);
+        var clause = ImportedModalityParticularClause.Create(Guid.CreateVersion7(), "123", "C", null, null);
+        _clauses.ListByImportedModalityAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(new List<ImportedModalityParticularClause> { clause });
+
+        await importer.RunAsync(Now, CancellationToken.None);
+
+        tag.Status.Should().Be(EImportedModalityTagStatus.Active);       // RN-042: falha não inativa
+        clause.Status.Should().Be(EImportedModalityClauseStatus.Active);
     }
 }
