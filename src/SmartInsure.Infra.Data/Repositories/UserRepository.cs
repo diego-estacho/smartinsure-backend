@@ -14,7 +14,7 @@ public sealed class UserRepository(SmartInsureDbContext context)
 
     public async Task<User?> GetByExternalIdentityAsync(
         string externalIdentity, CancellationToken cancellationToken)
-        => await Set
+        => await Set.AsNoTracking()
             .Include(user => user.Profile)
             .FirstOrDefaultAsync(user => user.ExternalIdentity == externalIdentity, cancellationToken);
 

@@ -2,12 +2,12 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using SmartInsure.Application.UseCase.Services.Invitations;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.InviteBrokerageAdministrator;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.InviteBrokerageAdministrator.Requests;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
-using SmartInsure.Core.Abstractions.Services.Dtos;
 using SmartInsure.Core.Constants;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
@@ -27,7 +27,7 @@ public class InviteBrokerageAdministratorUseCaseTests
         Substitute.For<IUserBrokerageMembershipRepository>();
     private readonly IInvitationRepository _invitationRepository = Substitute.For<IInvitationRepository>();
     private readonly IIdentityProvider _identityProvider = Substitute.For<IIdentityProvider>();
-    private readonly IMailService _mailService = Substitute.For<IMailService>();
+    private readonly IInvitationMailer _invitationMailer = Substitute.For<IInvitationMailer>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
     private readonly Profile _brokerageAdministrator =
@@ -45,15 +45,13 @@ public class InviteBrokerageAdministratorUseCaseTests
 
         _useCase = new InviteBrokerageAdministratorUseCase(
             _userRepository, _personRepository, _profileRepository, _membershipRepository,
-            _invitationRepository, _identityProvider, _mailService, _unitOfWork, options,
+            _invitationRepository, _identityProvider, _invitationMailer, _unitOfWork, options,
             Substitute.For<ILogger<InviteBrokerageAdministratorUseCase>>());
 
         _profileRepository.GetBrokerageAdministratorAsync(Arg.Any<CancellationToken>())
             .Returns(_brokerageAdministrator);
         _identityProvider.CreateIdentityAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns("casdoor-ca-1");
-        _mailService.SendAsync(Arg.Any<MailMessage>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
     }
 
     private static Person Brokerage(bool active = true)
@@ -88,7 +86,8 @@ public class InviteBrokerageAdministratorUseCaseTests
             Arg.Is<UserBrokerageMembership>(membership => membership.ProfileId == _brokerageAdministrator.Id),
             Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
-        await _mailService.Received(1).SendAsync(Arg.Any<MailMessage>(), Arg.Any<CancellationToken>());
+        await _invitationMailer.Received(1).SendAsync(
+            "maria@corretora.com.br", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

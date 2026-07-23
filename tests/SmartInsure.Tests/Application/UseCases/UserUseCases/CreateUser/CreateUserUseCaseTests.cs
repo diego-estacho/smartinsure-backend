@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using SmartInsure.Application.UseCase.Services.Invitations;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Requests;
@@ -23,7 +24,7 @@ public class CreateUserUseCaseTests
     private readonly IUserRepository _repository = Substitute.For<IUserRepository>();
     private readonly IInvitationRepository _invitationRepository = Substitute.For<IInvitationRepository>();
     private readonly IIdentityProvider _identityProvider = Substitute.For<IIdentityProvider>();
-    private readonly IMailService _mailService = Substitute.For<IMailService>();
+    private readonly IInvitationMailer _invitationMailer = Substitute.For<IInvitationMailer>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly ILogger<CreateUserUseCase> _logger = Substitute.For<ILogger<CreateUserUseCase>>();
     private readonly CreateUserUseCase _useCase;
@@ -37,10 +38,7 @@ public class CreateUserUseCaseTests
         });
 
         _useCase = new CreateUserUseCase(
-            _repository, _invitationRepository, _identityProvider, _mailService, _unitOfWork, options, _logger);
-
-        _mailService.SendAsync(Arg.Any<SmartInsure.Core.Abstractions.Services.Dtos.MailMessage>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
+            _repository, _invitationRepository, _identityProvider, _invitationMailer, _unitOfWork, options, _logger);
     }
 
     private static CreateUserRequest Request()

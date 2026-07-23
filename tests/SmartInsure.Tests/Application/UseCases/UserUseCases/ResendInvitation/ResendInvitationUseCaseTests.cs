@@ -1,11 +1,10 @@
 using FluentAssertions;
 using NSubstitute;
+using SmartInsure.Application.UseCase.Services.Invitations;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.ResendInvitation;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.ResendInvitation.Requests;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
-using SmartInsure.Core.Abstractions.Services;
-using SmartInsure.Core.Abstractions.Services.Dtos;
 using SmartInsure.Core.Entities;
 using SmartInsure.Infra.CrossCutting.Options;
 using Microsoft.Extensions.Options;
@@ -18,7 +17,7 @@ public class ResendInvitationUseCaseTests
 {
     private readonly IInvitationRepository _invitationRepository = Substitute.For<IInvitationRepository>();
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();
-    private readonly IMailService _mailService = Substitute.For<IMailService>();
+    private readonly IInvitationMailer _invitationMailer = Substitute.For<IInvitationMailer>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly ResendInvitationUseCase _useCase;
 
@@ -31,7 +30,7 @@ public class ResendInvitationUseCaseTests
         });
 
         _useCase = new ResendInvitationUseCase(
-            _invitationRepository, _userRepository, _mailService, _unitOfWork, options);
+            _invitationRepository, _userRepository, _invitationMailer, _unitOfWork, options);
     }
 
     [Fact]
@@ -44,8 +43,6 @@ public class ResendInvitationUseCaseTests
             .Returns(user);
         _invitationRepository.GetPendingByUserAsync(user.Id, Arg.Any<CancellationToken>())
             .Returns(oldInvitation);
-        _mailService.SendAsync(Arg.Any<MailMessage>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
 
         var response = await _useCase.ExecuteAsync(
             new ResendInvitationRequest(user.Id), CancellationToken.None);
@@ -53,8 +50,8 @@ public class ResendInvitationUseCaseTests
         response.UserId.Should().Be(user.Id);
         response.Email.Should().Be(user.Email);
         oldInvitation.ConsumedAtUtc.Should().NotBeNull(); // Deve estar consumido
-        await _mailService.Received(1)
-            .SendAsync(Arg.Is<MailMessage>(m => m.To.Contains(user.Email)), Arg.Any<CancellationToken>());
+        await _invitationMailer.Received(1).SendAsync(
+            user.Email, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -71,9 +68,9 @@ public class ResendInvitationUseCaseTests
         await _useCase.ExecuteAsync(
             new ResendInvitationRequest(userId), CancellationToken.None);
 
-        await _mailService.Received(1)
-            .SendAsync(Arg.Is<MailMessage>(m =>
-                m.Subject.Contains("Novo link") && m.HtmlBody.Contains("https://app.example.com/invite")),
-            Arg.Any<CancellationToken>());
+        // A composição do link/HTML fica no InvitationMailer; aqui garantimos o reenvio com o assunto certo.
+        await _invitationMailer.Received(1).SendAsync(
+            user.Email, Arg.Any<string>(), Arg.Any<string>(),
+            Arg.Is<string>(subject => subject.Contains("Novo link")), Arg.Any<CancellationToken>());
     }
 }

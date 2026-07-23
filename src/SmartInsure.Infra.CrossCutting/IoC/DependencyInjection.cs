@@ -15,6 +15,12 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // RN-035: URL base e validade do link de Convite.
+        services.AddOptions<InvitationOptions>()
+            .BindConfiguration(InvitationOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         // RN-005: emissão do acesso autenticado com a mesma chave simétrica da validação (ADR-015).
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
 

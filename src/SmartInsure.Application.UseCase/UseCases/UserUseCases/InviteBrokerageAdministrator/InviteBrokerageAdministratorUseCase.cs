@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SmartInsure.Application.UseCase.Services.Invitations;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.InviteBrokerageAdministrator.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.InviteBrokerageAdministrator.Requests;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.InviteBrokerageAdministrator.Responses;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
-using SmartInsure.Core.Abstractions.Services.Dtos;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
@@ -26,7 +26,7 @@ public sealed class InviteBrokerageAdministratorUseCase(
     IUserBrokerageMembershipRepository membershipRepository,
     IInvitationRepository invitationRepository,
     IIdentityProvider identityProvider,
-    IMailService mailService,
+    IInvitationMailer invitationMailer,
     IUnitOfWork unitOfWork,
     IOptions<InvitationOptions> invitationOptions,
     ILogger<InviteBrokerageAdministratorUseCase> logger) : IInviteBrokerageAdministratorUseCase
@@ -111,16 +111,8 @@ public sealed class InviteBrokerageAdministratorUseCase(
         // RN-035: link enviado pós-commit; falha de e-mail não desfaz a criação (reenviável).
         try
         {
-            var invitationLink = $"{invitationOptions.Value.AppBaseUrl}/invite?token={Uri.EscapeDataString(plainToken)}";
-
-            await mailService.SendAsync(
-                new MailMessage
-                {
-                    To = [email],
-                    Subject = "Bem-vindo ao SmartInsure — Complete seu acesso",
-                    HtmlBody = BuildInvitationEmailHtml(user.Name, invitationLink),
-                },
-                cancellationToken);
+            await invitationMailer.SendAsync(
+                email, user.Name, plainToken, "Bem-vindo ao SmartInsure — Complete seu acesso", cancellationToken);
         }
         catch (Exception emailException)
         {
@@ -132,29 +124,4 @@ public sealed class InviteBrokerageAdministratorUseCase(
 
         return new InviteBrokerageAdministratorResponse(user.Id, user.Name, user.Email, user.Status.ToString());
     }
-
-    private static string BuildInvitationEmailHtml(string userName, string invitationLink)
-        => $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-</head>
-<body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
-    <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-        <h1>Bem-vindo ao SmartInsure, {System.Web.HttpUtility.HtmlEncode(userName)}!</h1>
-        <p>Clique no link abaixo para completar seu acesso e definir sua senha:</p>
-        <p style='text-align: center; margin: 30px 0;'>
-            <a href='{System.Web.HttpUtility.HtmlAttributeEncode(invitationLink)}'
-               style='display: inline-block; background-color: #0066cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px;'>
-                Completar acesso
-            </a>
-        </p>
-        <p style='color: #666; font-size: 12px;'>
-            Este link expira em 7 dias. Se você não esperava este convite, ignore este e-mail.
-        </p>
-    </div>
-</body>
-</html>";
 }
