@@ -195,6 +195,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
         // Single LINQ join query to avoid N+1: appointments + insurers + persons in one go
         var appointments = await Context.Set<PolicyHolderAppointment>().AsNoTracking()
             .Where(appointment => appointment.PolicyHolderId == personId)
+            .OrderByDescending(appointment => appointment.StartedAt)
             .Join(Context.Set<Insurer>().AsNoTracking(),
                 appointment => appointment.InsurerId,
                 insurer => insurer.Id,
@@ -213,7 +214,6 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                     x.appointment.Status.ToString(),
                     x.appointment.StartedAt,
                     x.appointment.EndedAt))
-            .OrderByDescending(dto => dto.StartedAt)
             .ToListAsync(cancellationToken);
 
         return new PolicyHolderDetailsDto(
