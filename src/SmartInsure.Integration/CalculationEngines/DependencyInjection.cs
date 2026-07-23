@@ -26,6 +26,11 @@ public static class DependencyInjection
             .AddStandardResilienceHandler();
         services.AddScoped<PlugV2ModalityImportClient>();
 
+        // RN-040/ADR-044: idem para GetModalityObject — base URL por Habilitação, resiliência no client nomeado.
+        services.AddHttpClient(PlugV2ModalityObjectClient.HttpClientName)
+            .AddStandardResilienceHandler();
+        services.AddScoped<PlugV2ModalityObjectClient>();
+
         return services;
     }
 }

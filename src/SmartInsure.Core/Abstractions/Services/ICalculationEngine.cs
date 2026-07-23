@@ -38,6 +38,14 @@ public interface ICalculationEngine
         string policyHolderCnpj,
         string insurerExternalId,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-040/041: obtém o objeto de uma modalidade (Tag + Cláusulas particulares) na OnPoint,
+    /// por ModalityUniqueId. HasError=true (ou envelope inválido) sinaliza falha isolada da
+    /// modalidade (RN-042); falha de transporte sobe como exceção. Tradução na ACL (ADR-045).
+    /// </summary>
+    Task<ModalityObjectResult> GetModalityObjectAsync(
+        string? connectionParameters, string brokerCnpj, string modalityUniqueId, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -74,3 +82,10 @@ public sealed record PolicyHolderLimitGroup
     /// <summary>Taxa — da modalidade com maior AvailableLimit do grupo.</summary>
     public required decimal Rate { get; init; }
 }
+
+/// <summary>Objeto da modalidade (RN-040/041): a Tag e as Cláusulas particulares vindas no mesmo payload.</summary>
+public sealed record ModalityObjectResult(
+    bool HasError, string? JsonTag, string? ObjectText, IReadOnlyList<ModalityClauseData> Clauses);
+
+/// <summary>Cláusula particular como recebida da fonte (RN-041).</summary>
+public sealed record ModalityClauseData(string ExternalId, string Name, string? Text, string? JsonTag);
