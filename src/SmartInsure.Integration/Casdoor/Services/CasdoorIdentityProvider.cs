@@ -138,4 +138,30 @@ public sealed partial class CasdoorIdentityProvider(
                 "Provedor de identidade indisponível.", exception);
         }
     }
+
+    public async Task SetPasswordAsync(
+        string externalIdentity, string newPassword, CancellationToken cancellationToken)
+    {
+        var user = await api.GetUserAsync(externalIdentity, cancellationToken);
+
+        if (user.Data is null)
+        {
+            throw new InvalidOperationException(
+                $"Identidade {externalIdentity} não encontrada no provedor.");
+        }
+
+        var updatedUser = user.Data with
+        {
+            Password = newPassword,
+            NeedUpdatePassword = false,
+        };
+
+        var response = await api.UpdateUserAsync(updatedUser, cancellationToken);
+
+        if (!response.IsOk)
+        {
+            throw new InvalidOperationException(
+                $"Provedor de identidade recusou atualizar a senha: {response.Msg}");
+        }
+    }
 }

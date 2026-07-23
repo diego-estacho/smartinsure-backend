@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Distributed;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Constants;
-using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Api.Services;
 
@@ -38,11 +37,11 @@ public sealed class UserProfileClaimsTransformation(
         {
             var user = await userRepository.GetByExternalIdentityAsync(
                 externalIdentity, CancellationToken.None);
-            profile = user?.Profile?.ToString() ?? string.Empty;
+            profile = user?.Profile?.Name ?? string.Empty;
             await cache.SetStringAsync(cacheKey, profile, CacheOptions);
         }
 
-        if (profile == EUserProfile.SystemAdministrator.ToString())
+        if (profile == ProfileNames.SystemAdministrator)
         {
             var identity = new ClaimsIdentity();
             identity.AddClaim(new Claim(ClaimTypes.Role, Roles.SystemAdministrator));

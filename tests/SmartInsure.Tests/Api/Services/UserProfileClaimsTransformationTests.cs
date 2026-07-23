@@ -10,6 +10,8 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Api.Services;
 
+// RN-011 — o Perfil vira role; usa a entidade Profile (RN-032).
+
 /// <summary>RN-011 — o Perfil do Usuário vira role nas claims; sem perfil, nenhuma role.</summary>
 [Trait("RuleId", "RN-011")]
 public class UserProfileClaimsTransformationTests
@@ -35,7 +37,8 @@ public class UserProfileClaimsTransformationTests
         var user = User.Create("Maria Silva", "maria@corretora.com.br", externalIdentity);
         if (admin)
         {
-            user.GrantProfile(EUserProfile.SystemAdministrator);
+            user.GrantProfile(
+                Profile.Create(ProfileNames.SystemAdministrator, EProfileScope.System, isFixed: true));
         }
 
         _repository.GetByExternalIdentityAsync(externalIdentity, Arg.Any<CancellationToken>())

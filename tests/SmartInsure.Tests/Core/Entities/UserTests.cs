@@ -1,4 +1,5 @@
 using FluentAssertions;
+using SmartInsure.Core.Constants;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
@@ -26,15 +27,20 @@ public class UserTests
         act.Should().Throw<BusinessRuleException>();
     }
 
+    private static Profile SystemAdministratorProfile()
+        => Profile.Create(ProfileNames.SystemAdministrator, EProfileScope.System, isFixed: true);
+
     [Fact]
     [Trait("RuleId", "RN-012")]
     public void GrantProfile_DeveConcederPerfil_QuandoUsuarioSemPerfil()
     {
         var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
+        var profile = SystemAdministratorProfile();
 
-        user.GrantProfile(EUserProfile.SystemAdministrator);
+        user.GrantProfile(profile);
 
-        user.Profile.Should().Be(EUserProfile.SystemAdministrator);
+        user.ProfileId.Should().Be(profile.Id);
+        user.Profile.Should().Be(profile);
     }
 
     [Fact]
@@ -42,9 +48,10 @@ public class UserTests
     public void GrantProfile_DeveRecusar_QuandoUsuarioJaTemOPerfil()
     {
         var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
-        user.GrantProfile(EUserProfile.SystemAdministrator);
+        var profile = SystemAdministratorProfile();
+        user.GrantProfile(profile);
 
-        var act = () => user.GrantProfile(EUserProfile.SystemAdministrator);
+        var act = () => user.GrantProfile(profile);
 
         act.Should().Throw<ConflictException>();
     }
@@ -54,10 +61,11 @@ public class UserTests
     public void RevokeProfile_DeveRemoverPerfil_QuandoUsuarioTemPerfil()
     {
         var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
-        user.GrantProfile(EUserProfile.SystemAdministrator);
+        user.GrantProfile(SystemAdministratorProfile());
 
         user.RevokeProfile();
 
+        user.ProfileId.Should().BeNull();
         user.Profile.Should().BeNull();
     }
 

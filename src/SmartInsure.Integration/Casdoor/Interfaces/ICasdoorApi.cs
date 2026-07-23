@@ -27,6 +27,16 @@ public interface ICasdoorApi
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// RN-035: atualiza a identidade do Usuário (usado pra definir/alterar a senha).
+    /// NOTA: a semântica (merge/update total) depende do deployment Casdoor.
+    /// Confirmação necessária no PR para o comportamento exato.
+    /// </summary>
+    [Post("/api/update-user")]
+    Task<CasdoorResponse<object>> UpdateUserAsync(
+        [Body] CasdoorUser user,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// RN-005: validação de credenciais via grant password do OAuth do Casdoor.
     /// O token retornado não é repassado ao cliente — a plataforma emite o próprio acesso.
     /// </summary>

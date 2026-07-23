@@ -36,9 +36,15 @@ public sealed class AuthenticateUserUseCase(
             throw new UnauthorizedException(InvalidCredentialsMessage);
         }
 
-        // RN-005: Pendente não se autentica — primeiro acesso é pelo fluxo de convite (OPEN-06).
-        // Credencial já validada: a recusa é regra de negócio (422), não falha de autenticação
-        // (ADR-012). A situação só é revelada a quem provou conhecer a senha.
+        // RN-005/RN-046: só o Usuário Ativo acessa. Credencial já validada: a recusa é regra de
+        // negócio (422), não falha de autenticação (ADR-012). A situação só é revelada a quem provou
+        // conhecer a senha.
+        if (user.Status == EUserStatus.Inactive)
+        {
+            throw new BusinessRuleException(
+                "Usuário inativo. Procure um administrador para reativar o acesso.");
+        }
+
         if (user.Status != EUserStatus.Active)
         {
             throw new BusinessRuleException(

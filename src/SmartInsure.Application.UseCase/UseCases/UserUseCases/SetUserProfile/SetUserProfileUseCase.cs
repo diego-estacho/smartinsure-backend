@@ -5,17 +5,17 @@ using SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile.Respo
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Constants;
-using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile;
 
 /// <summary>
-/// RN-012 — concessão/revogação do Perfil; a plataforma nunca fica sem Administrador do
-/// Sistema; cache de perfil invalidado para efeito imediato.
+/// RN-012 — concessão/revogação do Perfil (agora entidade — RN-032); a plataforma nunca fica sem
+/// Administrador do Sistema; cache de perfil invalidado para efeito imediato.
 /// </summary>
 public sealed class SetUserProfileUseCase(
     IUserRepository userRepository,
+    IProfileRepository profileRepository,
     IUnitOfWork unitOfWork,
     IDistributedCache cache) : ISetUserProfileUseCase
 {
@@ -28,9 +28,11 @@ public sealed class SetUserProfileUseCase(
 
         if (request.Profile is null)
         {
-            if (user.Profile == EUserProfile.SystemAdministrator
-                && await userRepository.CountByProfileAsync(
-                    EUserProfile.SystemAdministrator, cancellationToken) <= 1)
+            var systemAdministrator = await profileRepository.GetSystemAdministratorAsync(cancellationToken);
+
+            if (systemAdministrator is not null
+                && user.ProfileId == systemAdministrator.Id
+                && await userRepository.CountByProfileIdAsync(systemAdministrator.Id, cancellationToken) <= 1)
             {
                 throw new BusinessRuleException(
                     "A plataforma não pode ficar sem Administrador do Sistema.");
@@ -40,10 +42,9 @@ public sealed class SetUserProfileUseCase(
         }
         else
         {
-            if (!Enum.TryParse<EUserProfile>(request.Profile, ignoreCase: true, out var profile))
-            {
-                throw new BusinessRuleException("O perfil deve ser SystemAdministrator ou nulo para revogação.");
-            }
+            var profile = await profileRepository.GetByNameAsync(request.Profile, cancellationToken)
+                ?? throw new BusinessRuleException(
+                    "O perfil deve ser SystemAdministrator ou nulo para revogação.");
 
             user.GrantProfile(profile);
         }
@@ -51,6 +52,6 @@ public sealed class SetUserProfileUseCase(
         await unitOfWork.CommitAsync(cancellationToken);
         await cache.RemoveAsync(CacheKeys.UserProfile(user.ExternalIdentity), cancellationToken);
 
-        return new SetUserProfileResponse(user.Id, user.Profile?.ToString());
+        return new SetUserProfileResponse(user.Id, user.Profile?.Name);
     }
 }

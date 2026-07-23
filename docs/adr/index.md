@@ -63,3 +63,4 @@
 | [ADR-057](057-politica-cobertura.md) | Política de cobertura e escopo da suíte | accepted | testes | Cobertura prioriza usecases/domínio; repositórios sem teste; integração adiada com risco registrado |
 | [ADR-058](058-artefatos-ingles-docs-ptbr.md) | Nomes de artefatos em inglês; documentação e UI em pt-BR | accepted | dominio, api, plataforma | Artefatos de código em inglês com mapa 1:1 no glossário; docs, UI, mensagens e commits em pt-BR |
 | [ADR-059](059-gate-exec-plan-no-harness.md) | Gate de exec-plan no harness | accepted | harness | Diff que toca `src/` exige exec-plan ativo ou dispensa em commit (`Exec-plan:`); força a decisão de triagem, não o artefato |
+| [ADR-060](060-escopo-ativo-claim.md) | Escopo ativo (Corretora/Tomador) carregado como claim | proposed | api, seguranca, dominio | Corretora/Tomador ativo vêm de claim enriquecida (ADR-014), lidos por extensão tipada; troca reemite o acesso e valida vínculo; sem tabela de sessão (RN-034) |

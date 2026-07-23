@@ -11,6 +11,18 @@ namespace SmartInsure.Infra.Data.Context;
 public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> options)
     : DbContext(options)
 {
+    public DbSet<Profile> Profiles => Set<Profile>();
+
+    public DbSet<Permission> Permissions => Set<Permission>();
+
+    public DbSet<ProfilePermission> ProfilePermissions => Set<ProfilePermission>();
+
+    public DbSet<UserBrokerageMembership> UserBrokerageMemberships => Set<UserBrokerageMembership>();
+
+    public DbSet<UserPolicyHolderMembership> UserPolicyHolderMemberships => Set<UserPolicyHolderMembership>();
+
+    public DbSet<Invitation> Invitations => Set<Invitation>();
+
     public DbSet<Insurer> Insurers => Set<Insurer>();
 
     public DbSet<Person> Persons => Set<Person>();

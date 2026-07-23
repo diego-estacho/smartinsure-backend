@@ -1,5 +1,4 @@
 using SmartInsure.Core.Entities;
-using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Core.Abstractions.Repositories;
 
@@ -12,5 +11,5 @@ public interface IUserRepository : IRepository<User>
     Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken);
 
     /// <summary>RN-012: a plataforma nunca fica sem Administrador do Sistema.</summary>
-    Task<int> CountByProfileAsync(EUserProfile profile, CancellationToken cancellationToken);
+    Task<int> CountByProfileIdAsync(Guid profileId, CancellationToken cancellationToken);
 }

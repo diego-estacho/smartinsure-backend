@@ -17,8 +17,9 @@ Contexto: hoje não existe política formal. Até existir, vale o [SECURITY.md](
 ## OPEN-03 — Vínculo entre Usuário e Corretora
 Dono: PO (gerente de projeto)
 Bloqueia: isolamento multi-tenant por corretora (query filters, ADR-035) e claims de corretora na identidade (ADR-014); restrição de quem pode criar usuário por perfil
-Status: aberta
+Status: parcialmente resolvida em 2026-07-23
 Contexto: a criação de Usuário (RN-001) nasce sem vínculo com Corretora e sem perfis, por decisão do negócio nesta fase. Falta decidir quando e como o Usuário passa a pertencer a uma Corretora e quais perfis restringem a criação — hoje qualquer usuário autenticado cria.
+Parcialmente resolvida em 2026-07-23 (RN-032..RN-046, jornada Perfis e Permissões): definidos o vínculo Usuário↔Corretora (N por Usuário, cada um portando o Perfil naquela Corretora), a Corretora ativa como gate das Permissões efetivas, o modelo Perfil×Escopo×Permissão, a hierarquia de criação (Admin→Corretor Administrador; Corretor Administrador→Tomador Administrador/Corretor; Tomador Administrador→Tomador; comuns por Permissão) e as verificações de nomeação para o Tomador Administrador. Depende da ratificação da PO dos termos novos e da nova cardinalidade de Perfil no glossário. Segue aberto: o isolamento multi-tenant técnico (query filters ADR-035, claims ADR-014) continua sob esta pendência até implementado.
 
 ## OPEN-04 — Uso dos dados retornados pelo Birô
 Dono: PO (gerente de projeto)
@@ -36,8 +37,9 @@ Contexto: a RN-005 recusa credenciais incorretas com mensagem genérica, mas nã
 ## OPEN-06 — Primeiro acesso via convite (substitui a senha inicial padrão)
 Dono: PO (gerente de projeto) — endereçada pela futura funcionalidade de convite
 Bloqueia: revisão de RN-001 (fim da senha inicial padrão) e de RN-002 (ativação passa a ocorrer pelo link de convite, sem autenticação prévia)
-Status: aberta
+Status: parcialmente resolvida em 2026-07-23
 Contexto: decidido em 2026-07-16 que o Usuário Pendente não se autentica (RN-005); a primeira senha será definida pelo próprio Usuário através de link de convite enviado por e-mail — uso único, com prazo de validade (proposta: 7 dias) e reenviável enquanto o Usuário for Pendente. O envio de e-mail ainda não existe e será implementado na funcionalidade de convite, quando RN-001 e RN-002 serão revisadas. Decidido em 2026-07-16: o login recusa o Usuário Pendente sempre (RN-005 literal) — usuário novo permanece sem acesso até a funcionalidade de convite existir; a ativação (RN-002) fica inoperante nesse intervalo por decisão consciente do negócio.
+Endereçada em 2026-07-23 (RN-035, jornada Perfis e Permissões): o mecanismo de Convite (link de uso único, validade, reenvio) e o primeiro acesso com senha própria foram especificados, revisando RN-001 (fim da senha inicial padrão) e RN-002 (ativação pelo link). RN-001 e RN-002 foram reescritas como PROPOSTA em 2026-07-23 (bloco de revisão no topo de cada uma em usuarios.md), refletindo o convite. Correção 2026-07-23: o transporte de e-mail JÁ EXISTE (`IMailService`/`MailKitMailService`, ADR-048) — a antiga afirmação de "serviço de e-mail inexistente" está superada. Restante pendente da PO: confirmar o prazo de validade do link (proposta 7 dias) e ratificar a revisão de RN-001/RN-002. O mecanismo de convite (geração/validação do link de uso único e o caso de uso de envio) é implementação, não bloqueio.
 
 ## OPEN-07 — Comportamento do cotar Ofertas
 Dono: PO (gerente de projeto)
@@ -50,3 +52,29 @@ Dono: PO (gerente de projeto)
 Bloqueia: exibição da validade do limite na Consulta de Crédito (RN-029); Registro Manual de Limite; Solicitação de Análise de Crédito pela assessoria
 Status: aberta
 Contexto: decidido em 2026-07-20 que esta fase entrega apenas a consulta online de Limites de Crédito com histórico (RN-029..RN-031). Parcialmente resolvida em 2026-07-21: o retorno real do motor traz limite revisado e disponível por modalidade — o limite utilizado passou a ser derivado (revisado − disponível) e incluído na RN-029; os grupos de modalidade são dinâmicos, informados pela Seguradora. Segue em aberto: a validade do limite não tem fonte no retorno do motor (a tela apresenta como ausente) — decidir fonte ou remoção. O registro manual de limite (informado por portal, telefone ou e-mail da seguradora) e a solicitação de análise pela assessoria ficaram fora desta entrega e serão especificados em demanda própria. A lista de "tomadores pesquisados recentemente" foi decidida como conveniência de tela, sem persistência — não gera RN. Pendência adicional (2026-07-20, apontada em code review): a RN-029 não define a fórmula do "limite consolidado" do resumo — a implementação usa a soma, por Seguradora disponível, do maior limite entre as modalidades; confirmar a fórmula com a PO (documentada no contrato do endpoint).
+
+## OPEN-09 — Nomes técnicos dos Perfis fixos (colisão com Papel da Pessoa)
+Dono: PO (gerente de projeto) + time (ADR-058, dono do vocabulário)
+Bloqueia: código de domínio dos Perfis fixos Corretor e Tomador da jornada Perfis e Permissões (RN-032..RN-046)
+Status: aberta
+Contexto: os Perfis fixos "Corretor" e "Tomador" (papéis de acesso do Usuário) colidem em nome com o Papel da Pessoa Corretor (`Broker`) e Tomador (`PolicyHolder`), que já existem no glossário e são conceitos distintos (o papel da Pessoa não é o Perfil do Usuário). Precisa a PO/time decidir os nomes técnicos 1:1 desses dois Perfis fixos (ex.: `BrokerProfile`/`PolicyHolderProfile` ou outro) antes de qualquer código, sob a regra do ADR-058. Corretor Administrador e Tomador Administrador já têm proposta de nome técnico no glossário (`BrokerageAdministrator`/`PolicyHolderAdministrator`), também sujeita a ratificação.
+
+## OPEN-10 — Remoção de Permissão essencial à própria administração
+Dono: PO (gerente de projeto)
+Bloqueia: o comportamento da edição de Perfil fixo (RN-043) quando a Permissão removida é a que sustenta a administração (ex.: gerenciar Usuários no Corretor Administrador)
+Status: aberta
+Contexto: a RN-043 permite ao Administrador do Sistema editar as Permissões dos Perfis fixos com efeito global. Não foi decidido o que a plataforma faz se ele remover a própria Permissão que sustenta a administração de um Escopo — se bloqueia (como a RN-046 faz ao impedir Escopo sem administrador), se avisa, ou se apenas registra. Sem precedente ratificado, a RN-043 declara o efeito como não definido nesta fase.
+
+## OPEN-11 — Mecânica do Escopo ativo (Corretora/Tomador ativo) e escopo padrão no primeiro acesso
+Dono: arquitetura (ADR) + PO (comportamento no primeiro acesso)
+Bloqueia: a resolução do Escopo ativo em tempo de request na RN-034 (permissões efetivas por Corretora/Tomador ativo) e, por consequência, os query filters multi-tenant por Corretora ativa (ADR-035). Não bloqueia as tabelas/entidades de vínculo (Usuário↔Corretora/Tomador), que são o N:N do glossário e podem nascer antes.
+Status: aberta (direção proposta em 2026-07-23)
+Direção proposta (2026-07-23): a mecânica candidata é Escopo ativo carregado como claim do acesso (ADR-060, status proposto — aguardando ratificação do dono de arquitetura), coerente com o ADR-014; troca reemite o acesso validando o vínculo; sem tabela de sessão nova. Segue ABERTO: (a) ratificação da mecânica pela arquitetura (ADR-060); (b) dono PO/UX — qual o Escopo ativo padrão no primeiro acesso quando o Usuário tem mais de um vínculo (a única vira ativa automaticamente? seleção obrigatória antes de operar?). A fatia 1b (carregamento/troca da claim) fica pendente de (a) e (b); a fatia 1a (vínculos) não depende delas.
+
+## OPEN-12 — Autoridade de inativação por escopo e Usuário multi-Corretora (RN-046)
+Dono: PO (gerente de projeto)
+Bloqueia: a inativação/reativação de Usuário pelos atores de escopo da RN-046 (Corretor Administrador, Tomador Administrador, usuário comum com permissão) — a fatia entregue faz apenas a do Administrador do Sistema.
+Status: aberta
+Contexto: a inativação torna o Usuário Inativo globalmente ("Usuário Inativo não acessa a plataforma"), mas um Usuário pode estar vinculado a várias Corretoras/Tomadores (RN-034). A RN-046 diz que o Corretor Administrador inativa "usuários das suas corretoras" — não está resolvido se um CA pode inativar GLOBALMENTE um Usuário que também pertence a outra Corretora (de outro CA), ou se a ação deveria ser apenas a remoção do vínculo naquele escopo. Também depende do enforcement por permissão (RN-033, adiado) para o caso do usuário comum. Enquanto aberto, só o Administrador do Sistema inativa/reativa (global, sem ambiguidade). Decidir a semântica (global vs por escopo) antes de estender aos demais atores.
+Inclui também o **guard do lado do alvo** da RN-046 ("inativação que deixaria uma Corretora ou Tomador sem nenhum administrador é recusada"): a fatia entregue implementa apenas o guard de Escopo System (não deixar a plataforma sem Administrador do Sistema); a proteção equivalente para Corretora (último Corretor Administrador) e Tomador (último Tomador Administrador) fica com esta decisão — depende de contagem de administradores ativos por Escopo, que só faz sentido junto com a semântica global-vs-escopo. Limitação atual consciente: o Administrador do Sistema pode inativar o último Corretor/Tomador Administrador de um Escopo.
+Contexto: a RN-034 exige que, com o Usuário vinculado a mais de uma Corretora/Tomador, exista uma Corretora ativa e um Tomador ativo que determinam as Permissões efetivas do momento. Nenhum ADR define COMO isso é resolvido por request. Candidatos: (a) claim no JWT (stateless, exige reemissão do token ao trocar); (b) sessão/estado no servidor (tabela de sessão com escopo ativo por token); (c) header por request (cliente envia a cada chamada); (d) híbrido (header com fallback pra sessão). Cada um afeta segurança (fonte de verdade da permissão), reemissão de token, consistência multi-aba e o gancho do multi-tenant (ADR-035). Também em aberto: qual o Escopo ativo padrão no primeiro acesso (única Corretora vinculada vira ativa automaticamente? seleção obrigatória?) — parte com sabor de PO. Decisão vira ADR (mecânica) e, se necessário, ajuste de RN-034 (comportamento padrão). Enquanto aberta, os vínculos podem ser implementados, mas a seleção/uso do Escopo ativo não.
