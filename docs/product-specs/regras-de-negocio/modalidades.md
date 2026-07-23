@@ -56,7 +56,7 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 ## RN-034 — Fila de Revisão: exceções, override e ignorar
 
-**Descrição.** Como o vínculo vem pronto da OnPoint (id da Modalidade Global), a Fila de Revisão — recorte evidenciado dentro do Mapa de Modalidades — trata apenas de **exceções e curadoria**: Modalidades Importadas sem identificador de Modalidade Global (sem vínculo automático) e a gestão de ignorar/reativar. O Administrador pode ainda reatribuir manualmente uma Modalidade Importada a outra Modalidade (override) e promover (criar uma Modalidade e vincular).
+**Descrição.** Como o vínculo vem pronto da OnPoint (id da Modalidade Global), a Fila de Revisão — recorte evidenciado dentro do Mapa de Modalidades — trata apenas de **exceções e curadoria**: Modalidades Importadas sem identificador de Modalidade Global (sem vínculo automático) e a gestão de ignorar/reativar. O Administrador pode ainda reatribuir manualmente uma Modalidade Importada a outra Modalidade (override) e promover (criar uma Modalidade e vincular). **Exibição (2026-07-22):** a Fila está **oculta na UI por feature-flag** (OPEN-14) enquanto não há fluxo de pendência normal e o cadastro manual não é decidido — a implementação permanece; o Mapa exibe só a matriz.
 
 **Pré-condições.** Modalidade Importada sem vínculo automático, ou decisão do Administrador de reatribuir/ignorar.
 

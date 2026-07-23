@@ -64,6 +64,12 @@ Status: **resolvida** em 2026-07-22 (ADR-061) — opção (A)
 Contexto: levantado em 2026-07-22. O PlugV2/OnPoint agrupa várias ofertas sob uma mesma **Global Modality** (identificador do motor). Ex.: id 31 = "Judicial" reúne, só na Essor, 10 origens distintas — "Judicial - Cível", "Judicial - Execução Fiscal", várias "PGE …". O modelo antigo (ADR-060) herdava o mapeamento por identificador a partir de uma semente confirmada, o que levava a lumping semanticamente questionável.
 Resolução: o time decidiu pela **opção (A)** — a **Modalidade equivale à Modalidade Global** da OnPoint (a fonte é a autoridade da granularidade). O ADR-061 formaliza: a Modalidade é derivada da Modalidade Global (find-or-create por id global), o vínculo é intrínseco, e não há semente/confirmação manual para propagar. Assim "Judicial" é uma única Modalidade por definição, e o problema de granularidade deixa de existir. Correção de dados legados (mapeamentos criados sob o ADR-060) será feita no retrabalho da implementação para o modelo do ADR-061.
 
+## OPEN-14 — Exibição da Fila de Revisão (feature-flag)
+Dono: PO (gerente de projeto)
+Bloqueia: a exibição da Fila de Revisão no Mapa de Modalidades (front)
+Status: aberta
+Contexto: levantado em 2026-07-22. Como o vínculo Modalidade Importada → Modalidade vem pronto pela Modalidade Global (ADR-061), no fluxo normal não há pendências de curadoria (toda importada tem id global). Por isso a **Fila de Revisão foi ocultada no front por feature-flag** (`NUXT_PUBLIC_MODALITY_REVIEW_QUEUE`, default `false`) — **a implementação permanece intacta e testada** (Reatribuir/Ignorar/Reativar no composable/BFF/endpoints + dialogs). Falta a PO decidir se/quando reexibir: reativar a flag (`true`) quando o **cadastro manual de Modalidades** e/ou o **tratamento de exceções** (importadas sem id de Modalidade Global) for decidido e fizer sentido operacional. Relacionada a OPEN-13. Enquanto isso, a Fila não aparece; o Mapa mostra só a matriz Seguradoras × Modalidades.
+
 ## OPEN-13 — Nome único da Modalidade vs. identidade por id de Modalidade Global
 Dono: PO (gerente de projeto)
 Bloqueia: importação de uma Seguradora cujo id de Modalidade Global traz um nome que colide com uma Modalidade manual já existente
