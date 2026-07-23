@@ -72,25 +72,38 @@ def _merged(base, branch):
     return cherry.returncode == 0 and cherry.stdout.strip().startswith("-")
 
 
-def _limpar_residuo(path):
-    """Windows: `git worktree remove` desregistra a worktree mas às vezes deixa
-    node_modules/.output (ignorados/travados) para trás. Só é chamado quando o remove
-    teve sucesso (worktree limpa) — apaga o resíduo e a pasta-pai <slug> se ficou vazia."""
-    def _on_error(func, p, _exc):
-        try:
-            os.chmod(p, stat.S_IWRITE)
-            func(p)
-        except OSError:
-            pass
-    p = Path(path)
+def _remover_arvore(p):
+    """Apaga a pasta INTEIRA, inclusive node_modules (o que mais pesa no disco): junctions do
+    pnpm, arquivos read-only e caminhos longos. No Windows usa `rmdir /s /q` (robusto pra
+    node_modules e não segue junctions); complementa com shutil + chmod. Retorna True se sumiu."""
+    if not p.exists():
+        return True
+    if os.name == "nt":
+        subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", str(p)], capture_output=True, text=True)
     if p.exists():
+        def _on_error(func, alvo, _exc):
+            try:
+                os.chmod(alvo, stat.S_IWRITE)
+                func(alvo)
+            except OSError:
+                pass
         shutil.rmtree(p, onerror=_on_error)
+    return not p.exists()
+
+
+def _limpar_residuo(path):
+    """Remove a árvore do worktree (inclusive node_modules) e a pasta-pai <slug> se ficar vazia.
+    Só é chamado após confirmar a worktree limpa. Retorna True se a pasta sumiu por completo;
+    False se algo travou arquivos (ex.: dev server/editor aberto na worktree)."""
+    p = Path(path)
+    ok = _remover_arvore(p)
     parent = p.parent
     try:
         if parent.exists() and not any(parent.iterdir()):
             parent.rmdir()
     except OSError:
         pass
+    return ok
 
 
 def worktrees():
@@ -125,7 +138,7 @@ def main():
         print("  sem origin/main — nada a avaliar")
         return 0
 
-    removidas, preservadas = [], []
+    removidas, preservadas, parciais = [], [], []
     for path, branch in worktrees():
         if not branch or branch in ("main", "master"):
             continue
@@ -139,21 +152,26 @@ def main():
             preservadas.append((path, branch,
                                 "trabalho não commitado" if st.returncode == 0 else st.stderr.strip()))
             continue
-        # Worktree limpa: remove. No Windows o `git worktree remove` desregistra mas às vezes
-        # falha no rmdir final (ignorados travados, ex.: node_modules) — por isso limpamos o
-        # resíduo de qualquer modo; o `git worktree prune` no fim resolve o registro pendente.
-        rm = subprocess.run(["git", "worktree", "remove", path],
-                            cwd=ROOT, capture_output=True, text=True)
-        _limpar_residuo(path)
-        removidas.append((path, branch, "" if rm.returncode == 0 else rm.stderr.strip()))
+        # Worktree limpa: desregistra e apaga a árvore INTEIRA (inclusive node_modules). O
+        # `git worktree remove` no Windows desregistra mas costuma deixar node_modules — por isso
+        # a remoção real da pasta é do `_limpar_residuo`; o `prune` no fim fecha o registro.
+        subprocess.run(["git", "worktree", "remove", path], cwd=ROOT, capture_output=True, text=True)
+        if _limpar_residuo(path):
+            removidas.append((path, branch, ""))
+        else:
+            parciais.append((path, branch,
+                             "node_modules/arquivos travados — feche o dev server/editor apontando "
+                             "para essa worktree e rode o gc de novo"))
 
     git("worktree", "prune", check=False)
 
     for path, branch, _ in removidas:
         print(f"  [removida]   {branch} -> {path}")
+    for path, branch, err in parciais:
+        print(f"  [parcial]    {branch} -> {path} ({err})")
     for path, branch, err in preservadas:
         print(f"  [preservada] {branch} -> {path} (não removida: {err or 'em uso/pendências'})")
-    if not removidas and not preservadas:
+    if not removidas and not preservadas and not parciais:
         print("  nada a limpar — nenhuma worktree mergeada.")
     return 0
 

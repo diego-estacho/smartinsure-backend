@@ -57,6 +57,7 @@ Harness/ferramenta — não toca comportamento de negócio nem contrato (não di
 
 **Fluxo de remoção + reclamação de disco (Windows):**
 - Bug pego no 1º dogfood: `git worktree remove` retornou "Directory not empty" (desregistrou a worktree, mas deixou `node_modules` travado); a versão inicial só limpava o resíduo quando `returncode == 0` → não reclamava o disco. Corrigido: **pré-checagem de limpeza** via `git status --porcelain` (trabalho real preservado; arquivos ignorados não contam) + `_limpar_residuo` **sempre** após o remove, com `git worktree prune` ao fim.
-- Teste sintético: worktree mergeada com `node_modules/` ignorado → gc a classifica **[removida]** e o diretório (+ pasta-pai `<slug>`) some do disco por completo.
+- Hardening da deleção (feedback do dono — node_modules é o que mais pesa): a pasta **inteira** tem de sumir, inclusive `node_modules`. `shutil.rmtree` é frágil no Windows com junctions do pnpm / read-only / caminhos longos, e o `onerror` silencioso podia deixar resíduo reportando "removida". Passou a usar **`rmdir /s /q`** (nativo, robusto e não segue junctions) + fallback `shutil`+chmod, e **verifica** que a pasta sumiu — se algo travar (dev server/editor aberto), classifica **[parcial]** com orientação, nunca "removida" falso.
+- **Teste com `node_modules` real do pnpm**: worktree mergeada com **415 MB e 2944 junctions** → gc a classifica **[removida]** e a árvore inteira (node_modules + pasta-pai `<slug>`) some do disco por completo.
 - Limpeza real: worktree `app-shell-nav` (PR #24 mergeado) reclamada — **450 MB**.
 - Worktree **não-mergeada** (`harness-gc-cleanup`, esta atividade, com commit à frente) preservada em todos os runs.
