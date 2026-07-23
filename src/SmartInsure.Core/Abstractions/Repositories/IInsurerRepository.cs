@@ -14,4 +14,8 @@ public interface IInsurerRepository : IRepository<Insurer>
 
     /// <summary>RN-027: Seguradora rastreada para validação de status.</summary>
     Task<Insurer?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>RN-031: batch load de nomes corporativos para evitar N+1 em listagens.</summary>
+    Task<IReadOnlyDictionary<Guid, string>> GetCorporateNamesByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
 }

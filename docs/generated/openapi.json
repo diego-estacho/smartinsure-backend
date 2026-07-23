@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://127.0.0.1:5981/"
+      "url": "http://localhost:5158/"
     }
   ],
   "paths": {
@@ -406,6 +406,141 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/credit-inquiries": {
+      "post": {
+        "tags": [
+          "CreditInquiriesEndpoint"
+        ],
+        "summary": "Executa consulta de limites de crédito do tomador",
+        "operationId": "ExecuteCreditInquiry",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteCreditInquiryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecuteCreditInquiryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "CreditInquiriesEndpoint"
+        ],
+        "summary": "Lista histórico de consultas de crédito (paginado)",
+        "operationId": "ListCreditInquiries",
+        "parameters": [
+          {
+            "name": "brokerageId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "policyHolderCnpj",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfCreditInquiryListItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/credit-inquiries/{id}": {
+      "get": {
+        "tags": [
+          "CreditInquiriesEndpoint"
+        ],
+        "summary": "Recupera histórico de uma consulta de crédito",
+        "operationId": "GetCreditInquiry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCreditInquiryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -1736,6 +1871,215 @@
           }
         }
       },
+      "CreditInquiryLimitGroupResponse": {
+        "required": [
+          "groupName",
+          "groupType",
+          "availableLimit",
+          "usedLimit",
+          "rate"
+        ],
+        "type": "object",
+        "properties": {
+          "groupName": {
+            "type": "string"
+          },
+          "groupType": {
+            "type": "string"
+          },
+          "availableLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "usedLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "rate": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "CreditInquiryListItemResponse": {
+        "required": [
+          "id",
+          "brokerageId",
+          "policyHolderCnpj",
+          "queriedAt",
+          "resultsCount",
+          "availableResults"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHolderCnpj": {
+            "type": "string"
+          },
+          "queriedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resultsCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "availableResults": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "CreditInquiryResultResponse": {
+        "required": [
+          "insurerId",
+          "insurerName",
+          "status",
+          "failureReason",
+          "limits"
+        ],
+        "type": "object",
+        "properties": {
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "failureReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "limits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditInquiryLimitGroupResponse"
+            }
+          }
+        }
+      },
+      "CreditInquirySummary": {
+        "required": [
+          "insurersQueried",
+          "insurersAvailable",
+          "consolidatedLimit"
+        ],
+        "type": "object",
+        "properties": {
+          "insurersQueried": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "insurersAvailable": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "consolidatedLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "ExecuteCreditInquiryRequest": {
+        "required": [
+          "brokerageId",
+          "policyHolderCnpj"
+        ],
+        "type": "object",
+        "properties": {
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHolderCnpj": {
+            "type": "string"
+          }
+        }
+      },
+      "ExecuteCreditInquiryResponse": {
+        "required": [
+          "creditInquiryId",
+          "queriedAt",
+          "policyHolderCnpj",
+          "policyHolderName",
+          "summary",
+          "results"
+        ],
+        "type": "object",
+        "properties": {
+          "creditInquiryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "queriedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policyHolderCnpj": {
+            "type": "string"
+          },
+          "policyHolderName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/CreditInquirySummary"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditInquiryResultResponse"
+            }
+          }
+        }
+      },
       "GetBrokerageInsurerEnablementResponse": {
         "required": [
           "id",
@@ -1841,6 +2185,45 @@
                 "$ref": "#/components/schemas/BrokerageAddressResponse"
               }
             ]
+          }
+        }
+      },
+      "GetCreditInquiryResponse": {
+        "required": [
+          "creditInquiryId",
+          "queriedAt",
+          "policyHolderCnpj",
+          "policyHolderName",
+          "summary",
+          "results"
+        ],
+        "type": "object",
+        "properties": {
+          "creditInquiryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "queriedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policyHolderCnpj": {
+            "type": "string"
+          },
+          "policyHolderName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/CreditInquirySummary"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditInquiryResultResponse"
+            }
           }
         }
       },
@@ -2163,6 +2546,55 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BrokerageListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "PagedResponseOfCreditInquiryListItemResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditInquiryListItemResponse"
             }
           },
           "page": {
@@ -2827,6 +3259,9 @@
     },
     {
       "name": "CalculationEnginesEndpoint"
+    },
+    {
+      "name": "CreditInquiriesEndpoint"
     },
     {
       "name": "InsurersEndpoint"
