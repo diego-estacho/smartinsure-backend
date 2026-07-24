@@ -38,6 +38,10 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<CreditInquiryResult> CreditInquiryResults => Set<CreditInquiryResult>();
 
+    public DbSet<QuotationGroup> QuotationGroups => Set<QuotationGroup>();
+
+    public DbSet<QuotationGroupInsurer> QuotationGroupInsurers => Set<QuotationGroupInsurer>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartInsureDbContext).Assembly);

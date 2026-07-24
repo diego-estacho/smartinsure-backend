@@ -7,6 +7,7 @@ Dono: PO (gerente de projeto)
 Bloqueia: qualquer código de domínio (nomes de entidades, rotas, telas, status)
 Status: aberta
 Contexto: a proposta está em [glossario.md](glossario.md). Já foram ratificados os status de Usuário e Corretora. Falta a PO ratificar os demais termos e enumerar os demais status do produto com as transições permitidas.
+Parcialmente resolvida em 2026-07-24 (jornada Grupo de Cotação): por decisão do dono, o agregado antes chamado **Oferta** (`Offer`) foi renomeado para **Grupo de Cotação** (`QuotationGroup`) e cada retorno de Seguradora, antes `Quote`, para **Cotação** (`Quotation`); a UI mantém "oferta" como rótulo provisório. Foi enumerado o único status desta fase — **Rascunho** (`Draft`) do Grupo de Cotação (RN-050, RN-051). Seguem em aberto os demais termos/estados e os estados posteriores do Grupo de Cotação (cotação obtida, proposta aceita, apólice emitida — OPEN-07).
 
 ## OPEN-02 — Política de acesso de agentes de IA a dados (LGPD)
 Dono: time + empresa (verificar se o grupo já tem política formalizada)
@@ -39,11 +40,12 @@ Bloqueia: revisão de RN-001 (fim da senha inicial padrão) e de RN-002 (ativaç
 Status: aberta
 Contexto: decidido em 2026-07-16 que o Usuário Pendente não se autentica (RN-005); a primeira senha será definida pelo próprio Usuário através de link de convite enviado por e-mail — uso único, com prazo de validade (proposta: 7 dias) e reenviável enquanto o Usuário for Pendente. O envio de e-mail ainda não existe e será implementado na funcionalidade de convite, quando RN-001 e RN-002 serão revisadas. Decidido em 2026-07-16: o login recusa o Usuário Pendente sempre (RN-005 literal) — usuário novo permanece sem acesso até a funcionalidade de convite existir; a ativação (RN-002) fica inoperante nesse intervalo por decisão consciente do negócio.
 
-## OPEN-07 — Comportamento do cotar Ofertas
+## OPEN-07 — Comportamento do cotar Grupos de Cotação
 Dono: PO (gerente de projeto)
-Bloqueia: a funcionalidade de cotar Ofertas (disparo das Cotações a partir de uma Oferta)
+Bloqueia: a funcionalidade de cotar (disparo das Cotações a partir de um Grupo de Cotação) e a emissão
 Status: aberta
 Contexto: decidido em 2026-07-19 que esta fase entrega apenas a infraestrutura do Motor de Cálculo (RN-022..RN-024) — Habilitação de Seguradora e resolução do motor por configuração, com PlugV2 como único motor. A direção indicada pelo negócio é que cotar dispare para TODAS as Seguradoras habilitadas da Corretora (uma Cotação por Seguradora, conforme glossário), mas a demanda do cotar ainda não foi especificada; escopo, disparo (todas vs. uma escolhida), momento e experiência do corretor serão definidos na demanda própria. Também segue aberto quem pode gerenciar a Habilitação de Seguradora — nesta fase qualquer usuário autenticado (mesma pendência de perfis da OPEN-03).
+Parcialmente resolvida em 2026-07-24 (jornada Grupo de Cotação): a **persistência do Grupo de Cotação em Rascunho** — o pedido que o corretor monta no wizard até concluir a etapa de risco (RN-050 criação, RN-051 atualização em Rascunho) — entrou em escopo e é do backend. Seguem mockados no front e fora de escopo desta fase: o disparo das Cotações às Seguradoras (etapa de cotações), a invalidação/recálculo por mudança de dados, e a emissão (etapa de emissão).
 
 ## OPEN-08 — Validade do limite e funcionalidades complementares da Consulta de Crédito
 Dono: PO (gerente de projeto)
