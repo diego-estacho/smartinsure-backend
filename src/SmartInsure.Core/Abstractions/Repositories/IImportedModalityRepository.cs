@@ -18,4 +18,11 @@ public interface IImportedModalityRepository : IRepository<ImportedModality>
 
     /// <summary>RN-037: pendências da Fila — Ativas, não Ignoradas, sem vínculo (ModalityId nulo).</summary>
     Task<IReadOnlyList<PendingImportedModalityDto>> ListPendingAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-042/RN-043: Modalidades Importadas processáveis na importação de Coberturas Adicionais
+    /// (Ativas e não Ignoradas) de uma Seguradora, com nome de origem, tipo do grupo importado e ramo.
+    /// </summary>
+    Task<IReadOnlyList<ImportableModalityForCoverageDto>> ListImportableForCoverageAsync(
+        Guid insurerId, CancellationToken cancellationToken);
 }

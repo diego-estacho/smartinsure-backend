@@ -30,6 +30,10 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
     public DbSet<ImportedModalityParticularClause> ImportedModalityParticularClauses
         => Set<ImportedModalityParticularClause>();
 
+    public DbSet<AdditionalCoverage> AdditionalCoverages => Set<AdditionalCoverage>();
+
+    public DbSet<ImportedAdditionalCoverage> ImportedAdditionalCoverages => Set<ImportedAdditionalCoverage>();
+
     public DbSet<CreditInquiry> CreditInquiries => Set<CreditInquiry>();
 
     public DbSet<CreditInquiryResult> CreditInquiryResults => Set<CreditInquiryResult>();

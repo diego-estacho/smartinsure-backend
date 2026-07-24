@@ -3,9 +3,9 @@ using SmartInsure.Core.Enumerators;
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Cláusula particular (RN-041): texto contratual opcional da Modalidade Importada, entregue no mesmo
+/// Cláusula particular (RN-048): texto contratual opcional da Modalidade Importada, entregue no mesmo
 /// objeto da modalidade. Identidade por (Modalidade Importada, id externo da cláusula na OnPoint).
-/// Nasce Ativa; reaparecer reativa; ausência numa consulta bem-sucedida inativa (RN-042).
+/// Nasce Ativa; reaparecer reativa; ausência numa consulta bem-sucedida inativa (RN-049).
 /// </summary>
 public sealed class ImportedModalityParticularClause : EntityBase
 {

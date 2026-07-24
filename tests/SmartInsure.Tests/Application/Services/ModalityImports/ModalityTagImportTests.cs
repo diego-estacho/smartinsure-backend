@@ -12,7 +12,7 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Application.Services.ModalityImports;
 
-/// <summary>RN-040/RN-041/RN-042 — importação de Tag e Cláusulas particulares no ciclo de catálogo.</summary>
+/// <summary>RN-047/RN-048/RN-049 — importação de Tag e Cláusulas particulares no ciclo de catálogo.</summary>
 public class ModalityTagImportTests
 {
     private static readonly DateTime Now = new(2026, 7, 23, 5, 0, 0, DateTimeKind.Utc);
@@ -74,7 +74,7 @@ public class ModalityTagImportTests
             .Returns(result);
 
     [Fact]
-    [Trait("RuleId", "RN-040")]
+    [Trait("RuleId", "RN-047")]
     public async Task DeveCriarTag_QuandoObjetoTrazJsonTag()
     {
         GivenSingleModalityCatalog();
@@ -89,7 +89,7 @@ public class ModalityTagImportTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-040")]
+    [Trait("RuleId", "RN-047")]
     public async Task NaoDeveSobrescreverTag_QuandoObjetoSemJsonTag_EInativaExistente()
     {
         GivenSingleModalityCatalog();
@@ -100,12 +100,12 @@ public class ModalityTagImportTests
         await BuildImporter().RunAsync(Now, CancellationToken.None);
 
         await _tags.DidNotReceive().AddAsync(Arg.Any<ImportedModalityTag>(), Arg.Any<CancellationToken>());
-        existing.Status.Should().Be(EImportedModalityTagStatus.Inactive); // RN-042
-        existing.JsonTag.Should().Be("{\"v\":1}"); // conteúdo preservado (RN-040)
+        existing.Status.Should().Be(EImportedModalityTagStatus.Inactive); // RN-049
+        existing.JsonTag.Should().Be("{\"v\":1}"); // conteúdo preservado (RN-047)
     }
 
     [Fact]
-    [Trait("RuleId", "RN-041")]
+    [Trait("RuleId", "RN-048")]
     public async Task DeveCriarClausulas_PorChaveExterna()
     {
         GivenSingleModalityCatalog();
@@ -119,7 +119,7 @@ public class ModalityTagImportTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-041")]
+    [Trait("RuleId", "RN-048")]
     public async Task DeveAtualizarClausulaExistente_SemDuplicar()
     {
         GivenSingleModalityCatalog();
@@ -140,7 +140,7 @@ public class ModalityTagImportTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-042")]
+    [Trait("RuleId", "RN-049")]
     public async Task DeveInativarClausulaAusente_EmConsultaBemSucedida()
     {
         GivenSingleModalityCatalog();
@@ -159,7 +159,7 @@ public class ModalityTagImportTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-042")]
+    [Trait("RuleId", "RN-049")]
     public async Task NaoDeveInativarNada_QuandoConsultaDaModalidadeFalha()
     {
         GivenSingleModalityCatalog();
@@ -172,13 +172,13 @@ public class ModalityTagImportTests
 
         await BuildImporter().RunAsync(Now, CancellationToken.None);
 
-        tag.Status.Should().Be(EImportedModalityTagStatus.Active);       // RN-042: falha não inativa
+        tag.Status.Should().Be(EImportedModalityTagStatus.Active);       // RN-049: falha não inativa
         clause.Status.Should().Be(EImportedModalityClauseStatus.Active);
         await _tags.DidNotReceive().AddAsync(Arg.Any<ImportedModalityTag>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    [Trait("RuleId", "RN-041")]
+    [Trait("RuleId", "RN-048")]
     public async Task DeveManterAPrimeira_QuandoIdExternoDuplicadoNaMesmaResposta()
     {
         GivenSingleModalityCatalog();
@@ -197,7 +197,7 @@ public class ModalityTagImportTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-042")]
+    [Trait("RuleId", "RN-049")]
     public async Task DeveInativarTagEClausulas_QuandoModalidadeSaiuDeAtiva()
     {
         GivenSingleModalityCatalog();
@@ -223,7 +223,7 @@ public class ModalityTagImportTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-042")]
+    [Trait("RuleId", "RN-049")]
     public async Task NaoDeveInativarNada_QuandoConsultaDaModalidadeLancaExcecao()
     {
         GivenSingleModalityCatalog();
@@ -238,7 +238,7 @@ public class ModalityTagImportTests
 
         await importer.RunAsync(Now, CancellationToken.None);
 
-        tag.Status.Should().Be(EImportedModalityTagStatus.Active);       // RN-042: falha não inativa
+        tag.Status.Should().Be(EImportedModalityTagStatus.Active);       // RN-049: falha não inativa
         clause.Status.Should().Be(EImportedModalityClauseStatus.Active);
     }
 }

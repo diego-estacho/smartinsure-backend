@@ -28,6 +28,20 @@ public interface ICalculationEngine
         string? connectionParameters, string brokerCnpj, CancellationToken cancellationToken);
 
     /// <summary>
+    /// RN-042/RN-044: obtém as Coberturas Adicionais de UMA Modalidade Importada, identificada pelo
+    /// nome de origem e pelo tipo do grupo, junto à Seguradora (InsuranceUniqueId), usando os
+    /// parâmetros de conexão da Habilitação e o CNPJ da Corretora. A tradução do payload do
+    /// fornecedor para o contrato acontece na ACL do provider (ADR-045).
+    /// </summary>
+    Task<ImportedAdditionalCoverageResult> GetAdditionalCoveragesAsync(
+        string? connectionParameters,
+        string brokerCnpj,
+        string insuranceUniqueId,
+        string modalityName,
+        string? modalityGroupType,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// RN-029: consulta os Limites de Crédito de um tomador junto à Seguradora.
     /// Retorna limites e taxas agrupados por grupo de modalidade (dinâmicos conforme retorno da Seguradora),
     /// ou null se indisponível. Exceções são do tipo CalculationEngineException.
@@ -40,9 +54,9 @@ public interface ICalculationEngine
         CancellationToken cancellationToken);
 
     /// <summary>
-    /// RN-040/041: obtém o objeto de uma modalidade (Tag + Cláusulas particulares) na OnPoint,
+    /// RN-047/048: obtém o objeto de uma modalidade (Tag + Cláusulas particulares) na OnPoint,
     /// por ModalityUniqueId. HasError=true (ou envelope inválido) sinaliza falha isolada da
-    /// modalidade (RN-042); falha de transporte sobe como exceção. Tradução na ACL (ADR-045).
+    /// modalidade (RN-049); falha de transporte sobe como exceção. Tradução na ACL (ADR-045).
     /// </summary>
     Task<ModalityObjectResult> GetModalityObjectAsync(
         string? connectionParameters, string brokerCnpj, string modalityUniqueId, CancellationToken cancellationToken);
@@ -83,9 +97,9 @@ public sealed record PolicyHolderLimitGroup
     public required decimal Rate { get; init; }
 }
 
-/// <summary>Objeto da modalidade (RN-040/041): a Tag e as Cláusulas particulares vindas no mesmo payload.</summary>
+/// <summary>Objeto da modalidade (RN-047/048): a Tag e as Cláusulas particulares vindas no mesmo payload.</summary>
 public sealed record ModalityObjectResult(
     bool HasError, string? JsonTag, string? ObjectText, IReadOnlyList<ModalityClauseData> Clauses);
 
-/// <summary>Cláusula particular como recebida da fonte (RN-041).</summary>
+/// <summary>Cláusula particular como recebida da fonte (RN-048).</summary>
 public sealed record ModalityClauseData(string ExternalId, string Name, string? Text, string? JsonTag);

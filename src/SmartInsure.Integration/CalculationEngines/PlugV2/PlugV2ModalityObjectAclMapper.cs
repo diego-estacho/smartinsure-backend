@@ -7,7 +7,7 @@ namespace SmartInsure.Integration.CalculationEngines.PlugV2;
 /// <summary>
 /// Camada anticorrupção (ADR-045): traduz o payload do PlugV2 (GetModalityObject) para o
 /// contrato do motor (`ModalityObjectResult`). Nada do modelo do fornecedor sai daqui.
-/// RN-042: envelope com erro ou resposta nula é falha isolada da modalidade — nunca lança.
+/// RN-049: envelope com erro ou resposta nula é falha isolada da modalidade — nunca lança.
 /// </summary>
 public static class PlugV2ModalityObjectAclMapper
 {
@@ -38,7 +38,7 @@ public static class PlugV2ModalityObjectAclMapper
 
         foreach (var clause in envelope.Response.ParticularClauses ?? [])
         {
-            // RN-041 (caso limite): cláusula sem id é descartada — não vira item órfão.
+            // RN-048 (caso limite): cláusula sem id é descartada — não vira item órfão.
             // Id == 0 é um id externo válido (não é "ausente") e deve ser mantido.
             if (clause.Id is not { } id)
             {

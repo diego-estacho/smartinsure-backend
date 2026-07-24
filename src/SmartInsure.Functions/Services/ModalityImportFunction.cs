@@ -7,7 +7,7 @@ namespace SmartInsure.Functions.Services;
 /// <summary>
 /// Importação agendada do ciclo de catálogo (RN-034): varre as Habilitações Ativas, importa pelo
 /// Motor de Cálculo resolvido em cada vínculo e, no mesmo ciclo, importa a Tag e as Cláusulas
-/// particulares de cada Modalidade Importada Ativa (RN-040/041/042). Falha por Corretora/Seguradora
+/// particulares de cada Modalidade Importada Ativa (RN-047/048/049). Falha por Corretora/Seguradora
 /// é isolada (RN-038).
 /// Cadência configurável por app setting <c>ModalityImport:Schedule</c> (OPEN-10, não crítico —
 /// há default): commitado em <c>appsettings.json</c> deste projeto como <c>0 */30 * * * *</c>

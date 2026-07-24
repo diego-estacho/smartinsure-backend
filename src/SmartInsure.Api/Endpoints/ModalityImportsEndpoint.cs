@@ -11,7 +11,7 @@ namespace SmartInsure.Api.Endpoints;
 /// Importação de modalidades (RN-034): disparo manual restrito ao Administrador do Sistema
 /// (operação/teste). Roda o ciclo completo pelo mesmo <c>IModalityImporter</c> do agendado —
 /// inclui a importação de Tag e Cláusulas particulares de cada Modalidade Importada Ativa
-/// (RN-040/041/042), sem código de orquestração adicional. O agendado roda pelo timer das
+/// (RN-047/048/049), sem código de orquestração adicional. O agendado roda pelo timer das
 /// Functions com cadência configurável por app setting (OPEN-10).
 /// </summary>
 public sealed class ModalityImportsEndpoint : CarterModule

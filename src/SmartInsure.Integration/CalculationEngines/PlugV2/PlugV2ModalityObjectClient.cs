@@ -6,10 +6,10 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Integration.CalculationEngines.PlugV2;
 
 /// <summary>
-/// Cliente HTTP do PlugV2 para GetModalityObject (RN-040). A base URL é por Habilitação
+/// Cliente HTTP do PlugV2 para GetModalityObject (RN-047). A base URL é por Habilitação
 /// (ConnectionParameters), então a URL é montada por chamada; a resiliência (ADR-044) vem do
 /// HttpClient nomeado. Falha de transporte sobe como exceção — o importer isola a falha por
-/// modalidade (RN-042); a tradução do envelope de negócio fica na ACL, que não lança.
+/// modalidade (RN-049); a tradução do envelope de negócio fica na ACL, que não lança.
 /// </summary>
 public sealed class PlugV2ModalityObjectClient(IHttpClientFactory httpClientFactory)
 {

@@ -18,7 +18,7 @@ public sealed class ImportedModalityParticularClauseMapping : IEntityTypeConfigu
         builder.Property(clause => clause.JsonTag);
         builder.Property(clause => clause.Status).HasMaxLength(20).IsRequired();
 
-        // RN-041: identidade por (Modalidade Importada, id externo da cláusula).
+        // RN-048: identidade por (Modalidade Importada, id externo da cláusula).
         builder.HasIndex(clause => new { clause.ImportedModalityId, clause.ExternalId }).IsUnique();
         builder.HasOne<ImportedModality>().WithMany().HasForeignKey(clause => clause.ImportedModalityId);
 

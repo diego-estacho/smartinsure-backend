@@ -17,7 +17,7 @@ internal sealed class PlugV2ModalityObjectData
 
 internal sealed class PlugV2ParticularClause
 {
-    /// <summary>Numérico na origem; ausente (null) sinaliza cláusula sem id — descartada (RN-041).</summary>
+    /// <summary>Numérico na origem; ausente (null) sinaliza cláusula sem id — descartada (RN-048).</summary>
     public int? Id { get; set; }
 
     public string? Name { get; set; }

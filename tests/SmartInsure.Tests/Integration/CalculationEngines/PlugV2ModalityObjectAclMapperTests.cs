@@ -3,11 +3,11 @@ using SmartInsure.Integration.CalculationEngines.PlugV2;
 
 namespace SmartInsure.Tests.Integration.CalculationEngines;
 
-/// <summary>RN-040/041/042 — ACL do objeto da modalidade PlugV2.</summary>
+/// <summary>RN-047/048/049 — ACL do objeto da modalidade PlugV2.</summary>
 public class PlugV2ModalityObjectAclMapperTests
 {
     [Fact]
-    [Trait("RuleId", "RN-040")]
+    [Trait("RuleId", "RN-047")]
     public void Map_DeveExtrairTagEClausulas_QuandoSucesso()
     {
         const string raw = """
@@ -27,7 +27,7 @@ public class PlugV2ModalityObjectAclMapperTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-042")]
+    [Trait("RuleId", "RN-049")]
     public void Map_DeveSinalizarErro_QuandoHasError()
     {
         const string raw = """{"statusCode":500,"hasError":true,"errors":["x"],"response":null}""";
@@ -39,7 +39,7 @@ public class PlugV2ModalityObjectAclMapperTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-041")]
+    [Trait("RuleId", "RN-048")]
     public void Map_DeveIgnorarClausulaSemId()
     {
         const string raw = """

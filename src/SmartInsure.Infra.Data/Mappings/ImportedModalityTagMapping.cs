@@ -16,7 +16,7 @@ public sealed class ImportedModalityTagMapping : IEntityTypeConfiguration<Import
         builder.Property(tag => tag.ObjectText);
         builder.Property(tag => tag.Status).HasMaxLength(20).IsRequired();
 
-        // RN-040: 1:1 com a Modalidade Importada.
+        // RN-047: 1:1 com a Modalidade Importada.
         builder.HasIndex(tag => tag.ImportedModalityId).IsUnique();
         builder.HasOne<ImportedModality>().WithMany().HasForeignKey(tag => tag.ImportedModalityId);
 

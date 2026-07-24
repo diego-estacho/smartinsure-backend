@@ -12,7 +12,7 @@ evidence: []
 
 ## Status
 
-Aceito (2026-07-23, AB#0004). Estende o ciclo de importação de catálogo do [ADR-061](061-modalidade-derivada-da-global-modality.md)/RN-034 com o passo de Tags e Cláusulas (RN-040/RN-041/RN-042).
+Aceito (2026-07-23, AB#0004). Estende o ciclo de importação de catálogo do [ADR-061](061-modalidade-derivada-da-global-modality.md)/RN-034 com o passo de Tags e Cláusulas (RN-047/RN-048/RN-049).
 
 ## Contexto
 
@@ -24,9 +24,9 @@ Duas escolhas difíceis de reverter: (1) onde esse passo roda (job próprio × d
 
 - **O passo de Tags/Cláusulas roda dentro do ciclo de importação de catálogo** (RN-034), logo após o upsert das Modalidades Importadas de cada Seguradora processada **com sucesso**, iterando suas `ImportedModality` **Ativas** e chamando `GetModalityObject(BrokerCnpj, ModalityUniqueId=SourceId)` pelo Motor de Cálculo resolvido na Habilitação. Não há job, scheduler nem cadência próprios; o disparo agendado e o sob demanda (`POST /modality-imports/run`, Administrador do Sistema) são os mesmos do catálogo.
 - **Cópia local em duas entidades novas** (SQL Server/EF Core, migrations Flyway — EF Migrations proibidas, ADR-041):
-  - `ImportedModalityTag` — **1:1** com `ImportedModality` (chave única por `ImportedModalityId`); guarda o `JsonTag`, o texto do objeto e o status Ativa/Inativa. Só é gravada/atualizada quando o objeto traz `jsonTag` preenchido; nunca sobrescreve com vazio (RN-040).
-  - `ImportedModalityParticularClause` — **N** por `ImportedModality`; identidade pela chave **(`ImportedModalityId`, `ExternalId`)** — o `id` da cláusula na OnPoint; guarda nome, texto, `JsonTag` e status (RN-041).
-- **Resiliência e preservação herdadas** (RN-038/RN-039, RN-042): a falha na consulta do objeto de uma modalidade é isolada (não desativa sua Tag/Cláusulas, não interrompe as demais); a inativação por reconciliação só ocorre após consulta **bem-sucedida**; nada é apagado — inativa e reativa; cada execução é auditada no sumário da importação (`ModalityImportSummary`).
+  - `ImportedModalityTag` — **1:1** com `ImportedModality` (chave única por `ImportedModalityId`); guarda o `JsonTag`, o texto do objeto e o status Ativa/Inativa. Só é gravada/atualizada quando o objeto traz `jsonTag` preenchido; nunca sobrescreve com vazio (RN-047).
+  - `ImportedModalityParticularClause` — **N** por `ImportedModality`; identidade pela chave **(`ImportedModalityId`, `ExternalId`)** — o `id` da cláusula na OnPoint; guarda nome, texto, `JsonTag` e status (RN-048).
+- **Resiliência e preservação herdadas** (RN-038/RN-039, RN-049): a falha na consulta do objeto de uma modalidade é isolada (não desativa sua Tag/Cláusulas, não interrompe as demais); a inativação por reconciliação só ocorre após consulta **bem-sucedida**; nada é apagado — inativa e reativa; cada execução é auditada no sumário da importação (`ModalityImportSummary`).
 - **Nova operação no contrato do Motor** (`ICalculationEngine.GetModalityObjectAsync`), traduzida do payload PlugV2 por ACL própria (ADR-045), no padrão do `GetGroupAndModalities` (client resolvido sob demanda, base URL/`application-key-v2` por Habilitação, resiliência do HttpClient nomeado, ADR-044).
 
 ## Consequências

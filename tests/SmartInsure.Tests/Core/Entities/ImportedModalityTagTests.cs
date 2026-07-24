@@ -4,13 +4,13 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-040 — Tag da Modalidade Importada (1:1, nasce Ativa, upsert reativa).</summary>
+/// <summary>RN-047 — Tag da Modalidade Importada (1:1, nasce Ativa, upsert reativa).</summary>
 public class ImportedModalityTagTests
 {
     private static readonly Guid ModalityId = Guid.CreateVersion7();
 
     [Fact]
-    [Trait("RuleId", "RN-040")]
+    [Trait("RuleId", "RN-047")]
     public void Create_DeveNascerAtiva_ComJsonTag()
     {
         var tag = ImportedModalityTag.Create(ModalityId, "{\"campo\":1}", "objeto");
@@ -21,7 +21,7 @@ public class ImportedModalityTagTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-040")]
+    [Trait("RuleId", "RN-047")]
     public void UpdateFromSource_DeveAtualizarEReativar()
     {
         var tag = ImportedModalityTag.Create(ModalityId, "{\"v\":1}", null);
