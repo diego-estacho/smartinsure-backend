@@ -38,6 +38,8 @@ Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de enti
 | **Modalidade Importada** | `ImportedModality` | A modalidade como uma Seguradora a oferece, trazida na importação exatamente como exposta (nome de origem, ramo, parâmetros comerciais); vinculada a uma Modalidade pelo id da Modalidade Global (automático na importação), com override manual do Administrador (revisto em 2026-07-22 — aguardando ratificação da PO) | 1 por Seguradora, por identificador de origem | a Modalidade (o item do Smart) |
 | **Grupo Importado** | `ImportedGroup` | O agrupador que a Seguradora associa à Modalidade Importada, preservado como veio, para conferência e rastreio (proposto em 2026-07-21 — aguardando ratificação da PO) | — | um grupo do lado Smart (não existe) |
 | **Ramo** | `SuretyBranch` | Ramo regulatório do Seguro Garantia sob o qual a Seguradora oferece a modalidade: setor público ou privado; atributo da Modalidade Importada e insumo da disponibilidade derivada por ramo (revisto em 2026-07-22 — aguardando ratificação da PO) | 1 por Modalidade Importada | a Filial (`Branch`) |
+| **Cobertura Adicional** | `AdditionalCoverage` | Garantia complementar canônica do Smart que amplia a proteção de uma Modalidade (ex.: Multa, Trabalhista e Previdenciária no Seguro Garantia), nomeada e sem dono de Seguradora; o item que o corretor vê na cotação. Curada pelo Administrador do Sistema — criar, editar, ativar/inativar — e vinculada às Coberturas Adicionais Importadas; nunca criada pela importação (proposto em 2026-07-23 — aguardando ratificação da PO) | catálogo (curado) | a Cobertura Adicional Importada (a versão de cada Seguradora); a cobertura básica da Modalidade |
+| **Cobertura Adicional Importada** | `ImportedAdditionalCoverage` | A Cobertura Adicional como uma Seguradora a expõe na OnPoint, por Modalidade Importada, trazida na importação exatamente como veio (nome de origem, identificador de origem, tipo de cálculo do valor segurado, edição manual); vinculada manualmente a uma Cobertura Adicional canônica pelo Administrador, e identificada por Modalidade Importada + nome; sem vínculo, fica pendente de mapeamento (proposto em 2026-07-23 — aguardando ratificação da PO) | N por Modalidade Importada | a Cobertura Adicional (o item canônico do Smart) |
 
 Origem: ontologia definida pelo negócio em 2026-05-22 ("Oferta (singular) → Cotações, uma por seguradora"). Se a PO decidir termos diferentes, este arquivo muda ANTES de qualquer código de domínio existir.
 
@@ -96,3 +98,16 @@ Mesma situação de operação. Nada é excluído; sai de operação por Inativa
 > A Modalidade Importada passa a Inativa **automaticamente** quando deixa de vir numa importação bem-sucedida da Seguradora (RN-038); reaparecendo, é reativada.
 
 **Enums e marcadores do domínio de Modalidades** (expostos por nome estável): **Ramo** (`SuretyBranch`) — `Public` / `Private`. **Origem do vínculo** Modalidade Importada → Modalidade — `Automatic` (pelo id da Modalidade Global) / `Manual` (override do Administrador; preservado na reimportação). **Ignorada** (`Ignored`) é um marcador da Modalidade Importada: item que o Administrador decidiu não oferecer; não volta à Fila nas próximas importações, mas fica registrado (RN-037).
+
+### Cobertura Adicional e Cobertura Adicional Importada (proposto em 2026-07-23 — aguardando ratificação da PO)
+
+Mesma situação de operação das Modalidades. Nada é excluído; sai de operação por Inativação.
+
+| Status | Nome estável (API) | Significado | Transições permitidas |
+|---|---|---|---|
+| **Ativa** | `Active` | Item em operação no catálogo | Ativa → Inativa |
+| **Inativa** | `Inactive` | Item fora de operação, mantido no catálogo para histórico e retorno | Inativa → Ativa |
+
+> A Cobertura Adicional canônica é ativada/inativada pelo Administrador do Sistema na curadoria (RN-040). A Cobertura Adicional Importada passa a Inativa **automaticamente** quando deixa de vir numa consulta bem-sucedida da sua Modalidade Importada (RN-044); reaparecendo, é reativada.
+
+**Marcador da Cobertura Adicional Importada** (exposto por nome estável): **Ignorada** (`Ignored`) — importada que o Administrador decidiu não mapear; não aparece como pendente de mapeamento nem é oferecida, mas fica registrada (RN-043). Sem vínculo com uma Cobertura Adicional canônica e não Ignorada, a importada fica **pendente de mapeamento** (RN-043).

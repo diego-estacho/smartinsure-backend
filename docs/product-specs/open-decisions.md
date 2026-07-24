@@ -55,13 +55,13 @@ Contexto: decidido em 2026-07-20 que esta fase entrega apenas a consulta online 
 Dono: PO (gerente de projeto)
 Bloqueia: a regra de qual credencial (PlugKey) usar na importação de uma Seguradora habilitada por mais de uma Corretora, e o tratamento caso o catálogo retornado divirja entre Corretoras
 Status: aberta
-Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A Modalidade Importada é da Seguradora, não da Corretora (o `BrokerCnpj`/PlugKey é só credencial de busca), então a importação deduplica por Seguradora e faz uma chamada por Seguradora (RN-034). Falta a PO decidir qual credencial usar quando várias Corretoras habilitam a mesma Seguradora e o que fazer se o retorno divergir entre elas (hoje assume-se catálogo único por Seguradora).
+Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A Modalidade Importada é da Seguradora, não da Corretora (o `BrokerCnpj`/PlugKey é só credencial de busca), então a importação deduplica por Seguradora e faz uma chamada por Seguradora (RN-034). Falta a PO decidir qual credencial usar quando várias Corretoras habilitam a mesma Seguradora e o que fazer se o retorno divergir entre elas (hoje assume-se catálogo único por Seguradora). Reusada por analogia em 2026-07-23 pela jornada Coberturas Adicionais (AB#0003, RN-043): a importação de coberturas herda a mesma dedução por Seguradora e o mesmo tratamento de credencial.
 
 ## OPEN-10 — Cadência do agendamento da importação de modalidades
 Dono: PO (gerente de projeto)
 Bloqueia: nada crítico (há default proposto); ajusta a frequência do job
 Status: aberta
-Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A importação roda periodicamente por agendamento (RN-034). Proposta de default: diária, em horário de baixo pico, com a cadência configurável (não fixa no código). Falta a PO confirmar se há requisito de frequência específico (ex.: mais de uma vez ao dia, ou alinhado a janela da Seguradora).
+Contexto: levantado em 2026-07-21 (jornada Catálogo de Modalidades, AB#0002). A importação roda periodicamente por agendamento (RN-034). Proposta de default: diária, em horário de baixo pico, com a cadência configurável (não fixa no código). Falta a PO confirmar se há requisito de frequência específico (ex.: mais de uma vez ao dia, ou alinhado a janela da Seguradora). Reusada por analogia em 2026-07-23 pela jornada Coberturas Adicionais (AB#0003, RN-044): a cadência do job de coberturas também é configurável (não fixa no código); default proposto na spec = produção 1x/dia às 05:00 e demais ambientes a cada 30min, pendente da mesma confirmação da PO.
 
 ## OPEN-11 — Disponibilidade derivada por tipo de tomador (PF/PJ)
 Dono: PO (gerente de projeto)
@@ -93,3 +93,9 @@ Dono: PO (gerente de projeto)
 Bloqueia: —
 Status: **resolvida** em 2026-07-22 (ADR-061)
 Contexto: levantado em 2026-07-21 (originalmente OPEN-08; renumerado para OPEN-15 na integração com a jornada Consulta de Crédito, que passou a ocupar o OPEN-08 no tronco). **Encerrada** com a revisão do modelo (ADR-061): o vínculo Modalidade Importada → Modalidade passa a ser intrínseco, pelo id da Modalidade Global da OnPoint — não há aproximação por nome/descrição em nenhuma forma. A "semelhança" deixa de existir no domínio de modalidades.
+
+## OPEN-16 — Semântica do tipo de cálculo do valor segurado e uso da edição manual da Cobertura Adicional
+Dono: PO (gerente de projeto)
+Bloqueia: qualquer efeito de negócio do `InsuredAmountCalculationType` e do `AllowManualEdit` da Cobertura Adicional (precificação/cálculo do valor segurado na cotação, permitir/bloquear edição manual do valor)
+Status: aberta
+Contexto: levantado em 2026-07-23 (jornada Coberturas Adicionais, AB#0003). A importação traz da OnPoint, por cobertura, o tipo de cálculo do valor segurado (inteiro) e a indicação de edição manual permitida (booleano). Nesta fase esses dois campos são **importados e preservados como recebidos, sem interpretação** (RN-040) — a precificação da cobertura na cotação e a edição de valores pelo corretor estão fora de escopo da spec. Falta a PO definir a semântica dos valores do tipo de cálculo (enumerar por nome estável, conforme regra do glossário) e o comportamento da edição manual, quando a jornada de cotação com coberturas for especificada.
