@@ -6,10 +6,177 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5158/"
+      "url": "http://localhost:5159/"
     }
   ],
   "paths": {
+    "/api/v1/additional-coverage-imports/run": {
+      "post": {
+        "tags": [
+          "AdditionalCoverageImportsEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalCoverageImportSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages/map": {
+      "get": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalCoverageMapResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages": {
+      "post": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdditionalCoverageNameBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages/{id}": {
+      "put": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdditionalCoverageNameBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages/{id}/activate": {
+      "post": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivateAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages/{id}/inactivate": {
+      "post": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InactivateAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "tags": [
@@ -541,6 +708,136 @@
           },
           "404": {
             "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/v1/imported-additional-coverages/{id}/link": {
+      "post": {
+        "tags": [
+          "ImportedAdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkImportedAdditionalCoverageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkImportedAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-additional-coverages/{id}/unlink": {
+      "post": {
+        "tags": [
+          "ImportedAdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnlinkImportedAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-additional-coverages/{id}/ignore": {
+      "post": {
+        "tags": [
+          "ImportedAdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IgnoreImportedAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-additional-coverages/{id}/restore": {
+      "post": {
+        "tags": [
+          "ImportedAdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreImportedAdditionalCoverageResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1469,6 +1766,22 @@
   },
   "components": {
     "schemas": {
+      "ActivateAdditionalCoverageResponse": {
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "ActivateUserResponse": {
         "required": [
           "id",
@@ -1481,6 +1794,79 @@
             "format": "uuid"
           },
           "status": {
+            "type": "string"
+          }
+        }
+      },
+      "AdditionalCoverageImportSummaryResponse": {
+        "required": [
+          "modalitiesProcessed",
+          "modalitiesSucceeded",
+          "modalitiesFailed",
+          "failures"
+        ],
+        "type": "object",
+        "properties": {
+          "modalitiesProcessed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "modalitiesSucceeded": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "modalitiesFailed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AdditionalCoverageMapResponse": {
+        "required": [
+          "coverages",
+          "pending"
+        ],
+        "type": "object",
+        "properties": {
+          "coverages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CanonicalCoverageItem"
+            }
+          },
+          "pending": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendingCoverageItem"
+            }
+          }
+        }
+      },
+      "AdditionalCoverageNameBody": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
             "type": "string"
           }
         }
@@ -1722,6 +2108,33 @@
           }
         }
       },
+      "CanonicalCoverageItem": {
+        "required": [
+          "id",
+          "name",
+          "status",
+          "linked"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "linked": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkedCoverageItem"
+            }
+          }
+        }
+      },
       "ChangeBrokerageInsurerEnablementStatusBody": {
         "required": [
           "status"
@@ -1824,6 +2237,26 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateAdditionalCoverageResponse": {
+        "required": [
+          "id",
+          "name",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
           },
           "status": {
             "type": "string"
@@ -2762,6 +3195,22 @@
           }
         }
       },
+      "IgnoreImportedAdditionalCoverageResponse": {
+        "required": [
+          "importedCoverageId",
+          "ignored"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ignored": {
+            "type": "boolean"
+          }
+        }
+      },
       "IgnoreImportedModalityResponse": {
         "required": [
           "importedModalityId",
@@ -2890,6 +3339,22 @@
           }
         }
       },
+      "InactivateAdditionalCoverageResponse": {
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "InsurerListItemResponse": {
         "required": [
           "id",
@@ -2925,6 +3390,59 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "LinkedCoverageItem": {
+        "required": [
+          "importedCoverageId",
+          "insurerName",
+          "modalityName",
+          "coverageName"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "modalityName": {
+            "type": "string"
+          },
+          "coverageName": {
+            "type": "string"
+          }
+        }
+      },
+      "LinkImportedAdditionalCoverageBody": {
+        "required": [
+          "additionalCoverageId"
+        ],
+        "type": "object",
+        "properties": {
+          "additionalCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "LinkImportedAdditionalCoverageResponse": {
+        "required": [
+          "importedCoverageId",
+          "additionalCoverageId"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "additionalCoverageId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -3381,6 +3899,35 @@
           }
         }
       },
+      "PendingCoverageItem": {
+        "required": [
+          "id",
+          "importedModalityId",
+          "insurerName",
+          "modalityName",
+          "coverageName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "modalityName": {
+            "type": "string"
+          },
+          "coverageName": {
+            "type": "string"
+          }
+        }
+      },
       "PendingImportedModalityResponse": {
         "required": [
           "importedModalityId",
@@ -3726,6 +4273,22 @@
           }
         }
       },
+      "RestoreImportedAdditionalCoverageResponse": {
+        "required": [
+          "importedCoverageId",
+          "ignored"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ignored": {
+            "type": "boolean"
+          }
+        }
+      },
       "RestoreImportedModalityResponse": {
         "required": [
           "importedModalityId",
@@ -3792,6 +4355,38 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "UnlinkImportedAdditionalCoverageResponse": {
+        "required": [
+          "importedCoverageId"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "UpdateAdditionalCoverageResponse": {
+        "required": [
+          "id",
+          "name",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
           }
         }
       },
@@ -4035,6 +4630,12 @@
   },
   "tags": [
     {
+      "name": "AdditionalCoverageImportsEndpoint"
+    },
+    {
+      "name": "AdditionalCoveragesEndpoint"
+    },
+    {
       "name": "AuthenticationEndpoint"
     },
     {
@@ -4048,6 +4649,9 @@
     },
     {
       "name": "CreditInquiriesEndpoint"
+    },
+    {
+      "name": "ImportedAdditionalCoveragesEndpoint"
     },
     {
       "name": "ImportedModalitiesEndpoint"
