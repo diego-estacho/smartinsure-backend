@@ -35,6 +35,14 @@ public sealed class PlugV2CalculationEngine(
         return importClient.GetGroupAndModalitiesAsync(connection, brokerCnpj, cancellationToken);
     }
 
+    public Task<ModalityObjectResult> GetModalityObjectAsync(
+        string? connectionParameters, string brokerCnpj, string modalityUniqueId, CancellationToken cancellationToken)
+    {
+        var connection = PlugV2ConnectionParameters.Parse(connectionParameters);
+        var client = serviceProvider.GetRequiredService<PlugV2ModalityObjectClient>();
+        return client.GetModalityObjectAsync(connection, brokerCnpj, modalityUniqueId, cancellationToken);
+    }
+
     public Task<ImportedAdditionalCoverageResult> GetAdditionalCoveragesAsync(
         string? connectionParameters,
         string brokerCnpj,

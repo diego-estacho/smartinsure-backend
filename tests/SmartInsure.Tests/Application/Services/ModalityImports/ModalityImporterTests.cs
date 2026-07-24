@@ -23,6 +23,8 @@ public class ModalityImporterTests
     private readonly IImportedGroupRepository _groups = Substitute.For<IImportedGroupRepository>();
     private readonly IImportedModalityRepository _modalities = Substitute.For<IImportedModalityRepository>();
     private readonly IModalityRepository _catalog = Substitute.For<IModalityRepository>();
+    private readonly IImportedModalityTagRepository _tags = Substitute.For<IImportedModalityTagRepository>();
+    private readonly IImportedModalityParticularClauseRepository _clauses = Substitute.For<IImportedModalityParticularClauseRepository>();
     private readonly ICalculationEngine _engine = Substitute.For<ICalculationEngine>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
@@ -32,7 +34,14 @@ public class ModalityImporterTests
             .AddKeyedSingleton(ECalculationEngine.PlugV2, _engine)
             .BuildServiceProvider();
 
-        return new ModalityImporter(_enablements, _groups, _modalities, _catalog, provider, _unitOfWork);
+        // Passo de objeto (U5) benigno nos testes de modalidade: objeto bem-sucedido vazio, sem cláusulas locais.
+        _engine.GetModalityObjectAsync(Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new ModalityObjectResult(false, null, null, Array.Empty<ModalityClauseData>()));
+        _clauses.ListByImportedModalityAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<ImportedModalityParticularClause>());
+
+        return new ModalityImporter(
+            _enablements, _groups, _modalities, _catalog, _tags, _clauses, provider, _unitOfWork);
     }
 
     private void GivenActiveEnablement()

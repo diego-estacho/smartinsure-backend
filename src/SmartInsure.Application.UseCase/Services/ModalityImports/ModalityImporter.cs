@@ -13,12 +13,16 @@ namespace SmartInsure.Application.UseCase.Services.ModalityImports;
 /// importado (RN-033), deriva a Modalidade da Modalidade Global por *find-or-create* pelo id
 /// global e vincula a Importada (RN-035), preservando override Manual (RN-037); desativa o que
 /// sumiu numa importação bem-sucedida e isola a falha por Corretora/Seguradora (RN-038) (ADR-061).
+/// Após o upsert, importa a Tag (RN-047) e as Cláusulas particulares (RN-048) de cada Modalidade
+/// Importada Ativa pelo objeto da modalidade, com resiliência e reconciliação (RN-049).
 /// </summary>
 public sealed class ModalityImporter(
     IBrokerageInsurerEnablementRepository enablementRepository,
     IImportedGroupRepository importedGroupRepository,
     IImportedModalityRepository importedModalityRepository,
     IModalityRepository modalityRepository,
+    IImportedModalityTagRepository tagRepository,
+    IImportedModalityParticularClauseRepository clauseRepository,
     IServiceProvider serviceProvider,
     IUnitOfWork unitOfWork) : IModalityImporter
 {
@@ -49,10 +53,11 @@ public sealed class ModalityImporter(
                 .ToDictionary(group => group.Key, group => group.First().InsurerId);
 
             ImportedCatalogResult catalog;
+            ICalculationEngine engine;
 
             try
             {
-                var engine = ResolveEngine(connection.CalculationEngine);
+                engine = ResolveEngine(connection.CalculationEngine);
                 catalog = await engine.GetGroupAndModalitiesAsync(
                     connection.ConnectionParameters, brokerCnpj, cancellationToken);
             }
@@ -90,7 +95,9 @@ public sealed class ModalityImporter(
 
                 try
                 {
-                    await ImportInsurerAsync(insurerId, insurerCatalog, modalityCache, nowUtc, cancellationToken);
+                    await ImportInsurerAsync(
+                        insurerId, insurerCatalog, modalityCache, engine,
+                        connection.ConnectionParameters, brokerCnpj, failures, nowUtc, cancellationToken);
                     await unitOfWork.CommitAsync(cancellationToken);
                     succeeded++;
                 }
@@ -109,6 +116,10 @@ public sealed class ModalityImporter(
         Guid insurerId,
         ImportedInsurerCatalog insurerCatalog,
         Dictionary<string, Modality> modalityCache,
+        ICalculationEngine engine,
+        string? connectionParameters,
+        string brokerCnpj,
+        List<string> failures,
         DateTime nowUtc,
         CancellationToken cancellationToken)
     {
@@ -116,6 +127,7 @@ public sealed class ModalityImporter(
         // Cache in-batch: várias modalidades compartilham o mesmo Grupo Importado e o upsert por
         // consulta não enxerga o que ainda não foi commitado — sem o cache criaria grupos duplicados.
         var groupCache = new Dictionary<string, ImportedGroup>();
+        var importedThisRun = new List<ImportedModality>();
 
         foreach (var data in insurerCatalog.Modalities)
         {
@@ -127,16 +139,30 @@ public sealed class ModalityImporter(
 
             var importedGroupId = await UpsertGroupAsync(insurerId, data, groupCache, cancellationToken);
             var imported = await UpsertModalityAsync(insurerId, data, importedGroupId, nowUtc, cancellationToken);
-
             await LinkToModalityAsync(imported, data, modalityCache, cancellationToken);
+            importedThisRun.Add(imported);
         }
 
         // RN-038: Modalidades Importadas Ativas que não vieram nesta importação bem-sucedida são desativadas.
         var active = await importedModalityRepository.ListActiveByInsurerAsync(insurerId, cancellationToken);
+        var deactivated = active.Where(modality => !seenSourceIds.Contains(modality.SourceId)).ToList();
 
-        foreach (var modality in active.Where(modality => !seenSourceIds.Contains(modality.SourceId)))
+        foreach (var modality in deactivated)
         {
             modality.Deactivate();
+        }
+
+        // RN-047/048/049: objeto da modalidade (Tag + Cláusulas) por Modalidade Importada Ativa desta execução.
+        foreach (var imported in importedThisRun)
+        {
+            await ImportModalityObjectAsync(
+                imported, engine, connectionParameters, brokerCnpj, insurerCatalog.InsuranceName, failures, cancellationToken);
+        }
+
+        // RN-049: Modalidade desativada pela reconciliação → inativa sua Tag e Cláusulas.
+        foreach (var imported in deactivated)
+        {
+            await DeactivateModalityObjectAsync(imported, cancellationToken);
         }
     }
 
@@ -247,5 +273,117 @@ public sealed class ModalityImporter(
     {
         var engine = Enum.Parse<ECalculationEngine>(calculationEngine);
         return serviceProvider.GetRequiredKeyedService<ICalculationEngine>(engine);
+    }
+
+    /// <summary>
+    /// RN-047/048/049: importa o objeto (Tag + Cláusulas) de uma Modalidade Importada. Falha na consulta
+    /// é isolada (não desativa nada, RN-049). Tag só é gravada com JsonTag preenchido (RN-047); objeto
+    /// bem-sucedido sem JsonTag inativa a Tag existente. Cláusulas por chave externa (RN-048); ausentes
+    /// numa consulta bem-sucedida são inativadas (RN-049).
+    /// </summary>
+    private async Task ImportModalityObjectAsync(
+        ImportedModality imported,
+        ICalculationEngine engine,
+        string? connectionParameters,
+        string brokerCnpj,
+        string insurerName,
+        List<string> failures,
+        CancellationToken cancellationToken)
+    {
+        ModalityObjectResult result;
+
+        try
+        {
+            result = await engine.GetModalityObjectAsync(
+                connectionParameters, brokerCnpj, imported.SourceId, cancellationToken);
+        }
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            // RN-049: falha da modalidade não desativa nada dela nem afeta as demais.
+            failures.Add($"Objeto da modalidade {imported.SourceId} (Seguradora {insurerName}): {exception.Message}");
+            return;
+        }
+
+        // Motor real nunca retorna nulo; defensivo para não desativar por engano (RN-049).
+        if (result is null || result.HasError)
+        {
+            failures.Add($"Objeto da modalidade {imported.SourceId} (Seguradora {insurerName}): resposta com erro.");
+            return;
+        }
+
+        await UpsertTagAsync(imported.Id, result, cancellationToken);
+        await UpsertClausesAsync(imported.Id, result, cancellationToken);
+    }
+
+    private async Task UpsertTagAsync(Guid importedModalityId, ModalityObjectResult result, CancellationToken cancellationToken)
+    {
+        var tag = await tagRepository.GetByImportedModalityAsync(importedModalityId, cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(result.JsonTag))
+        {
+            if (tag is null)
+            {
+                await tagRepository.AddAsync(
+                    ImportedModalityTag.Create(importedModalityId, result.JsonTag, result.ObjectText), cancellationToken);
+            }
+            else
+            {
+                tag.UpdateFromSource(result.JsonTag, result.ObjectText);
+            }
+        }
+        else if (tag is not null)
+        {
+            // RN-047: objeto bem-sucedido sem JsonTag não sobrescreve com vazio; RN-049: inativa a Tag existente.
+            tag.Deactivate();
+        }
+    }
+
+    private async Task UpsertClausesAsync(Guid importedModalityId, ModalityObjectResult result, CancellationToken cancellationToken)
+    {
+        var localClauses = await clauseRepository.ListByImportedModalityAsync(importedModalityId, cancellationToken);
+        var seenExternalIds = new HashSet<string>();
+
+        foreach (var clause in result.Clauses)
+        {
+            if (!seenExternalIds.Add(clause.ExternalId))
+            {
+                continue; // duplicata do mesmo id na resposta: a primeira vence (RN-048).
+            }
+
+            var existing = localClauses.FirstOrDefault(c => c.ExternalId == clause.ExternalId);
+
+            if (existing is null)
+            {
+                await clauseRepository.AddAsync(
+                    ImportedModalityParticularClause.Create(
+                        importedModalityId, clause.ExternalId, clause.Name, clause.Text, clause.JsonTag),
+                    cancellationToken);
+            }
+            else
+            {
+                existing.UpdateFromSource(clause.Name, clause.Text, clause.JsonTag);
+            }
+        }
+
+        // RN-049: Cláusulas locais Ativas que não vieram na resposta bem-sucedida são inativadas.
+        foreach (var local in localClauses.Where(c =>
+                     c.Status == EImportedModalityClauseStatus.Active && !seenExternalIds.Contains(c.ExternalId)))
+        {
+            local.Deactivate();
+        }
+    }
+
+    /// <summary>RN-049: Modalidade que saiu de Ativa (reconciliação de catálogo) tem Tag e Cláusulas inativadas.</summary>
+    private async Task DeactivateModalityObjectAsync(ImportedModality imported, CancellationToken cancellationToken)
+    {
+        var tag = await tagRepository.GetByImportedModalityAsync(imported.Id, cancellationToken);
+        tag?.Deactivate();
+
+        var clauses = await clauseRepository.ListByImportedModalityAsync(imported.Id, cancellationToken);
+
+        foreach (var clause in clauses.Where(c => c.Status == EImportedModalityClauseStatus.Active))
+        {
+            clause.Deactivate();
+        }
     }
 }
