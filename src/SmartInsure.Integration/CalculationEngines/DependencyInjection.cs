@@ -26,6 +26,11 @@ public static class DependencyInjection
             .AddStandardResilienceHandler();
         services.AddScoped<PlugV2ModalityImportClient>();
 
+        // RN-042/RN-044/ADR-044: base URL por Habilitação (montada por chamada), resiliência no client nomeado.
+        services.AddHttpClient(PlugV2AdditionalCoveragesClient.HttpClientName)
+            .AddStandardResilienceHandler();
+        services.AddScoped<PlugV2AdditionalCoveragesClient>();
+
         return services;
     }
 }

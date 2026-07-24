@@ -9,6 +9,14 @@ using SmartInsure.Application.UseCase.IoC;
 using SmartInsure.Infra.Data;
 using SmartInsure.Integration.CalculationEngines;
 
+// RN-044/OPEN-10: cadência da importação de Coberturas Adicionais é configurável por app setting;
+// default a cada 30min quando não configurada (prod ajusta para "0 0 5 * * *"). Definido antes do
+// build para o TimerTrigger "%AdditionalCoverageImportSchedule%" sempre resolver.
+if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AdditionalCoverageImportSchedule")))
+{
+    Environment.SetEnvironmentVariable("AdditionalCoverageImportSchedule", "0 */30 * * * *");
+}
+
 var builder = FunctionsApplication.CreateBuilder(args);
 
 // Composição da DI do job de importação de modalidades (RN-034): dados (SQL Server),

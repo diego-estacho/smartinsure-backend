@@ -1,0 +1,8 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.AdditionalCoverageImportUseCases.RunAdditionalCoverageImport.Requests;
+using SmartInsure.Application.UseCase.UseCases.AdditionalCoverageImportUseCases.RunAdditionalCoverageImport.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.AdditionalCoverageImportUseCases.RunAdditionalCoverageImport.Interfaces;
+
+public interface IRunAdditionalCoverageImportUseCase
+    : IUseCase<RunAdditionalCoverageImportRequest, AdditionalCoverageImportSummaryResponse>;
