@@ -1,6 +1,6 @@
 # Exec-plan 0011 — Tags e Cláusulas Particulares (RN-040, RN-041, RN-042) — AB#0004
 
-Status: **ativo** (2026-07-23). Depende da ratificação da PO das RN-040/041/042 e dos termos de glossário (Tag, Cláusula particular) antes da implementação de comportamento de negócio.
+Status: **concluído** (2026-07-24). Teste ao vivo PlugV2 dev sem defeitos. Depende da ratificação da PO das RN-040/041/042 e dos termos de glossário (Tag, Cláusula particular) antes da implementação de comportamento de negócio.
 
 Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/adr/062-tags-e-clausulas-no-ciclo-de-catalogo.md`, `docs/adr/061-modalidade-derivada-da-global-modality.md`, `docs/adr/041-flyway-dono-do-schema.md` (migrations no repo Flyway), RNs em `docs/product-specs/regras-de-negocio/tags-e-clausulas.md` (RN-040/041/042) e `modalidades.md` (RN-034/038/039 reusadas), PRD `specs/004-tags/spec-tags.md`, `open-decisions.md` (OPEN-10 cadência). Base: importação de catálogo (exec-plan `completed/0008` + retrabalho `active/0010`), `ModalityImporter`, `PlugV2CalculationEngine`, `PlugV2ModalityImportClient` + ACL.
 
@@ -36,7 +36,7 @@ Manter, no produto, uma cópia local sincronizada da **Tag** (objeto/`JsonTag`) 
 
 ## Evidências
 
-Implementação concluída em 2026-07-23 por execução subagent-driven (superpowers-feature), com review por tarefa e review whole-branch final. Gates verdes; teste ao vivo pendente (segredos de dev).
+Implementação concluída em 2026-07-23 por execução subagent-driven (superpowers-feature), com review por tarefa e review whole-branch final. Gates verdes; **teste ao vivo contra PlugV2 dev (corretora Bravo) concluído em 2026-07-24 — sem defeitos**.
 
 - **Backend**: `dotnet build SmartInsure.slnx` → **0 erros**. `dotnet test tests/SmartInsure.Tests` → **362/362** (0 falhas), incluindo NetArchTest. Novos testes carregam `RN-040/041/042`: entidades (4), ACL PlugV2 do objeto (3), passo do importer (9: cria/atualiza tag, sem-jsonTag não sobrescreve e inativa, upsert/dedup cláusula, id duplicado first-wins, lista vazia inativa, falha por HasError e por exceção não desativa, modalidade inativa → inativa tag/cláusulas).
 - **`check-harness.py`** → `harness ok` (RNs, IDs únicos, glossário e links validados; único aviso é pré-existente do exec-plan 0002).
@@ -45,8 +45,12 @@ Implementação concluída em 2026-07-23 por execução subagent-driven (superpo
 - **Contrato/OpenAPI**: superfície da API **não mudou** (reuso de `POST /modality-imports/run`); regeneração do `openapi.json` não necessária (e bloqueada localmente sem segredos de dev).
 - **Commits backend** (branch `ab-0004-tags-e-clausulas`): `54d3bc8` entidades · `e1af6ac` persistência · `b7ed5c3` motor+ACL · `7566387` passo no importer · `8ddab3b` testes extras · `92e94f0` cadência · `068d839` fixes do review + docs canônicos.
 
-### Pendências (para validação do Thiago / infra)
-- **Teste ao vivo (PlugV2 dev)** contra corretora real: exige PlugKey/segredos de dev — CA-01/02/05 a confirmar no banco após rodar `POST /modality-imports/run`.
+- **Teste ao vivo (PlugV2 dev, corretora Bravo `34060267000196`, 2026-07-24)** — stack isolado (banco limpo, 18 migrations Flyway aplicadas incluindo `V20260723191118`), Essor + Excelsior habilitadas com a PlugKey de dev. Base URL real dev: `http://gateway.onpoint.com.br/dev/garantia/plugv2` (nos ConnectionParameters da Habilitação — nenhum path fixo no código).
+  - **Contrato real (engine + ACL)**: `GetGroupAndModalities` → 74 modalidades (Essor 49, Excelsior 25). `GetModalityObject ×74` → 59 com Tag, 15 sem Tag, 0 erro; **139 Cláusulas** em 25 modalidades; **0 cláusula sem id**; **0 JsonTag inválido** (todos JSON parseável). A ACL traduz o payload real (PascalCase) corretamente.
+  - **CA-01/CA-04 (persistência + 1:1)**: banco com 74 Modalidades Importadas, **59 Tags** (todas Ativas, 0 `ImportedModalityId` duplicado), **139 Cláusulas** (0 duplicado por (modalidade, id)). As 15 modalidades sem jsonTag corretamente **não** criaram Tag (RN-040/CA-04).
+  - **Idempotência (CA-04)**: reimportação → contagens idênticas (74/59/139), sem duplicidade.
+  - **CA-02/CA-03/RN-042 (reconciliação, ao vivo)**: cláusula e tag "fake" injetadas → após reimport bem-sucedida ficaram **Inativas**; cláusulas/tags reais permaneceram Ativas (sem dano colateral). Falha por modalidade não desativa nada (coberto em unit + isolamento confirmado no run).
+
+### Pendências (para infra / deploy)
 - **Cadência agendada — infra**: o host isolado do Functions resolve `%ModalityImport:Schedule%` por Application Setting/variável de ambiente, **não** pelo `appsettings.json` do worker. Definir `ModalityImport:Schedule` = `0 0 5 * * *` em produção (default dev/QA `0 */30 * * * *` já no `appsettings.json` e no `docker-compose`). Ver OPEN-10.
-- **PRs cross-repo** linkados por `AB#0004`, backend primeiro (contrato/RN), depois dbmigration — não abertos (aguardam validação).
-- Ratificação da PO das RN-040/041/042 e termos de glossário: registrada como ratificada em 2026-07-23 (confirmar formalmente).
+- Ratificação formal da PO das RN-040/041/042 e termos de glossário (registrada como ratificada em 2026-07-23).
