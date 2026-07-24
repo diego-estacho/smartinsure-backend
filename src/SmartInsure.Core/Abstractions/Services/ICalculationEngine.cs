@@ -28,6 +28,20 @@ public interface ICalculationEngine
         string? connectionParameters, string brokerCnpj, CancellationToken cancellationToken);
 
     /// <summary>
+    /// RN-042/RN-044: obtém as Coberturas Adicionais de UMA Modalidade Importada, identificada pelo
+    /// nome de origem e pelo tipo do grupo, junto à Seguradora (InsuranceUniqueId), usando os
+    /// parâmetros de conexão da Habilitação e o CNPJ da Corretora. A tradução do payload do
+    /// fornecedor para o contrato acontece na ACL do provider (ADR-045).
+    /// </summary>
+    Task<ImportedAdditionalCoverageResult> GetAdditionalCoveragesAsync(
+        string? connectionParameters,
+        string brokerCnpj,
+        string insuranceUniqueId,
+        string modalityName,
+        string? modalityGroupType,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// RN-029: consulta os Limites de Crédito de um tomador junto à Seguradora.
     /// Retorna limites e taxas agrupados por grupo de modalidade (dinâmicos conforme retorno da Seguradora),
     /// ou null se indisponível. Exceções são do tipo CalculationEngineException.

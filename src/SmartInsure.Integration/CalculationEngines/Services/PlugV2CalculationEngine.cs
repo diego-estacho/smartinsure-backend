@@ -35,6 +35,20 @@ public sealed class PlugV2CalculationEngine(
         return importClient.GetGroupAndModalitiesAsync(connection, brokerCnpj, cancellationToken);
     }
 
+    public Task<ImportedAdditionalCoverageResult> GetAdditionalCoveragesAsync(
+        string? connectionParameters,
+        string brokerCnpj,
+        string insuranceUniqueId,
+        string modalityName,
+        string? modalityGroupType,
+        CancellationToken cancellationToken)
+    {
+        var connection = PlugV2ConnectionParameters.Parse(connectionParameters);
+        var coveragesClient = serviceProvider.GetRequiredService<PlugV2AdditionalCoveragesClient>();
+        return coveragesClient.GetAdditionalCoveragesAsync(
+            connection, brokerCnpj, insuranceUniqueId, modalityName, modalityGroupType, cancellationToken);
+    }
+
     /// <summary>RN-029: consulta limites de crédito do tomador junto à Seguradora via PlugV2.</summary>
     public async Task<PolicyHolderLimitsAndRates?> GetPolicyHolderLimitsAndRatesAsync(
         string? connectionParameters,

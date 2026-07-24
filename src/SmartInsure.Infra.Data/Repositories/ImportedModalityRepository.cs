@@ -59,4 +59,21 @@ public sealed class ImportedModalityRepository(SmartInsureDbContext context)
                     .Select(ig => ig.Name)
                     .FirstOrDefault() ?? string.Empty))
             .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<ImportableModalityForCoverageDto>> ListImportableForCoverageAsync(
+        Guid insurerId, CancellationToken cancellationToken)
+        => await (
+            from imported in Set.AsNoTracking()
+            where imported.InsurerId == insurerId
+                && imported.Status == EImportedModalityStatus.Active
+                && !imported.IsIgnored
+            select new ImportableModalityForCoverageDto(
+                imported.Id,
+                imported.OriginName,
+                Context.Set<ImportedGroup>()
+                    .Where(ig => ig.Id == imported.ImportedGroupId)
+                    .Select(ig => ig.Type)
+                    .FirstOrDefault(),
+                imported.Branch))
+            .ToListAsync(cancellationToken);
 }
