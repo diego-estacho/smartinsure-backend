@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IAdditionalCoverageRepository, AdditionalCoverageRepository>();
         services.AddScoped<IImportedAdditionalCoverageRepository, ImportedAdditionalCoverageRepository>();
         services.AddScoped<ICreditInquiryRepository, CreditInquiryRepository>();
+        services.AddScoped<IQuotationGroupRepository, QuotationGroupRepository>();
 
         services.AddOptions<MongoOptions>()
             .BindConfiguration(MongoOptions.SectionName)

@@ -1675,6 +1675,75 @@
         }
       }
     },
+    "/api/v1/quotation-groups": {
+      "post": {
+        "tags": [
+          "QuotationGroupsEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuotationGroupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateQuotationGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{id}": {
+      "put": {
+        "tags": [
+          "QuotationGroupsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuotationGroupBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateQuotationGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/users": {
       "post": {
         "tags": [
@@ -2663,6 +2732,137 @@
                 "$ref": "#/components/schemas/ImportedPolicyHolderAddressResponse"
               }
             ]
+          }
+        }
+      },
+      "CreateQuotationGroupRequest": {
+        "required": [
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage"
+        ],
+        "type": "object",
+        "properties": {
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateQuotationGroupResponse": {
+        "required": [
+          "id",
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
           }
         }
       },
@@ -4625,6 +4825,137 @@
             ]
           }
         }
+      },
+      "UpdateQuotationGroupBody": {
+        "required": [
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage"
+        ],
+        "type": "object",
+        "properties": {
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateQuotationGroupResponse": {
+        "required": [
+          "id",
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
       }
     }
   },
@@ -4673,6 +5004,9 @@
     },
     {
       "name": "PolicyHoldersEndpoint"
+    },
+    {
+      "name": "QuotationGroupsEndpoint"
     },
     {
       "name": "UsersEndpoint"
