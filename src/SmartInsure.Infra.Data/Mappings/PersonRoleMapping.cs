@@ -20,6 +20,12 @@ public sealed class PersonRoleMapping : IEntityTypeConfiguration<PersonRole>
             .HasMaxLength(20)
             .IsRequired();
 
+        // RN-034: contato complementar da Corretora (só o papel Corretor usa; nulo nos demais).
+        // Alinhado 1:1 com a migration adicionar-contato-corretor-em-person-roles.
+        builder.Property(role => role.ContactEmail).HasMaxLength(200);
+        builder.Property(role => role.ContactPhone).HasMaxLength(20);
+        builder.Property(role => role.ResponsibleName).HasMaxLength(200);
+
         // RN-017: um vínculo por papel por Pessoa.
         builder.HasIndex(role => new { role.PersonId, role.Role })
             .HasDatabaseName("UX_PersonRoles_PersonId_Role")

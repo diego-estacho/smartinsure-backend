@@ -124,6 +124,65 @@ public sealed class Person : EntityBase
         return null;
     }
 
+    /// <summary>
+    /// RN-019: prepara o Papel da Pessoa de corretor na confirmação do cadastro — cria o vínculo
+    /// quando ainda não existe (Pessoa nova) ou ajusta a situação e o contato do vínculo recém
+    /// importado do Birô. Grava o nome fantasia informado, quando houver. A recusa de Corretora já
+    /// cadastrada é feita antes desta chamada (o use case verifica o papel Corretor pré-existente).
+    /// </summary>
+    public void SetUpBrokerage(
+        bool active,
+        string? socialName,
+        string? contactEmail,
+        string? contactPhone,
+        string? responsibleName)
+    {
+        if (Type != EPersonType.J)
+        {
+            throw new BusinessRuleException("A corretora deve ser uma Pessoa jurídica.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(socialName))
+        {
+            SocialName = socialName.Trim();
+        }
+
+        var role = GetRole(EPersonRole.Broker);
+        if (role is null)
+        {
+            _roles.Add(PersonRole.CreateBroker(Id, active, contactEmail, contactPhone, responsibleName));
+            return;
+        }
+
+        role.UpdateBrokerageContact(contactEmail, contactPhone, responsibleName);
+
+        if (active && role.Status == EPersonRoleStatus.Inactive)
+        {
+            role.Activate();
+        }
+        else if (!active && role.Status == EPersonRoleStatus.Active)
+        {
+            role.Deactivate();
+        }
+    }
+
+    /// <summary>
+    /// RN-034: edita os dados complementares da Corretora (nome fantasia e contato). Não altera os
+    /// dados obtidos do Birô (razão social, Natureza Jurídica, endereço), que seguem import-once (RN-014).
+    /// </summary>
+    public void UpdateBrokerageComplementaryData(
+        string? socialName,
+        string? contactEmail,
+        string? contactPhone,
+        string? responsibleName)
+    {
+        var role = GetRole(EPersonRole.Broker)
+            ?? throw new NotFoundException("Corretora não encontrada.");
+
+        SocialName = string.IsNullOrWhiteSpace(socialName) ? null : socialName.Trim();
+        role.UpdateBrokerageContact(contactEmail, contactPhone, responsibleName);
+    }
+
     /// <summary>RN-016: matriz é o estabelecimento de ordem /0001 do CNPJ (só pessoa jurídica).</summary>
     public bool IsHeadquarters
         => Type == EPersonType.J && DocumentNumber[8..12] == "0001";

@@ -11,4 +11,8 @@ public interface IPersonBureauImporter
         CancellationToken cancellationToken);
 }
 
-public sealed record PersonBureauImport(Person Person, bool IsPrivateSector);
+public sealed record PersonBureauImport(
+    Person Person,
+    bool IsPrivateSector,
+    string? LegalNatureCode,
+    string? LegalNatureName);

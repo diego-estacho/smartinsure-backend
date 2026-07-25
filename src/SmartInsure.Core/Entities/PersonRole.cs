@@ -20,6 +20,13 @@ public sealed class PersonRole : EntityBase
 
     public EPersonRoleStatus Status { get; private set; }
 
+    /// <summary>RN-034: contato complementar da Corretora — só o papel Corretor usa (nulo nos demais).</summary>
+    public string? ContactEmail { get; private set; }
+
+    public string? ContactPhone { get; private set; }
+
+    public string? ResponsibleName { get; private set; }
+
     public void Activate()
     {
         if (Status == EPersonRoleStatus.Active)
@@ -40,6 +47,17 @@ public sealed class PersonRole : EntityBase
         Status = EPersonRoleStatus.Inactive;
     }
 
+    /// <summary>RN-034: edita os dados de contato complementares do papel Corretor.</summary>
+    public void UpdateBrokerageContact(
+        string? contactEmail,
+        string? contactPhone,
+        string? responsibleName)
+    {
+        ContactEmail = Normalize(contactEmail);
+        ContactPhone = Normalize(contactPhone);
+        ResponsibleName = Normalize(responsibleName);
+    }
+
     internal static PersonRole Create(Guid personId, EPersonRole role)
         => new()
         {
@@ -47,4 +65,24 @@ public sealed class PersonRole : EntityBase
             Role = role,
             Status = EPersonRoleStatus.Active,
         };
+
+    /// <summary>RN-019: papel Corretor criado na confirmação, com situação inicial e contato.</summary>
+    internal static PersonRole CreateBroker(
+        Guid personId,
+        bool active,
+        string? contactEmail,
+        string? contactPhone,
+        string? responsibleName)
+        => new()
+        {
+            PersonId = personId,
+            Role = EPersonRole.Broker,
+            Status = active ? EPersonRoleStatus.Active : EPersonRoleStatus.Inactive,
+            ContactEmail = Normalize(contactEmail),
+            ContactPhone = Normalize(contactPhone),
+            ResponsibleName = Normalize(responsibleName),
+        };
+
+    private static string? Normalize(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

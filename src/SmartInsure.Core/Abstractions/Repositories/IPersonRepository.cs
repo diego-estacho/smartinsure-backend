@@ -25,16 +25,27 @@ public interface IPersonRepository : IRepository<Person>
     Task<Person?> GetTrackedByDocumentNumberAsync(
         string documentNumber, CancellationToken cancellationToken);
 
-    /// <summary>RN-018: lista Pessoas jurídicas com Papel da Pessoa de corretor.</summary>
-    Task<(IReadOnlyList<BrokerageListItemDto> Items, long TotalCount)> ListBrokeragesAsync(
-        int page,
-        int pageSize,
-        EPersonRoleStatus? status,
+    /// <summary>
+    /// RN-018: lista Pessoas jurídicas com Papel da Pessoa de corretor, com busca, filtros
+    /// combinados (situação, seguradora, motor, setor, período) e contagem por situação — tudo no servidor.
+    /// </summary>
+    Task<BrokerageListResult> ListBrokeragesAsync(
+        BrokerageListQuery query,
         CancellationToken cancellationToken);
 
     /// <summary>RN-020: detalhe da Corretora a partir da Pessoa jurídica com papel Corretor.</summary>
     Task<BrokerageDetailsDto?> GetBrokerageByIdAsync(
         Guid personId,
+        CancellationToken cancellationToken);
+
+    /// <summary>RN-035: linha do tempo da Corretora derivada da auditoria (criação, habilitações, última edição).</summary>
+    Task<IReadOnlyList<BrokerageHistoryEventDto>> GetBrokerageHistoryAsync(
+        Guid personId,
+        CancellationToken cancellationToken);
+
+    /// <summary>RN-032: dados de um CNPJ já cadastrado (somente leitura), para a consulta do cadastro.</summary>
+    Task<BrokeragePreviewDto?> FindBrokeragePreviewByDocumentAsync(
+        string documentNumber,
         CancellationToken cancellationToken);
 
     /// <summary>RN-021: Pessoa rastreada com o papel Corretor para alterar situação.</summary>

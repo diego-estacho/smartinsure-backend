@@ -38,7 +38,7 @@ public sealed class PersonBureauImporter(
             complement.City,
             complement.State);
 
-        return new PersonBureauImport(person, legalNature.IsPrivate);
+        return new PersonBureauImport(person, legalNature.IsPrivate, legalNature.Code, legalNature.Name);
     }
 
     private static string PersonTypeName(EPersonRole role)
