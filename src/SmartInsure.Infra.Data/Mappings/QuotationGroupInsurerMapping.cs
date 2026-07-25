@@ -13,6 +13,9 @@ public sealed class QuotationGroupInsurerMapping : IEntityTypeConfiguration<Quot
 
         builder.HasKey(insurer => insurer.Id);
 
+        // Id gerado pela aplicação (EntityBase) — new-in-collection precisa virar INSERT, não UPDATE.
+        builder.Property(insurer => insurer.Id).ValueGeneratedNever();
+
         builder.Property(insurer => insurer.QuotationGroupId).IsRequired();
         builder.Property(insurer => insurer.InsurerId).IsRequired();
 

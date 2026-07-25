@@ -13,6 +13,10 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
 
         builder.HasKey(group => group.Id);
 
+        // Id é UUIDv7 gerado pela aplicação (EntityBase), não pelo banco — sem isso o EF trata
+        // a chave preenchida como "já existe" e gera UPDATE em vez de INSERT ao adicionar filhos.
+        builder.Property(group => group.Id).ValueGeneratedNever();
+
         // FKs com DeleteBehavior.Restrict (convenção global, ADR-034). Tomador e Segurado são Pessoas.
         builder.HasOne<Person>()
             .WithMany()
