@@ -8,8 +8,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.BrokerageUseCases.GetBrokerageHistory;
 
-/// <summary>RN-035 — Histórico da Corretora.</summary>
-[Trait("RuleId", "RN-035")]
+/// <summary>RN-055 — Histórico da Corretora.</summary>
+[Trait("RuleId", "RN-055")]
 public class GetBrokerageHistoryUseCaseTests
 {
     private readonly IPersonRepository _repository = Substitute.For<IPersonRepository>();

@@ -19,7 +19,7 @@ public sealed record BrokerageListResult(
     long TotalCount,
     BrokerageSituationCountsDto Counts);
 
-/// <summary>RN-018/RN-033 — contagem por situação apresentada, considerando os demais filtros.</summary>
+/// <summary>RN-018/RN-053 — contagem por situação apresentada, considerando os demais filtros.</summary>
 public sealed record BrokerageSituationCountsDto(
     long All,
     long Active,
@@ -56,14 +56,14 @@ public sealed record BrokerageDetailsDto(
     int EnabledInsurerCount,
     PersonMainAddressDto? MainAddress);
 
-/// <summary>RN-035 — evento da linha do tempo da Corretora, derivado da auditoria (sem tabela de eventos).</summary>
+/// <summary>RN-055 — evento da linha do tempo da Corretora, derivado da auditoria (sem tabela de eventos).</summary>
 public sealed record BrokerageHistoryEventDto(
     string Type,
     string? Subject,
     DateTime OccurredAt,
     string Author);
 
-/// <summary>RN-032 — dados de um CNPJ já cadastrado, para a consulta somente leitura do cadastro.</summary>
+/// <summary>RN-052 — dados de um CNPJ já cadastrado, para a consulta somente leitura do cadastro.</summary>
 public sealed record BrokeragePreviewDto(
     Guid PersonId,
     string DocumentNumber,

@@ -3,7 +3,7 @@ using SmartInsure.Core.Enumerators;
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// RN-033 — fonte única da regra da situação apresentada da Corretora (derivada).
+/// RN-053 — fonte única da regra da situação apresentada da Corretora (derivada).
 /// A Corretora com papel Inativo é sempre Inativa; com papel Ativo, é Ativa quando o cadastro
 /// está completo (nome fantasia e e-mail de contato presentes) e Incompleta quando falta um deles.
 /// A mesma regra vale na listagem, na contagem, no filtro e no detalhe (calculada no servidor).

@@ -109,7 +109,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
             baseQuery = baseQuery.Where(person => ids.Contains(person.Id));
         }
 
-        // Contagem por situação apresentada, sobre os demais filtros (sem a própria situação) — RN-018/RN-033.
+        // Contagem por situação apresentada, sobre os demais filtros (sem a própria situação) — RN-018/RN-053.
         var counts = new BrokerageSituationCountsDto(
             await baseQuery.LongCountAsync(cancellationToken),
             await baseQuery.Where(MatchesSituation(EBrokerageSituation.Active)).LongCountAsync(cancellationToken),
@@ -122,7 +122,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
 
         var totalCount = await filtered.LongCountAsync(cancellationToken);
 
-        // Página: projeta os campos crus (a situação é resolvida em memória pela regra única, RN-033).
+        // Página: projeta os campos crus (a situação é resolvida em memória pela regra única, RN-053).
         var pageRows = await filtered
             .OrderBy(person => person.Name)
             .ThenBy(person => person.Id)
@@ -260,7 +260,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
         Guid personId,
         CancellationToken cancellationToken)
     {
-        // RN-035: criação e última edição vêm do vínculo do papel Corretor.
+        // RN-055: criação e última edição vêm do vínculo do papel Corretor.
         var role = await Context.Set<PersonRole>().AsNoTracking()
             .Where(personRole => personRole.PersonId == personId && personRole.Role == EPersonRole.Broker)
             .Select(personRole => new
@@ -287,7 +287,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
             events.Add(new("data-updated", null, role.UpdatedAt.Value, role.UpdatedBy ?? "sistema"));
         }
 
-        // RN-035: cada Habilitação de Seguradora (criação e última alteração).
+        // RN-055: cada Habilitação de Seguradora (criação e última alteração).
         var enablementRows = await Context.Set<BrokerageInsurerEnablement>().AsNoTracking()
             .Where(enablement => enablement.BrokerageId == personId)
             .Join(
@@ -323,7 +323,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
             .ToList();
     }
 
-    // RN-033: espelha Core.Entities.BrokerageSituationRules em SQL (filtro/contagem da situação
+    // RN-053: espelha Core.Entities.BrokerageSituationRules em SQL (filtro/contagem da situação
     // apresentada, sobre o papel Corretor). Manter em sincronia com BrokerageSituationRules.Resolve.
     private static Expression<Func<Person, bool>> MatchesSituation(EBrokerageSituation situation)
         => situation switch

@@ -4,7 +4,7 @@ using SmartInsure.Infra.CrossCutting.Validators;
 
 namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.PreviewBrokerageByCnpj.Validators;
 
-/// <summary>RN-032 — a consulta de CNPJ exige um CNPJ válido.</summary>
+/// <summary>RN-052 — a consulta de CNPJ exige um CNPJ válido.</summary>
 public sealed class PreviewBrokerageByCnpjValidator : AbstractValidator<PreviewBrokerageByCnpjRequest>
 {
     public PreviewBrokerageByCnpjValidator()

@@ -11,7 +11,7 @@ public sealed record ListBrokeragesRequest : PagedRequest
     /// <summary>Busca por CNPJ (dígitos), razão social ou nome fantasia.</summary>
     public string? Search { get; init; }
 
-    /// <summary>Situação apresentada: Active, Incomplete ou Inactive (RN-033).</summary>
+    /// <summary>Situação apresentada: Active, Incomplete ou Inactive (RN-053).</summary>
     public string? Situation { get; init; }
 
     public Guid? InsurerId { get; init; }

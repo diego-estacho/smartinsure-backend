@@ -40,7 +40,7 @@ public sealed class BrokeragesEndpoint : CarterModule
         app.MapGet("/", ListAsync)
             .Produces<ListBrokeragesResponse>(StatusCodes.Status200OK);
 
-        // RN-032: consulta de CNPJ somente leitura (rota literal antes de /{id:guid}).
+        // RN-052: consulta de CNPJ somente leitura (rota literal antes de /{id:guid}).
         app.MapGet("/preview", PreviewAsync)
             .Produces<BrokeragePreviewResponse>(StatusCodes.Status200OK);
 

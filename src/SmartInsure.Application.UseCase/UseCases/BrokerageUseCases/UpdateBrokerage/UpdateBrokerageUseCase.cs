@@ -8,9 +8,9 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.UpdateBrokerage;
 
 /// <summary>
-/// RN-034 — edita os dados complementares da Corretora (nome fantasia e contato). Não altera os dados
+/// RN-054 — edita os dados complementares da Corretora (nome fantasia e contato). Não altera os dados
 /// obtidos do Birô (razão social, Natureza Jurídica, endereço), que seguem import-once (RN-014). A
-/// situação apresentada (RN-033) é recalculada no retorno.
+/// situação apresentada (RN-053) é recalculada no retorno.
 /// </summary>
 public sealed class UpdateBrokerageUseCase(
     IPersonRepository personRepository,

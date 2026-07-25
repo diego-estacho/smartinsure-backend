@@ -13,7 +13,7 @@ namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.CreateBroke
 /// <summary>
 /// RN-019 — cria a Corretora na confirmação: garante a Pessoa jurídica (importando do Birô quando
 /// nova), adiciona o papel Corretor com a situação escolhida e grava os dados complementares. A
-/// consulta prévia do CNPJ é somente leitura (RN-032) — nada é gravado antes desta confirmação.
+/// consulta prévia do CNPJ é somente leitura (RN-052) — nada é gravado antes desta confirmação.
 /// </summary>
 public sealed class CreateBrokerageUseCase(
     IPersonRepository personRepository,

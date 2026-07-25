@@ -167,7 +167,7 @@ public sealed class Person : EntityBase
     }
 
     /// <summary>
-    /// RN-034: edita os dados complementares da Corretora (nome fantasia e contato). Não altera os
+    /// RN-054: edita os dados complementares da Corretora (nome fantasia e contato). Não altera os
     /// dados obtidos do Birô (razão social, Natureza Jurídica, endereço), que seguem import-once (RN-014).
     /// </summary>
     public void UpdateBrokerageComplementaryData(

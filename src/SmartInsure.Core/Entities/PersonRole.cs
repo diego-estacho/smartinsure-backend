@@ -20,7 +20,7 @@ public sealed class PersonRole : EntityBase
 
     public EPersonRoleStatus Status { get; private set; }
 
-    /// <summary>RN-034: contato complementar da Corretora — só o papel Corretor usa (nulo nos demais).</summary>
+    /// <summary>RN-054: contato complementar da Corretora — só o papel Corretor usa (nulo nos demais).</summary>
     public string? ContactEmail { get; private set; }
 
     public string? ContactPhone { get; private set; }
@@ -47,7 +47,7 @@ public sealed class PersonRole : EntityBase
         Status = EPersonRoleStatus.Inactive;
     }
 
-    /// <summary>RN-034: edita os dados de contato complementares do papel Corretor.</summary>
+    /// <summary>RN-054: edita os dados de contato complementares do papel Corretor.</summary>
     public void UpdateBrokerageContact(
         string? contactEmail,
         string? contactPhone,

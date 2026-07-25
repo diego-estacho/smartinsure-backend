@@ -4,7 +4,7 @@
 
 > Revisada em 2026-07-25 (redesign do CRUD, exec-plan 0009) — busca, filtros combinados, contagem por situação e paginação no servidor. Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO).
 
-**Descrição.** A plataforma lista como Corretoras todas as Pessoas jurídicas que possuem Papel da Pessoa de corretor. A lista é paginada e ordenada pelo servidor (a base pode passar de dez mil Corretoras) e combina, por E lógico, busca livre e filtros: situação apresentada (Ativa, Incompleta ou Inativa — RN-033), Seguradora habilitada, Motor de Cálculo, setor (público ou privado, pela Natureza Jurídica) e período de cadastro (data em que o Papel da Pessoa de corretor foi criado). A busca livre casa por CNPJ (somente dígitos), razão social e nome fantasia.
+**Descrição.** A plataforma lista como Corretoras todas as Pessoas jurídicas que possuem Papel da Pessoa de corretor. A lista é paginada e ordenada pelo servidor (a base pode passar de dez mil Corretoras) e combina, por E lógico, busca livre e filtros: situação apresentada (Ativa, Incompleta ou Inativa — RN-053), Seguradora habilitada, Motor de Cálculo, setor (público ou privado, pela Natureza Jurídica) e período de cadastro (data em que o Papel da Pessoa de corretor foi criado). A busca livre casa por CNPJ (somente dígitos), razão social e nome fantasia.
 
 **Pré-condições.** Usuário autenticado na plataforma; Pessoas jurídicas com Papel da Pessoa de corretor cadastradas.
 
@@ -14,13 +14,13 @@
 
 ## RN-019 — Criação de Corretora por CNPJ
 
-> Revisada em 2026-07-25 (redesign do CRUD, exec-plan 0009) — a criação ocorre apenas na confirmação, carregando dados complementares e a escolha de ativação; a consulta prévia do CNPJ é somente leitura (RN-032). Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO).
+> Revisada em 2026-07-25 (redesign do CRUD, exec-plan 0009) — a criação ocorre apenas na confirmação, carregando dados complementares e a escolha de ativação; a consulta prévia do CNPJ é somente leitura (RN-052). Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO).
 
-**Descrição.** A plataforma cria uma Corretora a partir de um CNPJ válido no momento em que o usuário confirma o cadastro. Até a confirmação nada é gravado (a consulta do CNPJ é somente leitura — RN-032). Na confirmação, a plataforma garante que a Pessoa jurídica exista na base, adiciona o Papel da Pessoa de corretor e registra os dados complementares informados (nome fantasia, e-mail de contato, telefone e responsável — RN-034).
+**Descrição.** A plataforma cria uma Corretora a partir de um CNPJ válido no momento em que o usuário confirma o cadastro. Até a confirmação nada é gravado (a consulta do CNPJ é somente leitura — RN-052). Na confirmação, a plataforma garante que a Pessoa jurídica exista na base, adiciona o Papel da Pessoa de corretor e registra os dados complementares informados (nome fantasia, e-mail de contato, telefone e responsável — RN-054).
 
 **Pré-condições.** Usuário autenticado informa um CNPJ válido de Pessoa jurídica, matriz ou filial, e confirma a criação.
 
-**Critério de aceitação.** Se a Pessoa jurídica já existir sem Papel da Pessoa de corretor, a plataforma adiciona esse papel e devolve a Corretora criada. Se a Pessoa jurídica não existir, a plataforma a importa do Birô conforme RN-014 e adiciona o papel. A situação inicial segue a escolha do usuário: Ativa quando ele opta por ativar ao salvar, Inativa caso contrário. Os dados complementares informados são gravados junto; sem nome fantasia ou e-mail de contato, a Corretora Ativa é apresentada como Incompleta (RN-033).
+**Critério de aceitação.** Se a Pessoa jurídica já existir sem Papel da Pessoa de corretor, a plataforma adiciona esse papel e devolve a Corretora criada. Se a Pessoa jurídica não existir, a plataforma a importa do Birô conforme RN-014 e adiciona o papel. A situação inicial segue a escolha do usuário: Ativa quando ele opta por ativar ao salvar, Inativa caso contrário. Os dados complementares informados são gravados junto; sem nome fantasia ou e-mail de contato, a Corretora Ativa é apresentada como Incompleta (RN-053).
 
 **Casos limite.** CNPJ ausente, inválido ou documento de Pessoa física: criação recusada. CNPJ não localizado no Birô, Birô indisponível ou com erro: nada é criado. Pessoa jurídica que já possui Papel da Pessoa de corretor, em situação Ativa ou Inativa: criação recusada com notificação de Corretora já cadastrada, sem alterar a situação. Abandonar o cadastro antes de confirmar não deixa registro.
 
@@ -44,7 +44,7 @@
 
 **Casos limite.** Cancelamento no diálogo de confirmação não altera a situação. Ativar Corretora já Ativa ou inativar Corretora já Inativa é recusado com indicação clara. Corretora inexistente: solicitação recusada com indicação clara. Nesta fase, a situação da Corretora não bloqueia automaticamente outros fluxos da plataforma.
 
-## RN-032 — Consulta de CNPJ para cadastro de Corretora (somente leitura)
+## RN-052 — Consulta de CNPJ para cadastro de Corretora (somente leitura)
 
 > Catalogada em 2026-07-25 (redesign do CRUD, exec-plan 0009). Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO). Relacionada à OPEN-04 (uso dos dados do Birô): decide-se aqui apenas o gatilho de consulta do cadastro de Corretora, sem efeito sobre situação cadastral nem reuso de respostas.
 
@@ -56,7 +56,7 @@
 
 **Casos limite.** CNPJ ausente, inválido ou documento de Pessoa física: consulta recusada. CNPJ não localizado no Birô, Birô indisponível ou com erro: a plataforma informa a falha e nada é gravado. A consulta não altera a situação cadastral nem dispara qualquer efeito automático (OPEN-04).
 
-## RN-033 — Situação apresentada da Corretora
+## RN-053 — Situação apresentada da Corretora
 
 > Catalogada em 2026-07-25 (redesign do CRUD, exec-plan 0009). Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO). Não cria status novo nem transição: a situação apresentada é derivada; a máquina de estados da Corretora segue Ativa/Inativa (glossário, ratificado 2026-07-17).
 
@@ -68,7 +68,7 @@
 
 **Casos limite.** Completar o nome fantasia e o e-mail de contato de uma Corretora Incompleta a torna Ativa sem qualquer transição de status. Inativar uma Corretora Incompleta a torna Inativa; reativá-la volta a Incompleta enquanto o cadastro seguir incompleto.
 
-## RN-034 — Edição de dados complementares da Corretora
+## RN-054 — Edição de dados complementares da Corretora
 
 > Catalogada em 2026-07-25 (redesign do CRUD, exec-plan 0009). Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO). Introduz os dados de contato da Corretora (e-mail, telefone, responsável) no glossário.
 
@@ -76,11 +76,11 @@
 
 **Pré-condições.** Usuário autenticado edita uma Corretora cadastrada.
 
-**Critério de aceitação.** Ao salvar, a plataforma grava os dados complementares informados e mantém inalterados os dados da Receita. Preencher ou remover nome fantasia e e-mail de contato reflete imediatamente na situação apresentada (RN-033).
+**Critério de aceitação.** Ao salvar, a plataforma grava os dados complementares informados e mantém inalterados os dados da Receita. Preencher ou remover nome fantasia e e-mail de contato reflete imediatamente na situação apresentada (RN-053).
 
 **Casos limite.** Corretora inexistente: edição recusada com indicação clara. E-mail de contato em formato inválido: edição recusada com indicação clara. Campos complementares vazios são aceitos (a Corretora pode ficar Incompleta).
 
-## RN-035 — Histórico da Corretora
+## RN-055 — Histórico da Corretora
 
 > Catalogada em 2026-07-25 (redesign do CRUD, exec-plan 0009). Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO). Deriva da auditoria já existente; não introduz tabela de eventos.
 

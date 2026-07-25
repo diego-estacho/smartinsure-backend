@@ -10,7 +10,7 @@ namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.ListBrokera
 
 /// <summary>
 /// RN-018 — lista Pessoas jurídicas com papel Corretor, com busca e filtros combinados server-side,
-/// e a contagem por situação apresentada (RN-033) para as abas. Filtro/ordenação/paginação no banco.
+/// e a contagem por situação apresentada (RN-053) para as abas. Filtro/ordenação/paginação no banco.
 /// </summary>
 public sealed class ListBrokeragesUseCase(IPersonRepository personRepository) : IListBrokeragesUseCase
 {

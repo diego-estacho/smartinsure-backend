@@ -11,8 +11,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.BrokerageUseCases.UpdateBrokerage;
 
-/// <summary>RN-034 — Edição de dados complementares da Corretora.</summary>
-[Trait("RuleId", "RN-034")]
+/// <summary>RN-054 — Edição de dados complementares da Corretora.</summary>
+[Trait("RuleId", "RN-054")]
 public class UpdateBrokerageUseCaseTests
 {
     private readonly IPersonRepository _repository = Substitute.For<IPersonRepository>();

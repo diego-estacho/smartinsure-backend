@@ -4,8 +4,8 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-033 — Situação apresentada da Corretora (derivada no servidor).</summary>
-[Trait("RuleId", "RN-033")]
+/// <summary>RN-053 — Situação apresentada da Corretora (derivada no servidor).</summary>
+[Trait("RuleId", "RN-053")]
 public class BrokerageSituationRulesTests
 {
     [Fact]

@@ -7,7 +7,7 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.GetBrokerageHistory;
 
 /// <summary>
-/// RN-035 — linha do tempo da Corretora derivada da auditoria. Uma Corretora existente tem sempre ao
+/// RN-055 — linha do tempo da Corretora derivada da auditoria. Uma Corretora existente tem sempre ao
 /// menos o evento de criação; timeline vazia significa Corretora inexistente (404).
 /// </summary>
 public sealed class GetBrokerageHistoryUseCase(IPersonRepository personRepository)

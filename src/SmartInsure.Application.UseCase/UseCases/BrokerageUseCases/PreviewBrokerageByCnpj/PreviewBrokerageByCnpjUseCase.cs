@@ -11,7 +11,7 @@ using SmartInsure.Infra.CrossCutting.Validators;
 namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.PreviewBrokerageByCnpj;
 
 /// <summary>
-/// RN-032 — consulta somente leitura de um CNPJ para o cadastro de Corretora: reaproveita os dados já
+/// RN-052 — consulta somente leitura de um CNPJ para o cadastro de Corretora: reaproveita os dados já
 /// cadastrados ou consulta o Birô, SEM gravar nada (este fluxo não tem <c>UnitOfWork.CommitAsync</c>).
 /// Sinaliza quando o CNPJ já possui papel Corretor, com o atalho para o cadastro existente.
 /// </summary>
@@ -42,7 +42,7 @@ public sealed class PreviewBrokerageByCnpjUseCase(
                 MapAddress(existing.MainAddress));
         }
 
-        // RN-032: importação somente leitura — nada é gravado (sem AddAsync/CommitAsync).
+        // RN-052: importação somente leitura — nada é gravado (sem AddAsync/CommitAsync).
         var imported = await personBureauImporter.ImportLegalPersonAsync(
             cnpj, EPersonRole.Broker, cancellationToken)
             ?? throw new BusinessRuleException(NotFoundMessage);

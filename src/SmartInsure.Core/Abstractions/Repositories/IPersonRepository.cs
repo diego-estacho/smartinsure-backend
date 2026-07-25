@@ -38,12 +38,12 @@ public interface IPersonRepository : IRepository<Person>
         Guid personId,
         CancellationToken cancellationToken);
 
-    /// <summary>RN-035: linha do tempo da Corretora derivada da auditoria (criação, habilitações, última edição).</summary>
+    /// <summary>RN-055: linha do tempo da Corretora derivada da auditoria (criação, habilitações, última edição).</summary>
     Task<IReadOnlyList<BrokerageHistoryEventDto>> GetBrokerageHistoryAsync(
         Guid personId,
         CancellationToken cancellationToken);
 
-    /// <summary>RN-032: dados de um CNPJ já cadastrado (somente leitura), para a consulta do cadastro.</summary>
+    /// <summary>RN-052: dados de um CNPJ já cadastrado (somente leitura), para a consulta do cadastro.</summary>
     Task<BrokeragePreviewDto?> FindBrokeragePreviewByDocumentAsync(
         string documentNumber,
         CancellationToken cancellationToken);

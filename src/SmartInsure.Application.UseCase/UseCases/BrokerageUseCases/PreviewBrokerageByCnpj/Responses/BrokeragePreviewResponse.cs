@@ -1,7 +1,7 @@
 namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.PreviewBrokerageByCnpj.Responses;
 
 /// <summary>
-/// RN-032 — retorno somente leitura da consulta de CNPJ: dados da Receita para revisão e o sinal
+/// RN-052 — retorno somente leitura da consulta de CNPJ: dados da Receita para revisão e o sinal
 /// de "já cadastrada" com o atalho para o cadastro existente. Nada aqui foi gravado.
 /// </summary>
 public sealed record BrokeragePreviewResponse(

@@ -2,7 +2,7 @@ namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.CreateBroke
 
 /// <summary>
 /// RN-019 — criação de Corretora na confirmação: CNPJ + dados complementares (nome fantasia e contato,
-/// RN-034) e a escolha de ativar ao salvar. Nada é gravado antes desta chamada (a consulta é RN-032).
+/// RN-054) e a escolha de ativar ao salvar. Nada é gravado antes desta chamada (a consulta é RN-052).
 /// </summary>
 public sealed record CreateBrokerageRequest
 {

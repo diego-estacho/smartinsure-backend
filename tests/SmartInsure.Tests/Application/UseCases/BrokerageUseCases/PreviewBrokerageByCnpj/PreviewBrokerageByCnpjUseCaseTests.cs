@@ -11,8 +11,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.BrokerageUseCases.PreviewBrokerageByCnpj;
 
-/// <summary>RN-032 — Consulta de CNPJ para cadastro de Corretora (somente leitura).</summary>
-[Trait("RuleId", "RN-032")]
+/// <summary>RN-052 — Consulta de CNPJ para cadastro de Corretora (somente leitura).</summary>
+[Trait("RuleId", "RN-052")]
 public class PreviewBrokerageByCnpjUseCaseTests
 {
     private const string Cnpj = "11444777000161";
@@ -38,7 +38,7 @@ public class PreviewBrokerageByCnpjUseCaseTests
         response.Name.Should().Be("Alfa Ltda");
         response.LegalNatureName.Should().Be("Sociedade Empresária Limitada");
         response.AlreadyRegistered.Should().BeFalse();
-        // RN-032: a consulta é somente leitura — nada é gravado.
+        // RN-052: a consulta é somente leitura — nada é gravado.
         await _repository.DidNotReceiveWithAnyArgs().AddAsync(default!, default);
     }
 

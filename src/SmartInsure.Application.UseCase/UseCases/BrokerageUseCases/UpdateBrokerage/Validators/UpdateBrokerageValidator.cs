@@ -3,7 +3,7 @@ using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.UpdateBrokerage
 
 namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.UpdateBrokerage.Validators;
 
-/// <summary>RN-034 — e-mail de contato opcional, mas com formato válido quando informado.</summary>
+/// <summary>RN-054 — e-mail de contato opcional, mas com formato válido quando informado.</summary>
 public sealed class UpdateBrokerageValidator : AbstractValidator<UpdateBrokerageRequest>
 {
     public UpdateBrokerageValidator()

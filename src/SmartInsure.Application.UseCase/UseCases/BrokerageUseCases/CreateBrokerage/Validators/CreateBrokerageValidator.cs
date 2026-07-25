@@ -13,7 +13,7 @@ public sealed class CreateBrokerageValidator : AbstractValidator<CreateBrokerage
             .NotEmpty().WithMessage("O CNPJ da corretora é obrigatório.")
             .Must(CnpjValidator.IsValid).WithMessage("O CNPJ da corretora é inválido.");
 
-        // RN-034: e-mail de contato é opcional, mas se informado deve ter formato válido.
+        // RN-054: e-mail de contato é opcional, mas se informado deve ter formato válido.
         RuleFor(request => request.ContactEmail)
             .EmailAddress().WithMessage("O e-mail de contato é inválido.")
             .When(request => !string.IsNullOrWhiteSpace(request.ContactEmail));

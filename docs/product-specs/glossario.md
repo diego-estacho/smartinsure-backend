@@ -89,7 +89,7 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 | **Ativa** | `Active` | Corretora habilitada no cadastro de Corretoras | Ativa → Inativa (RN-021) |
 | **Inativa** | `Inactive` | Corretora mantida no cadastro de Corretoras sem bloqueio automático em outros fluxos nesta fase | Inativa → Ativa (RN-021) |
 
-> **Situação apresentada (derivada — RN-033, 2026-07-25).** Além do status armazenado Ativa/Inativa acima, a plataforma apresenta a Corretora como **Incompleta** quando ela está Ativa mas falta nome fantasia ou e-mail de contato. É um valor **derivado no servidor** para exibição, contagem e filtro — não é status novo e não cria transição na máquina de estados. Nome estável na API: `Active` / `Incomplete` / `Inactive`. Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO).
+> **Situação apresentada (derivada — RN-053, 2026-07-25).** Além do status armazenado Ativa/Inativa acima, a plataforma apresenta a Corretora como **Incompleta** quando ela está Ativa mas falta nome fantasia ou e-mail de contato. É um valor **derivado no servidor** para exibição, contagem e filtro — não é status novo e não cria transição na máquina de estados. Nome estável na API: `Active` / `Incomplete` / `Inactive`. Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO).
 
 ### Modalidade e Modalidade Importada (proposto/revisto em 2026-07-22 — aguardando ratificação da PO)
 
