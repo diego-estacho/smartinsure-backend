@@ -28,8 +28,9 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                 && person.DocumentNumber.Substring(8, 4) == "0001");
         }
 
-        return await ProjectItems(query)
-            .OrderBy(item => item.Name)
+        // Ordena pela entidade ANTES de projetar — o EF não traduz OrderBy por propriedade de um
+        // DTO construído (PersonSearchItemDto), o que causava InvalidOperationException na busca.
+        return await ProjectItems(query.OrderBy(person => person.Name))
             .ToListAsync(cancellationToken);
     }
 
