@@ -19,6 +19,21 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<BrokerageInsurerEnablement> BrokerageInsurerEnablements => Set<BrokerageInsurerEnablement>();
 
+    public DbSet<Modality> Modalities => Set<Modality>();
+
+    public DbSet<ImportedGroup> ImportedGroups => Set<ImportedGroup>();
+
+    public DbSet<ImportedModality> ImportedModalities => Set<ImportedModality>();
+
+    public DbSet<ImportedModalityTag> ImportedModalityTags => Set<ImportedModalityTag>();
+
+    public DbSet<ImportedModalityParticularClause> ImportedModalityParticularClauses
+        => Set<ImportedModalityParticularClause>();
+
+    public DbSet<AdditionalCoverage> AdditionalCoverages => Set<AdditionalCoverage>();
+
+    public DbSet<ImportedAdditionalCoverage> ImportedAdditionalCoverages => Set<ImportedAdditionalCoverage>();
+
     public DbSet<CreditInquiry> CreditInquiries => Set<CreditInquiry>();
 
     public DbSet<CreditInquiryResult> CreditInquiryResults => Set<CreditInquiryResult>();

@@ -68,6 +68,8 @@ services:
       - "7071:80"
     environment:
       FUNCTIONS_WORKER_RUNTIME: dotnet-isolated
+      # Agenda do timer trigger (isolated: host resolve via env, não via appsettings.json do worker).
+      ModalityImport__Schedule: "0 */30 * * * *"
       # Conta de desenvolvimento padrão do Azurite (chave pública documentada, não é secret).
       AzureWebJobsStorage: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1"
       ConnectionStrings__SqlServer: "Server=mssql,1433;Database=SmartInsure;User Id=sa;Password=${MSSQL_SA_PASSWORD:-SmartInsure@Dev123};TrustServerCertificate=True"

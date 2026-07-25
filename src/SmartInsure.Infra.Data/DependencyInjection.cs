@@ -34,6 +34,13 @@ public static class DependencyInjection
         services.AddScoped<ILegalNatureRepository, LegalNatureRepository>();
         services.AddScoped<IBrokerageInsurerEnablementRepository, BrokerageInsurerEnablementRepository>();
         services.AddScoped<IPolicyHolderAppointmentRepository, PolicyHolderAppointmentRepository>();
+        services.AddScoped<IModalityRepository, ModalityRepository>();
+        services.AddScoped<IImportedGroupRepository, ImportedGroupRepository>();
+        services.AddScoped<IImportedModalityRepository, ImportedModalityRepository>();
+        services.AddScoped<IImportedModalityTagRepository, ImportedModalityTagRepository>();
+        services.AddScoped<IImportedModalityParticularClauseRepository, ImportedModalityParticularClauseRepository>();
+        services.AddScoped<IAdditionalCoverageRepository, AdditionalCoverageRepository>();
+        services.AddScoped<IImportedAdditionalCoverageRepository, ImportedAdditionalCoverageRepository>();
         services.AddScoped<ICreditInquiryRepository, CreditInquiryRepository>();
 
         services.AddOptions<MongoOptions>()
