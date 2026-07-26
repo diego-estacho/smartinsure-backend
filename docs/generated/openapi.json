@@ -437,10 +437,55 @@
             }
           },
           {
-            "name": "status",
+            "name": "q",
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "situation",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "insurerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "calculationEngine",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "registeredFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "registeredTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],
@@ -450,7 +495,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfBrokerageListItemResponse"
+                  "$ref": "#/components/schemas/ListBrokeragesResponse"
                 }
               }
             }
@@ -485,6 +530,34 @@
         }
       }
     },
+    "/api/v1/brokerages/preview": {
+      "get": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "cnpj",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrokeragePreviewResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/brokerages/{id}": {
       "get": {
         "tags": [
@@ -508,6 +581,74 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GetBrokerageResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBrokerageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBrokerageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/brokerages/{id}/history": {
+      "get": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBrokerageHistoryResponse"
                 }
               }
             }
@@ -2014,6 +2155,33 @@
           }
         }
       },
+      "BrokerageHistoryEventResponse": {
+        "required": [
+          "type",
+          "subject",
+          "occurredAt",
+          "author"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "author": {
+            "type": "string"
+          }
+        }
+      },
       "BrokerageInsurerEnablementListItemResponse": {
         "required": [
           "id",
@@ -2066,7 +2234,12 @@
           "name",
           "socialName",
           "isPrivateSector",
-          "status"
+          "status",
+          "situation",
+          "registeredAt",
+          "enabledInsurerCount",
+          "enabledInsurerNames",
+          "calculationEngines"
         ],
         "type": "object",
         "properties": {
@@ -2094,6 +2267,198 @@
           },
           "status": {
             "type": "string"
+          },
+          "situation": {
+            "type": "string"
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabledInsurerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "enabledInsurerNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "calculationEngines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BrokeragePreviewAddressResponse": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "BrokeragePreviewResponse": {
+        "required": [
+          "documentNumber",
+          "name",
+          "socialName",
+          "legalNatureCode",
+          "legalNatureName",
+          "isPrivateSector",
+          "alreadyRegistered",
+          "existingBrokerageId",
+          "mainAddress"
+        ],
+        "type": "object",
+        "properties": {
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "alreadyRegistered": {
+            "type": "boolean"
+          },
+          "existingBrokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "mainAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BrokeragePreviewAddressResponse"
+              }
+            ]
+          }
+        }
+      },
+      "BrokerageSituationCountsResponse": {
+        "required": [
+          "all",
+          "active",
+          "incomplete",
+          "inactive"
+        ],
+        "type": "object",
+        "properties": {
+          "all": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "active": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "incomplete": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "inactive": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           }
         }
       },
@@ -2329,13 +2694,37 @@
         }
       },
       "CreateBrokerageRequest": {
-        "required": [
-          "cnpj"
-        ],
         "type": "object",
         "properties": {
           "cnpj": {
             "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "activateOnSave": {
+            "type": "boolean"
           }
         }
       },
@@ -2349,6 +2738,12 @@
           "legalNatureName",
           "isPrivateSector",
           "status",
+          "situation",
+          "contactEmail",
+          "contactPhone",
+          "responsibleName",
+          "registeredAt",
+          "enabledInsurerCount",
           "mainAddress"
         ],
         "type": "object",
@@ -2389,6 +2784,39 @@
           },
           "status": {
             "type": "string"
+          },
+          "situation": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabledInsurerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           },
           "mainAddress": {
             "oneOf": [
@@ -2914,6 +3342,20 @@
           }
         }
       },
+      "GetBrokerageHistoryResponse": {
+        "required": [
+          "events"
+        ],
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrokerageHistoryEventResponse"
+            }
+          }
+        }
+      },
       "GetBrokerageInsurerEnablementResponse": {
         "required": [
           "id",
@@ -2969,6 +3411,12 @@
           "legalNatureName",
           "isPrivateSector",
           "status",
+          "situation",
+          "contactEmail",
+          "contactPhone",
+          "responsibleName",
+          "registeredAt",
+          "enabledInsurerCount",
           "mainAddress"
         ],
         "type": "object",
@@ -3009,6 +3457,39 @@
           },
           "status": {
             "type": "string"
+          },
+          "situation": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabledInsurerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           },
           "mainAddress": {
             "oneOf": [
@@ -3446,6 +3927,59 @@
           }
         }
       },
+      "ListBrokeragesResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "counts"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrokerageListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/BrokerageSituationCountsResponse"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
       "MapInsurerResponse": {
         "required": [
           "insurerId",
@@ -3618,55 +4152,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BrokerageInsurerEnablementListItemResponse"
-            }
-          },
-          "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          },
-          "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          }
-        }
-      },
-      "PagedResponseOfBrokerageListItemResponse": {
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "totalCount"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BrokerageListItemResponse"
             }
           },
           "page": {
@@ -4387,6 +4872,41 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "UpdateBrokerageBody": {
+        "required": [
+          "socialName",
+          "contactEmail",
+          "contactPhone",
+          "responsibleName"
+        ],
+        "type": "object",
+        "properties": {
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
