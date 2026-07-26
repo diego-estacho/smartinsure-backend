@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Repositories.Dtos;
@@ -110,15 +109,16 @@ public sealed class PersonRepository(SmartInsureDbContext context)
         }
 
         // Contagem por situação apresentada, sobre os demais filtros (sem a própria situação) — RN-018/RN-053.
+        // O predicado é a regra única de Core (BrokerageSituationRules), a mesma que resolve a linha.
         var counts = new BrokerageSituationCountsDto(
             await baseQuery.LongCountAsync(cancellationToken),
-            await baseQuery.Where(MatchesSituation(EBrokerageSituation.Active)).LongCountAsync(cancellationToken),
-            await baseQuery.Where(MatchesSituation(EBrokerageSituation.Incomplete)).LongCountAsync(cancellationToken),
-            await baseQuery.Where(MatchesSituation(EBrokerageSituation.Inactive)).LongCountAsync(cancellationToken));
+            await baseQuery.Where(BrokerageSituationRules.Matches(EBrokerageSituation.Active)).LongCountAsync(cancellationToken),
+            await baseQuery.Where(BrokerageSituationRules.Matches(EBrokerageSituation.Incomplete)).LongCountAsync(cancellationToken),
+            await baseQuery.Where(BrokerageSituationRules.Matches(EBrokerageSituation.Inactive)).LongCountAsync(cancellationToken));
 
         var filtered = query.Situation is null
             ? baseQuery
-            : baseQuery.Where(MatchesSituation(query.Situation.Value));
+            : baseQuery.Where(BrokerageSituationRules.Matches(query.Situation.Value));
 
         var totalCount = await filtered.LongCountAsync(cancellationToken);
 
@@ -260,7 +260,10 @@ public sealed class PersonRepository(SmartInsureDbContext context)
         Guid personId,
         CancellationToken cancellationToken)
     {
-        // RN-055: criação e última edição vêm do vínculo do papel Corretor.
+        // RN-055: criação e última atualização vêm do vínculo do papel Corretor. O papel guarda um
+        // único UpdatedAt (last-write-wins), então não dá para distinguir com fidelidade uma mudança
+        // de situação (RN-021) de uma edição de dados (RN-054) — o evento é neutro ("updated"). Um
+        // evento próprio por transição exigiria trilha de auditoria/eventos (fora do escopo, RN-055).
         var role = await Context.Set<PersonRole>().AsNoTracking()
             .Where(personRole => personRole.PersonId == personId && personRole.Role == EPersonRole.Broker)
             .Select(personRole => new
@@ -284,7 +287,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
 
         if (role.UpdatedAt is not null)
         {
-            events.Add(new("data-updated", null, role.UpdatedAt.Value, role.UpdatedBy ?? "sistema"));
+            events.Add(new("updated", null, role.UpdatedAt.Value, role.UpdatedBy ?? "sistema"));
         }
 
         // RN-055: cada Habilitação de Seguradora (criação e última alteração).
@@ -322,23 +325,6 @@ public sealed class PersonRepository(SmartInsureDbContext context)
             .OrderByDescending(historyEvent => historyEvent.OccurredAt)
             .ToList();
     }
-
-    // RN-053: espelha Core.Entities.BrokerageSituationRules em SQL (filtro/contagem da situação
-    // apresentada, sobre o papel Corretor). Manter em sincronia com BrokerageSituationRules.Resolve.
-    private static Expression<Func<Person, bool>> MatchesSituation(EBrokerageSituation situation)
-        => situation switch
-        {
-            EBrokerageSituation.Inactive => person => person.Roles.Any(role =>
-                role.Role == EPersonRole.Broker && role.Status == EPersonRoleStatus.Inactive),
-            EBrokerageSituation.Active => person => person.Roles.Any(role =>
-                role.Role == EPersonRole.Broker && role.Status == EPersonRoleStatus.Active
-                && person.SocialName != null && person.SocialName != ""
-                && role.ContactEmail != null && role.ContactEmail != ""),
-            _ => person => person.Roles.Any(role =>
-                role.Role == EPersonRole.Broker && role.Status == EPersonRoleStatus.Active
-                && (person.SocialName == null || person.SocialName == ""
-                    || role.ContactEmail == null || role.ContactEmail == "")),
-        };
 
     public async Task<Person?> GetTrackedBrokerageByIdAsync(
         Guid personId,
