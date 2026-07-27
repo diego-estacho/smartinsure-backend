@@ -17,24 +17,6 @@ public sealed class GetBrokerageUseCase(IPersonRepository personRepository) : IG
             request.BrokerageId, cancellationToken)
             ?? throw new NotFoundException("Corretora não encontrada.");
 
-        return new GetBrokerageResponse(
-            brokerage.Id,
-            brokerage.DocumentNumber,
-            brokerage.Name,
-            brokerage.SocialName,
-            brokerage.LegalNatureCode,
-            brokerage.LegalNatureDescription,
-            brokerage.IsPrivateSector,
-            brokerage.Status,
-            brokerage.MainAddress is null
-                ? null
-                : new BrokerageAddressResponse(
-                    brokerage.MainAddress.ZipCode,
-                    brokerage.MainAddress.Street,
-                    brokerage.MainAddress.Number,
-                    brokerage.MainAddress.Complement,
-                    brokerage.MainAddress.Neighborhood,
-                    brokerage.MainAddress.City,
-                    brokerage.MainAddress.State));
+        return GetBrokerageResponse.From(brokerage);
     }
 }

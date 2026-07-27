@@ -14,6 +14,7 @@ public sealed class PersonBureauImporter(
     public async Task<PersonBureauImport?> ImportLegalPersonAsync(
         string cnpj,
         EPersonRole role,
+        bool assignRole,
         CancellationToken cancellationToken)
     {
         var complement = await bureauProvider.GetPersonComplementAsync(
@@ -28,7 +29,11 @@ public sealed class PersonBureauImporter(
         var legalNature = await ResolveLegalNatureAsync(complement, cancellationToken);
 
         var person = Person.Create(cnpj, complement.Name, complement.TradeName, legalNature.Id);
-        person.AssignRole(role);
+        if (assignRole)
+        {
+            person.AssignRole(role);
+        }
+
         person.AddMainAddress(
             complement.ZipCode,
             complement.Street,
@@ -38,7 +43,7 @@ public sealed class PersonBureauImporter(
             complement.City,
             complement.State);
 
-        return new PersonBureauImport(person, legalNature.IsPrivate);
+        return new PersonBureauImport(person, legalNature.IsPrivate, legalNature.Code, legalNature.Name);
     }
 
     private static string PersonTypeName(EPersonRole role)

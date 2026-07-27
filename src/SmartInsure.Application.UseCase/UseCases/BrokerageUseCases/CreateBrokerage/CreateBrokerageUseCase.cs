@@ -1,17 +1,20 @@
+using SmartInsure.Application.UseCase.Services.PersonImports;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.CreateBrokerage.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.CreateBrokerage.Requests;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.CreateBrokerage.Responses;
-using SmartInsure.Application.UseCase.Services.PersonImports;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
-using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
 using SmartInsure.Infra.CrossCutting.Validators;
 
 namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.CreateBrokerage;
 
-/// <summary>RN-019 — cria Corretora por CNPJ como Pessoa jurídica com papel Corretor ativo.</summary>
+/// <summary>
+/// RN-019 — cria a Corretora na confirmação: garante a Pessoa jurídica (importando do Birô quando
+/// nova), adiciona o papel Corretor com a situação escolhida e grava os dados complementares. A
+/// consulta prévia do CNPJ é somente leitura (RN-052) — nada é gravado antes desta confirmação.
+/// </summary>
 public sealed class CreateBrokerageUseCase(
     IPersonRepository personRepository,
     IPersonBureauImporter personBureauImporter,
@@ -28,40 +31,37 @@ public sealed class CreateBrokerageUseCase(
         var existing = await personRepository.GetTrackedByDocumentNumberAsync(cnpj, cancellationToken);
         if (existing is not null)
         {
-            return await CreateFromExistingAsync(existing, cancellationToken);
+            // RN-019: Pessoa jurídica que já é Corretora não é recriada.
+            if (existing.GetRole(EPersonRole.Broker) is not null)
+            {
+                throw new ConflictException("Corretora já cadastrada.");
+            }
+
+            existing.SetUpBrokerage(
+                request.ActivateOnSave,
+                request.SocialName,
+                request.ContactEmail,
+                request.ContactPhone,
+                request.ResponsibleName);
+
+            await unitOfWork.CommitAsync(cancellationToken);
+            return await BuildResponseAsync(existing.Id, cancellationToken);
         }
 
         var imported = await personBureauImporter.ImportLegalPersonAsync(
-            cnpj, EPersonRole.Broker, cancellationToken);
-        if (imported is null)
-        {
-            throw new BusinessRuleException(NotFoundMessage);
-        }
+            cnpj, EPersonRole.Broker, assignRole: true, cancellationToken)
+            ?? throw new BusinessRuleException(NotFoundMessage);
+
+        imported.Person.SetUpBrokerage(
+            request.ActivateOnSave,
+            request.SocialName,
+            request.ContactEmail,
+            request.ContactPhone,
+            request.ResponsibleName);
 
         await personRepository.AddAsync(imported.Person, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
-
         return await BuildResponseAsync(imported.Person.Id, cancellationToken);
-    }
-
-    private async Task<CreateBrokerageResponse> CreateFromExistingAsync(
-        Person person,
-        CancellationToken cancellationToken)
-    {
-        if (person.Type != EPersonType.J)
-        {
-            throw new BusinessRuleException("A corretora deve ser uma Pessoa jurídica.");
-        }
-
-        if (person.GetRole(EPersonRole.Broker) is not null)
-        {
-            throw new ConflictException("Corretora já cadastrada.");
-        }
-
-        person.AssignRole(EPersonRole.Broker);
-        await unitOfWork.CommitAsync(cancellationToken);
-
-        return await BuildResponseAsync(person.Id, cancellationToken);
     }
 
     private async Task<CreateBrokerageResponse> BuildResponseAsync(
@@ -71,24 +71,6 @@ public sealed class CreateBrokerageUseCase(
         var brokerage = await personRepository.GetBrokerageByIdAsync(personId, cancellationToken)
             ?? throw new NotFoundException("Corretora não encontrada.");
 
-        return new CreateBrokerageResponse(
-            brokerage.Id,
-            brokerage.DocumentNumber,
-            brokerage.Name,
-            brokerage.SocialName,
-            brokerage.LegalNatureCode,
-            brokerage.LegalNatureDescription,
-            brokerage.IsPrivateSector,
-            brokerage.Status,
-            brokerage.MainAddress is null
-                ? null
-                : new ImportedBrokerageAddressResponse(
-                    brokerage.MainAddress.ZipCode,
-                    brokerage.MainAddress.Street,
-                    brokerage.MainAddress.Number,
-                    brokerage.MainAddress.Complement,
-                    brokerage.MainAddress.Neighborhood,
-                    brokerage.MainAddress.City,
-                    brokerage.MainAddress.State));
+        return CreateBrokerageResponse.From(brokerage);
     }
 }

@@ -16,6 +16,7 @@ Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de enti
 | **Apólice** | `Policy` | O documento emitido pela seguradora | 0..1 por proposta | — |
 | **Seguradora** | `Insurer` | Quem precifica e emite. A OnPoint é um *hub* de seguradoras, não uma seguradora | — | — |
 | **Corretora / Corretor** | `Brokerage` / `Broker` | A empresa cliente da plataforma / o usuário dela | — | — |
+| **Dados de contato da Corretora** | `ContactEmail` / `ContactPhone` / `ResponsibleName` | E-mail, telefone e responsável informados como cadastro complementar da Corretora, no vínculo de papel Corretor; opcionais (ratificado por Diego Estácho no lugar da PO em 2026-07-25 — registrar confirmação da PO) | 0..1 cada por Corretora | dados da Pessoa (razão social, endereço principal, Natureza Jurídica) |
 | **Usuário** | `User` | Pessoa que acessa a plataforma, com identidade mantida no provedor de identidade (ratificado pela PO em 2026-07-15) | — | a Corretora (empresa) |
 | **Provedor de identidade** | `IdentityProvider` | Serviço externo que guarda credenciais e autentica os Usuários da plataforma (ratificado pela PO em 2026-07-15) | — | — |
 | **Birô** | `Bureau` | Serviço externo que fornece dados cadastrais públicos de pessoa ou empresa a partir do CPF/CNPJ (ratificado pela PO em 2026-07-15) | — | fonte interna de dados; a seguradora |
@@ -87,6 +88,8 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 |---|---|---|---|
 | **Ativa** | `Active` | Corretora habilitada no cadastro de Corretoras | Ativa → Inativa (RN-021) |
 | **Inativa** | `Inactive` | Corretora mantida no cadastro de Corretoras sem bloqueio automático em outros fluxos nesta fase | Inativa → Ativa (RN-021) |
+
+> **Situação apresentada (derivada — RN-053, 2026-07-25).** Além do status armazenado Ativa/Inativa acima, a plataforma apresenta a Corretora como **Incompleta** quando ela está Ativa mas falta nome fantasia ou e-mail de contato. É um valor **derivado no servidor** para exibição, contagem e filtro — não é status novo e não cria transição na máquina de estados. Nome estável na API: `Active` / `Incomplete` / `Inactive`. Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO).
 
 ### Modalidade e Modalidade Importada (proposto/revisto em 2026-07-22 — aguardando ratificação da PO)
 
