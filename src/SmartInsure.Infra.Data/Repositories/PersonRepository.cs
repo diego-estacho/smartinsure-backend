@@ -123,9 +123,13 @@ public sealed class PersonRepository(SmartInsureDbContext context)
         var totalCount = await filtered.LongCountAsync(cancellationToken);
 
         // Página: projeta os campos crus (a situação é resolvida em memória pela regra única, RN-053).
+        // RN-018: ordena por data de cadastro (criação do papel Corretor) decrescente — as últimas
+        // Corretoras cadastradas aparecem primeiro; Id (UUIDv7, monotônico) desempata.
         var pageRows = await filtered
-            .OrderBy(person => person.Name)
-            .ThenBy(person => person.Id)
+            .OrderByDescending(person => person.Roles
+                .Where(role => role.Role == EPersonRole.Broker)
+                .Max(role => role.CreatedAt))
+            .ThenByDescending(person => person.Id)
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
             .Select(person => new
