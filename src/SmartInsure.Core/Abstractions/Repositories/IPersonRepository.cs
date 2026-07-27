@@ -25,6 +25,9 @@ public interface IPersonRepository : IRepository<Person>
     Task<Person?> GetTrackedByDocumentNumberAsync(
         string documentNumber, CancellationToken cancellationToken);
 
+    /// <summary>Pessoa por id com os Papéis carregados, para conferir o Papel exigido (RN-013/RN-017).</summary>
+    Task<Person?> GetByIdWithRolesAsync(Guid id, CancellationToken cancellationToken);
+
     /// <summary>
     /// RN-018: lista Pessoas jurídicas com Papel da Pessoa de corretor, com busca, filtros
     /// combinados (situação, seguradora, motor, setor, período) e contagem por situação — tudo no servidor.

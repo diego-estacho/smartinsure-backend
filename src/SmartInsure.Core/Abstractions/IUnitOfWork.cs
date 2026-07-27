@@ -9,4 +9,11 @@ public interface IUnitOfWork
     Task<int> CommitAsync(CancellationToken cancellationToken);
 
     Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Descarta as mudanças ainda rastreadas pelo ChangeTracker sem persistir. Usado no isolamento
+    /// por unidade (RN-038): após um rollback, garante que mudanças parciais não vazem para a próxima
+    /// unidade que compartilha o mesmo DbContext escopado.
+    /// </summary>
+    void DiscardChanges();
 }

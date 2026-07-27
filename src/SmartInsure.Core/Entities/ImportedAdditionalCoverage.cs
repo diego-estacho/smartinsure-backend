@@ -78,8 +78,12 @@ public sealed class ImportedAdditionalCoverage : EntityBase
     /// <summary>RN-043: o Administrador desfaz o vínculo — a importada volta a pendente de mapeamento.</summary>
     public void Unlink() => AdditionalCoverageId = null;
 
-    /// <summary>RN-043: o Administrador ignora uma importada que não deve ser mapeada — sai das pendências.</summary>
-    public void Ignore() => IsIgnored = true;
+    /// <summary>RN-043: o Administrador ignora uma importada que não deve ser mapeada — sai das pendências e desfaz o vínculo.</summary>
+    public void Ignore()
+    {
+        IsIgnored = true;
+        AdditionalCoverageId = null;
+    }
 
     /// <summary>RN-043: reavaliar uma importada antes Ignorada — volta a poder ser pendente/mapeada.</summary>
     public void Restore() => IsIgnored = false;

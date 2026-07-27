@@ -1,4 +1,5 @@
 using Carter;
+using FluentValidation;
 using SmartInsure.Api.Handlers.Base;
 using SmartInsure.Application.UseCase.UseCases.AdditionalCoverageUseCases.ActivateAdditionalCoverage.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.AdditionalCoverageUseCases.ActivateAdditionalCoverage.Requests;
@@ -38,7 +39,7 @@ public sealed class AdditionalCoveragesEndpoint : CarterModule
 
         app.MapPost("/", CreateAsync)
             .RequireAuthorization(Policies.SystemAdministrator)
-            .Produces<CreateAdditionalCoverageResponse>(StatusCodes.Status200OK);
+            .Produces<CreateAdditionalCoverageResponse>(StatusCodes.Status201Created);
 
         app.MapPut("/{id:guid}", UpdateAsync)
             .RequireAuthorization(Policies.SystemAdministrator)
@@ -61,16 +62,27 @@ public sealed class AdditionalCoveragesEndpoint : CarterModule
         HttpContext httpContext,
         RequestHandler handler,
         ICreateAdditionalCoverageUseCase useCase,
+        IValidator<CreateAdditionalCoverageRequest> validator,
         AdditionalCoverageNameBody body)
-        => await handler.TryHandleAsync(httpContext, useCase, new CreateAdditionalCoverageRequest(body.Name));
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new CreateAdditionalCoverageRequest(body.Name),
+            validator,
+            response => Results.Created($"/api/v1/additional-coverages/{response.Id}", response));
 
     private static async Task<IResult> UpdateAsync(
         HttpContext httpContext,
         RequestHandler handler,
         IUpdateAdditionalCoverageUseCase useCase,
+        IValidator<UpdateAdditionalCoverageRequest> validator,
         Guid id,
         AdditionalCoverageNameBody body)
-        => await handler.TryHandleAsync(httpContext, useCase, new UpdateAdditionalCoverageRequest(id, body.Name));
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new UpdateAdditionalCoverageRequest(id, body.Name),
+            validator);
 
     private static async Task<IResult> ActivateAsync(
         HttpContext httpContext, RequestHandler handler, IActivateAdditionalCoverageUseCase useCase, Guid id)

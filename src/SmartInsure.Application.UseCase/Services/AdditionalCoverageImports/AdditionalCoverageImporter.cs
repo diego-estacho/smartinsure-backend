@@ -48,7 +48,26 @@ public sealed class AdditionalCoverageImporter(
 
             var modalities = await importedModalityRepository.ListImportableForCoverageAsync(
                 enablement.InsurerId, cancellationToken);
-            var engine = ResolveEngine(enablement.CalculationEngine);
+
+            // RN-045: a resolução do Motor de Cálculo fica dentro do isolamento por Seguradora —
+            // um CalculationEngine inválido isola a Seguradora (todas as suas modalidades falham) e
+            // segue para a próxima, sem abortar a execução inteira (espelha o ModalityImporter).
+            ICalculationEngine engine;
+            try
+            {
+                engine = ResolveEngine(enablement.CalculationEngine);
+            }
+            catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+            {
+                foreach (var _ in modalities)
+                {
+                    processed++;
+                    failed++;
+                }
+
+                failures.Add($"Seguradora {enablement.InsurerId}: {exception.Message}");
+                continue;
+            }
 
             foreach (var modality in modalities)
             {
@@ -82,14 +101,21 @@ public sealed class AdditionalCoverageImporter(
                     continue;
                 }
 
+                // RN-045: cada modalidade em sua própria transação — uma falha faz rollback e descarta
+                // as mudanças rastreadas, evitando que mudanças parciais vazem para a próxima modalidade
+                // (o DbContext escopado é compartilhado por toda a execução).
+                await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
                 try
                 {
                     await UpsertAndReconcileAsync(modality, result, nowUtc, cancellationToken);
                     await unitOfWork.CommitAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
                     succeeded++;
                 }
                 catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
                 {
+                    await transaction.RollbackAsync(cancellationToken);
+                    unitOfWork.DiscardChanges();
                     failed++;
                     failures.Add($"Modalidade {modality.ModalityName}: {exception.Message}");
                 }

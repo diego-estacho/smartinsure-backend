@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using SmartInsure.Core.Abstractions.Services;
+using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Integration.CalculationEngines.PlugV2;
 
@@ -29,6 +30,13 @@ public sealed class PlugV2ModalityImportClient(IHttpClientFactory httpClientFact
         request.Content = JsonContent.Create(new { BrokerCnpj = brokerCnpj }, options: BodyOptions);
 
         using var response = await client.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new CalculationEngineException(
+                $"PlugV2 GetGroupAndModalities retornou status {response.StatusCode} para a corretora {brokerCnpj}.");
+        }
+
         var raw = await response.Content.ReadAsStringAsync(cancellationToken);
 
         var (result, envelopeError, errorMessage) = PlugV2ModalityAclMapper.Map(raw);
