@@ -73,4 +73,5 @@ public sealed record BrokeragePreviewDto(
     string? LegalNatureName,
     bool? IsPrivateSector,
     bool HasBrokerRole,
-    PersonMainAddressDto? MainAddress);
+    PersonMainAddressDto? MainAddress,
+    DateTime LastUpdatedAt);

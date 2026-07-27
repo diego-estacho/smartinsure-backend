@@ -8,6 +8,7 @@ public interface IPersonBureauImporter
     Task<PersonBureauImport?> ImportLegalPersonAsync(
         string cnpj,
         EPersonRole role,
+        bool assignRole,
         CancellationToken cancellationToken);
 }
 

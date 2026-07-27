@@ -49,7 +49,7 @@ public sealed class CreateBrokerageUseCase(
         }
 
         var imported = await personBureauImporter.ImportLegalPersonAsync(
-            cnpj, EPersonRole.Broker, cancellationToken)
+            cnpj, EPersonRole.Broker, assignRole: true, cancellationToken)
             ?? throw new BusinessRuleException(NotFoundMessage);
 
         imported.Person.SetUpBrokerage(

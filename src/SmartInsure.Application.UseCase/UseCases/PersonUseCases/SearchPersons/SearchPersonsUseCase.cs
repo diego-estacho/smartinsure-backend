@@ -126,7 +126,7 @@ public sealed class SearchPersonsUseCase(
         CancellationToken cancellationToken)
     {
         var imported = await personBureauImporter.ImportLegalPersonAsync(
-            cnpj, role, cancellationToken);
+            cnpj, role, assignRole: true, cancellationToken);
         if (imported is null)
         {
             return null;

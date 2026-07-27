@@ -3,6 +3,7 @@ using NSubstitute;
 using SmartInsure.Application.UseCase.Services.PersonImports;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.PreviewBrokerageByCnpj;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.PreviewBrokerageByCnpj.Requests;
+using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Entities;
@@ -11,7 +12,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.BrokerageUseCases.PreviewBrokerageByCnpj;
 
-/// <summary>RN-052 — Consulta de CNPJ para cadastro de Corretora (somente leitura).</summary>
+/// <summary>RN-052 (revisada) — Consulta de CNPJ para cadastro de Corretora.</summary>
 [Trait("RuleId", "RN-052")]
 public class PreviewBrokerageByCnpjUseCaseTests
 {
@@ -19,17 +20,18 @@ public class PreviewBrokerageByCnpjUseCaseTests
 
     private readonly IPersonRepository _repository = Substitute.For<IPersonRepository>();
     private readonly IPersonBureauImporter _importer = Substitute.For<IPersonBureauImporter>();
+    private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly PreviewBrokerageByCnpjUseCase _useCase;
 
     public PreviewBrokerageByCnpjUseCaseTests()
-        => _useCase = new PreviewBrokerageByCnpjUseCase(_repository, _importer);
+        => _useCase = new PreviewBrokerageByCnpjUseCase(_repository, _importer, _unitOfWork);
 
     [Fact]
-    public async Task Execute_NaoDeveGravarNada_QuandoConsultaCnpjNovo()
+    public async Task Execute_DevePersistirPjSemPapel_QuandoConsultaCnpjNovo()
     {
         _repository.FindBrokeragePreviewByDocumentAsync(Cnpj, Arg.Any<CancellationToken>())
             .Returns((BrokeragePreviewDto?)null);
-        _importer.ImportLegalPersonAsync(Cnpj, EPersonRole.Broker, Arg.Any<CancellationToken>())
+        _importer.ImportLegalPersonAsync(Cnpj, EPersonRole.Broker, Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(ImportedFrom(Cnpj));
 
         var response = await _useCase.ExecuteAsync(
@@ -38,8 +40,10 @@ public class PreviewBrokerageByCnpjUseCaseTests
         response.Name.Should().Be("Alfa Ltda");
         response.LegalNatureName.Should().Be("Sociedade Empresária Limitada");
         response.AlreadyRegistered.Should().BeFalse();
-        // RN-052: a consulta é somente leitura — nada é gravado.
-        await _repository.DidNotReceiveWithAnyArgs().AddAsync(default!, default);
+        response.ExistingBrokerageId.Should().BeNull();
+        // RN-052 revisada: a PJ é persistida (sem papel Corretor) para reuso da próxima consulta.
+        await _repository.Received(1).AddAsync(Arg.Any<Person>(), Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -47,17 +51,54 @@ public class PreviewBrokerageByCnpjUseCaseTests
     {
         var brokerageId = Guid.NewGuid();
         _repository.FindBrokeragePreviewByDocumentAsync(Cnpj, Arg.Any<CancellationToken>())
-            .Returns(new BrokeragePreviewDto(
-                brokerageId, Cnpj, "Alfa Ltda", "Alfa", "2062", "Sociedade Empresária Limitada",
-                true, HasBrokerRole: true, null));
+            .Returns(PreviewDto(brokerageId, hasBrokerRole: true, DateTime.UtcNow));
 
         var response = await _useCase.ExecuteAsync(
             new PreviewBrokerageByCnpjRequest(Cnpj), CancellationToken.None);
 
         response.AlreadyRegistered.Should().BeTrue();
         response.ExistingBrokerageId.Should().Be(brokerageId);
-        await _importer.DidNotReceiveWithAnyArgs().ImportLegalPersonAsync(default!, default, default);
+        await _importer.DidNotReceiveWithAnyArgs()
+            .ImportLegalPersonAsync(default!, default, default, default);
         await _repository.DidNotReceiveWithAnyArgs().AddAsync(default!, default);
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
+    }
+
+    [Fact]
+    public async Task Execute_DeveReusarDaBase_QuandoCacheRecenteSemPapel()
+    {
+        _repository.FindBrokeragePreviewByDocumentAsync(Cnpj, Arg.Any<CancellationToken>())
+            .Returns(PreviewDto(Guid.NewGuid(), hasBrokerRole: false, DateTime.UtcNow));
+
+        var response = await _useCase.ExecuteAsync(
+            new PreviewBrokerageByCnpjRequest(Cnpj), CancellationToken.None);
+
+        response.AlreadyRegistered.Should().BeFalse();
+        response.ExistingBrokerageId.Should().BeNull();
+        // RN-014: cache fresco reaproveitado sem novo custo de Birô e sem gravar.
+        await _importer.DidNotReceiveWithAnyArgs()
+            .ImportLegalPersonAsync(default!, default, default, default);
+        await _repository.DidNotReceiveWithAnyArgs().AddAsync(default!, default);
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
+    }
+
+    [Fact]
+    public async Task Execute_DeveReconsultarBiroSemGravar_QuandoCacheVencidoSemPapel()
+    {
+        _repository.FindBrokeragePreviewByDocumentAsync(Cnpj, Arg.Any<CancellationToken>())
+            .Returns(PreviewDto(Guid.NewGuid(), hasBrokerRole: false, DateTime.UtcNow.AddDays(-100)));
+        _importer.ImportLegalPersonAsync(Cnpj, EPersonRole.Broker, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(ImportedFrom(Cnpj));
+
+        var response = await _useCase.ExecuteAsync(
+            new PreviewBrokerageByCnpjRequest(Cnpj), CancellationToken.None);
+
+        response.AlreadyRegistered.Should().BeFalse();
+        // RN-014: após 90 dias reconsulta o Birô só para exibir; nada é gravado.
+        await _importer.ReceivedWithAnyArgs(1)
+            .ImportLegalPersonAsync(default!, default, default, default);
+        await _repository.DidNotReceiveWithAnyArgs().AddAsync(default!, default);
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
     }
 
     [Fact]
@@ -65,7 +106,7 @@ public class PreviewBrokerageByCnpjUseCaseTests
     {
         _repository.FindBrokeragePreviewByDocumentAsync(Cnpj, Arg.Any<CancellationToken>())
             .Returns((BrokeragePreviewDto?)null);
-        _importer.ImportLegalPersonAsync(Cnpj, EPersonRole.Broker, Arg.Any<CancellationToken>())
+        _importer.ImportLegalPersonAsync(Cnpj, EPersonRole.Broker, Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns((PersonBureauImport?)null);
 
         var action = () => _useCase.ExecuteAsync(
@@ -73,7 +114,13 @@ public class PreviewBrokerageByCnpjUseCaseTests
 
         await action.Should().ThrowAsync<BusinessRuleException>();
         await _repository.DidNotReceiveWithAnyArgs().AddAsync(default!, default);
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
     }
+
+    private static BrokeragePreviewDto PreviewDto(Guid personId, bool hasBrokerRole, DateTime lastUpdatedAt)
+        => new(
+            personId, Cnpj, "Alfa Ltda", "Alfa", "2062", "Sociedade Empresária Limitada",
+            true, hasBrokerRole, null, lastUpdatedAt);
 
     private static PersonBureauImport ImportedFrom(string cnpj)
     {

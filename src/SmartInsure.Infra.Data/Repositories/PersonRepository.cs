@@ -361,7 +361,8 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                         address.Neighborhood,
                         address.City,
                         address.State))
-                    .FirstOrDefault()))
+                    .FirstOrDefault(),
+                person.UpdatedAt ?? person.CreatedAt))
             .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<(IReadOnlyList<PolicyHolderListItemDto> Items, long TotalCount)> ListPolicyHoldersAsync(
