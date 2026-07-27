@@ -26,7 +26,7 @@ public static class PlugV2ModalityObjectAclMapper
             return new ModalityObjectResult(true, null, null, []);
         }
 
-        if (envelope is null || envelope.HasError || envelope.Response is null)
+        if (envelope is null || envelope.HasError || envelope.StatusCode != 200 || envelope.Response is null)
         {
             return new ModalityObjectResult(true, null, null, []);
         }

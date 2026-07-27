@@ -27,11 +27,27 @@ public sealed class UpdateQuotationGroupUseCase(
         var group = await quotationGroupRepository.GetByIdWithInsurersAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Grupo de cotação não encontrado.");
 
-        _ = await personRepository.GetByIdAsync(request.PolicyHolderId, cancellationToken)
+        // RN-051: só se atualiza enquanto Rascunho; qualquer outro estado é conflito.
+        if (group.Status != EQuotationGroupStatus.Draft)
+        {
+            throw new ConflictException("O grupo de cotação só pode ser atualizado enquanto está em Rascunho.");
+        }
+
+        var policyHolder = await personRepository.GetByIdWithRolesAsync(request.PolicyHolderId, cancellationToken)
             ?? throw new NotFoundException("Tomador não encontrado.");
 
-        _ = await personRepository.GetByIdAsync(request.InsuredId, cancellationToken)
+        if (policyHolder.GetRole(EPersonRole.PolicyHolder) is null)
+        {
+            throw new NotFoundException("Tomador não encontrado.");
+        }
+
+        var insured = await personRepository.GetByIdWithRolesAsync(request.InsuredId, cancellationToken)
             ?? throw new NotFoundException("Segurado não encontrado.");
+
+        if (insured.GetRole(EPersonRole.Insured) is null)
+        {
+            throw new NotFoundException("Segurado não encontrado.");
+        }
 
         _ = await modalityRepository.GetByIdAsync(request.ModalityId, cancellationToken)
             ?? throw new NotFoundException("Modalidade não encontrada.");

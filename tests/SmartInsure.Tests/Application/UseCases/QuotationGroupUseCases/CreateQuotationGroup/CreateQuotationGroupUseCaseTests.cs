@@ -39,8 +39,13 @@ public class CreateQuotationGroupUseCaseTests
 
     private void SetupValidReferences()
     {
-        _personRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns(Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid()));
+        // RN-050: Tomador precisa ter o papel PolicyHolder e Segurado o papel Insured. A mesma pessoa
+        // acumula os dois papéis (RN-017), então serve para as duas checagens do caso de uso.
+        var person = Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid());
+        person.AssignRole(EPersonRole.PolicyHolder);
+        person.AssignRole(EPersonRole.Insured);
+        _personRepository.GetByIdWithRolesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(person);
         _modalityRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(Modality.CreateManual("Garantia de Execução", null, EModalityStatus.Active));
     }
@@ -81,7 +86,7 @@ public class CreateQuotationGroupUseCaseTests
     [Fact]
     public async Task Execute_DeveRecusar_QuandoTomadorNaoEncontrado()
     {
-        // Sem setup do personRepository: GetByIdAsync devolve null e o tomador (checado primeiro) falta.
+        // Sem setup do personRepository: GetByIdWithRolesAsync devolve null e o tomador (checado primeiro) falta.
         var act = () => _useCase.ExecuteAsync(ValidRequest(), CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
@@ -91,8 +96,11 @@ public class CreateQuotationGroupUseCaseTests
     [Fact]
     public async Task Execute_DeveRecusar_QuandoModalidadeNaoEncontrada()
     {
-        _personRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns(Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid()));
+        var person = Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid());
+        person.AssignRole(EPersonRole.PolicyHolder);
+        person.AssignRole(EPersonRole.Insured);
+        _personRepository.GetByIdWithRolesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(person);
         // modalityRepository sem setup → GetByIdAsync devolve null → modalidade não encontrada.
 
         var act = () => _useCase.ExecuteAsync(ValidRequest(), CancellationToken.None);

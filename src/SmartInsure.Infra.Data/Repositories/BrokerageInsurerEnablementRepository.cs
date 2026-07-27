@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Repositories.Dtos;
-using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Infra.Data.Context;

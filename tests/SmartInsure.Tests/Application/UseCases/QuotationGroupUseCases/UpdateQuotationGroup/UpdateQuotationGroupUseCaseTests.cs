@@ -34,8 +34,13 @@ public class UpdateQuotationGroupUseCaseTests
 
     private void SetupValidReferences()
     {
-        _personRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns(Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid()));
+        // RN-051: Tomador precisa ter o papel PolicyHolder e Segurado o papel Insured. A mesma pessoa
+        // acumula os dois papéis (RN-017), então serve para as duas checagens do caso de uso.
+        var person = Person.Create("11444777000161", "Alfa Ltda", null, Guid.NewGuid());
+        person.AssignRole(EPersonRole.PolicyHolder);
+        person.AssignRole(EPersonRole.Insured);
+        _personRepository.GetByIdWithRolesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(person);
         _modalityRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(Modality.CreateManual("Garantia de Execução", null, EModalityStatus.Active));
     }
@@ -88,7 +93,7 @@ public class UpdateQuotationGroupUseCaseTests
         var group = ExistingDraft();
         _quotationGroupRepository.GetByIdWithInsurersAsync(group.Id, Arg.Any<CancellationToken>())
             .Returns(group);
-        // personRepository sem setup → GetByIdAsync devolve null → tomador não encontrado.
+        // personRepository sem setup → GetByIdWithRolesAsync devolve null → tomador não encontrado.
 
         var request = new UpdateQuotationGroupRequest(
             group.Id, Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),

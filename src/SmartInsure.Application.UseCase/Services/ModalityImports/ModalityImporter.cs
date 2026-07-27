@@ -30,13 +30,23 @@ public sealed class ModalityImporter(
     {
         var enablements = await enablementRepository.ListActiveForImportAsync(cancellationToken);
 
-        var processedInsurers = new HashSet<Guid>();
-        var failures = new List<string>();
-        int processed = 0, succeeded = 0, failed = 0;
+        // RN-038: contagem por Seguradora deduplicada, com "sucesso vence". Uma Seguradora habilitada
+        // por várias Corretoras é contada no máximo uma vez no total; se falha por uma Corretora mas
+        // depois tem sucesso por outra, conta como sucesso (não duas vezes). Por isso o desfecho é
+        // resolvido ao final, e não incrementando contadores inline.
+        var succeededInsurers = new HashSet<Guid>();
+        var failedInsurers = new Dictionary<Guid, string>();
+
+        // Detalhe auditável de nível de objeto (Tag/Cláusulas) por Modalidade — independe do desfecho
+        // da Seguradora e é sempre preservado (RN-047/048/049).
+        var objectFailures = new List<string>();
 
         // Cache de Modalidades por id global, ao longo de toda a execução: uma Modalidade Global é
         // compartilhada entre Seguradoras e o find-or-create por consulta não enxerga o que ainda
         // não foi commitado — sem o cache criaria Modalidades duplicadas para o mesmo id global.
+        // Só recebe Modalidades APÓS o commit bem-sucedido da Seguradora que as criou (ver ImportInsurerAsync):
+        // do contrário uma Seguradora cujo commit falhou deixaria no cache uma Modalidade não commitada
+        // que outra Seguradora reusaria (ghost-create).
         var modalityCache = new Dictionary<string, Modality>();
 
         foreach (var broker in enablements.GroupBy(enablement => enablement.BrokerageId))
@@ -63,33 +73,35 @@ public sealed class ModalityImporter(
             }
             catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
             {
-                // RN-038: falha da Corretora não desativa nada e não afeta as demais.
-                foreach (var _ in insurerByReference)
+                // RN-038: falha da Corretora não desativa nada e não afeta as demais. Marca a falha de
+                // cada Seguradora desta Corretora como PROVISÓRIA — outra Corretora ainda pode ter sucesso
+                // e o "sucesso vence" na resolução final. Não conta inline (evita a dupla contagem).
+                foreach (var insurerId in insurerByReference.Values)
                 {
-                    processed++;
-                    failed++;
+                    if (!succeededInsurers.Contains(insurerId))
+                    {
+                        failedInsurers[insurerId] = $"Corretora {brokerCnpj}: {exception.Message}";
+                    }
                 }
 
-                failures.Add($"Corretora {brokerCnpj}: {exception.Message}");
                 continue;
             }
 
             foreach (var insurerCatalog in catalog.Insurers)
             {
                 if (!insurerByReference.TryGetValue(insurerCatalog.InsuranceReferenceExternalId, out var insurerId)
-                    || !processedInsurers.Add(insurerId))
+                    || succeededInsurers.Contains(insurerId))
                 {
-                    // Seguradora sem Habilitação Ativa conhecida, ou já processada por outra Corretora (dedup).
+                    // Seguradora sem Habilitação Ativa conhecida, ou já importada com sucesso por outra
+                    // Corretora (dedup — sucesso é terminal, não reprocessa).
                     continue;
                 }
 
-                processed++;
-
                 if (!insurerCatalog.IsSuccess)
                 {
-                    // RN-038: falha da Seguradora não desativa nada dela.
-                    failed++;
-                    failures.Add($"Seguradora {insurerCatalog.InsuranceName} ({brokerCnpj}): falha na origem (IsSuccess=false).");
+                    // RN-038: falha da Seguradora não desativa nada dela. Provisória até a resolução final.
+                    failedInsurers[insurerId] =
+                        $"Seguradora {insurerCatalog.InsuranceName} ({brokerCnpj}): falha na origem (IsSuccess=false).";
                     continue;
                 }
 
@@ -97,17 +109,27 @@ public sealed class ModalityImporter(
                 {
                     await ImportInsurerAsync(
                         insurerId, insurerCatalog, modalityCache, engine,
-                        connection.ConnectionParameters, brokerCnpj, failures, nowUtc, cancellationToken);
-                    await unitOfWork.CommitAsync(cancellationToken);
-                    succeeded++;
+                        connection.ConnectionParameters, brokerCnpj, objectFailures, nowUtc, cancellationToken);
+                    // Sucesso é terminal e vence qualquer falha provisória anterior desta Seguradora.
+                    succeededInsurers.Add(insurerId);
+                    failedInsurers.Remove(insurerId);
                 }
                 catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
                 {
-                    failed++;
-                    failures.Add($"Seguradora {insurerCatalog.InsuranceName}: {exception.Message}");
+                    failedInsurers[insurerId] = $"Seguradora {insurerCatalog.InsuranceName}: {exception.Message}";
                 }
             }
         }
+
+        // Resolução final (RN-038): cada Seguradora contada uma única vez; falhas provisórias que nunca
+        // tiveram sucesso viram falha terminal. Ordem das mensagens: detalhe de objeto primeiro, depois
+        // as falhas de Seguradora terminais.
+        var succeeded = succeededInsurers.Count;
+        var failed = failedInsurers.Count;
+        var processed = succeeded + failed;
+
+        var failures = new List<string>(objectFailures);
+        failures.AddRange(failedInsurers.Values);
 
         return new ModalityImportSummary(processed, succeeded, failed, failures);
     }
@@ -123,46 +145,75 @@ public sealed class ModalityImporter(
         DateTime nowUtc,
         CancellationToken cancellationToken)
     {
-        var seenSourceIds = new HashSet<string>();
-        // Cache in-batch: várias modalidades compartilham o mesmo Grupo Importado e o upsert por
-        // consulta não enxerga o que ainda não foi commitado — sem o cache criaria grupos duplicados.
-        var groupCache = new Dictionary<string, ImportedGroup>();
-        var importedThisRun = new List<ImportedModality>();
+        // RN-038: cada Seguradora em sua própria transação. Uma falha faz rollback E descarta as
+        // mudanças rastreadas, para que mudanças parciais desta Seguradora não vazem para a próxima
+        // (o DbContext escopado é compartilhado por toda a execução).
+        await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        foreach (var data in insurerCatalog.Modalities)
+        // Modalidades Globais criadas DURANTE esta Seguradora ficam num cache local até o commit —
+        // só depois entram no cache compartilhado (evita ghost-create: uma Seguradora cujo commit
+        // falhou não deixa no cache compartilhado uma Modalidade não commitada que outra reusaria).
+        var pendingModalities = new Dictionary<string, Modality>();
+
+        try
         {
-            // Duplicata do mesmo identificador de origem no retorno: a primeira ocorrência vence.
-            if (!seenSourceIds.Add(data.SourceId))
+            var seenSourceIds = new HashSet<string>();
+            // Cache in-batch: várias modalidades compartilham o mesmo Grupo Importado e o upsert por
+            // consulta não enxerga o que ainda não foi commitado — sem o cache criaria grupos duplicados.
+            var groupCache = new Dictionary<string, ImportedGroup>();
+            var importedThisRun = new List<ImportedModality>();
+
+            foreach (var data in insurerCatalog.Modalities)
             {
-                continue;
+                // Duplicata do mesmo identificador de origem no retorno: a primeira ocorrência vence.
+                if (!seenSourceIds.Add(data.SourceId))
+                {
+                    continue;
+                }
+
+                var importedGroupId = await UpsertGroupAsync(insurerId, data, groupCache, cancellationToken);
+                var imported = await UpsertModalityAsync(insurerId, data, importedGroupId, nowUtc, cancellationToken);
+                await LinkToModalityAsync(imported, data, modalityCache, pendingModalities, cancellationToken);
+                importedThisRun.Add(imported);
             }
 
-            var importedGroupId = await UpsertGroupAsync(insurerId, data, groupCache, cancellationToken);
-            var imported = await UpsertModalityAsync(insurerId, data, importedGroupId, nowUtc, cancellationToken);
-            await LinkToModalityAsync(imported, data, modalityCache, cancellationToken);
-            importedThisRun.Add(imported);
+            // RN-038: Modalidades Importadas Ativas que não vieram nesta importação bem-sucedida são desativadas.
+            var active = await importedModalityRepository.ListActiveByInsurerAsync(insurerId, cancellationToken);
+            var deactivated = active.Where(modality => !seenSourceIds.Contains(modality.SourceId)).ToList();
+
+            foreach (var modality in deactivated)
+            {
+                modality.Deactivate();
+            }
+
+            // RN-047/048/049: objeto da modalidade (Tag + Cláusulas) por Modalidade Importada Ativa desta execução.
+            foreach (var imported in importedThisRun)
+            {
+                await ImportModalityObjectAsync(
+                    imported, engine, connectionParameters, brokerCnpj, insurerCatalog.InsuranceName, failures, cancellationToken);
+            }
+
+            // RN-049: Modalidade desativada pela reconciliação → inativa sua Tag e Cláusulas.
+            foreach (var imported in deactivated)
+            {
+                await DeactivateModalityObjectAsync(imported, cancellationToken);
+            }
+
+            await unitOfWork.CommitAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            // Commit bem-sucedido: só agora as Modalidades Globais criadas passam ao cache compartilhado
+            // (find-or-create para as próximas Seguradoras).
+            foreach (var (globalId, modality) in pendingModalities)
+            {
+                modalityCache[globalId] = modality;
+            }
         }
-
-        // RN-038: Modalidades Importadas Ativas que não vieram nesta importação bem-sucedida são desativadas.
-        var active = await importedModalityRepository.ListActiveByInsurerAsync(insurerId, cancellationToken);
-        var deactivated = active.Where(modality => !seenSourceIds.Contains(modality.SourceId)).ToList();
-
-        foreach (var modality in deactivated)
+        catch
         {
-            modality.Deactivate();
-        }
-
-        // RN-047/048/049: objeto da modalidade (Tag + Cláusulas) por Modalidade Importada Ativa desta execução.
-        foreach (var imported in importedThisRun)
-        {
-            await ImportModalityObjectAsync(
-                imported, engine, connectionParameters, brokerCnpj, insurerCatalog.InsuranceName, failures, cancellationToken);
-        }
-
-        // RN-049: Modalidade desativada pela reconciliação → inativa sua Tag e Cláusulas.
-        foreach (var imported in deactivated)
-        {
-            await DeactivateModalityObjectAsync(imported, cancellationToken);
+            await transaction.RollbackAsync(cancellationToken);
+            unitOfWork.DiscardChanges();
+            throw;
         }
     }
 
@@ -226,6 +277,7 @@ public sealed class ModalityImporter(
         ImportedModality imported,
         ImportedModalityData data,
         Dictionary<string, Modality> modalityCache,
+        Dictionary<string, Modality> pendingModalities,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(data.EngineModalityId))
@@ -238,7 +290,7 @@ public sealed class ModalityImporter(
             : data.EngineModalityName;
 
         var modality = await FindOrCreateModalityAsync(
-            data.EngineModalityId, globalName, modalityCache, cancellationToken);
+            data.EngineModalityId, globalName, modalityCache, pendingModalities, cancellationToken);
 
         imported.LinkToModality(modality.Id, EModalityLinkSource.Automatic);
     }
@@ -247,17 +299,32 @@ public sealed class ModalityImporter(
         string globalModalityExternalId,
         string globalName,
         Dictionary<string, Modality> modalityCache,
+        Dictionary<string, Modality> pendingModalities,
         CancellationToken cancellationToken)
     {
+        // Cache compartilhado (Modalidades já commitadas por Seguradoras anteriores) ...
         if (modalityCache.TryGetValue(globalModalityExternalId, out var cached))
         {
             return cached;
         }
 
-        var modality = await modalityRepository.GetByGlobalExternalIdAsync(globalModalityExternalId, cancellationToken)
-            ?? await CreateModalityAsync(globalModalityExternalId, globalName, cancellationToken);
+        // ... e cache local desta Seguradora (Modalidades criadas neste run, ainda não commitadas):
+        // mantém o find-or-create dentro da mesma Seguradora sem publicar no cache compartilhado.
+        if (pendingModalities.TryGetValue(globalModalityExternalId, out var pending))
+        {
+            return pending;
+        }
 
-        modalityCache[globalModalityExternalId] = modality;
+        var existing = await modalityRepository.GetByGlobalExternalIdAsync(globalModalityExternalId, cancellationToken);
+        if (existing is not null)
+        {
+            // Já commitada no banco: pode ir direto ao cache compartilhado.
+            modalityCache[globalModalityExternalId] = existing;
+            return existing;
+        }
+
+        var modality = await CreateModalityAsync(globalModalityExternalId, globalName, cancellationToken);
+        pendingModalities[globalModalityExternalId] = modality;
         return modality;
     }
 

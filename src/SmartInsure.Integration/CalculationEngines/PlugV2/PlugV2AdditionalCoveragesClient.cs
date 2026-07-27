@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using SmartInsure.Core.Abstractions.Services;
+using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Integration.CalculationEngines.PlugV2;
 
@@ -42,6 +43,13 @@ public sealed class PlugV2AdditionalCoveragesClient(IHttpClientFactory httpClien
             options: BodyOptions);
 
         using var response = await client.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new CalculationEngineException(
+                $"PlugV2 GetAdditionalCoverages retornou status {response.StatusCode} para a modalidade {modalityName}.");
+        }
+
         var raw = await response.Content.ReadAsStringAsync(cancellationToken);
 
         return PlugV2AdditionalCoveragesAclMapper.Map(raw);

@@ -46,6 +46,11 @@ public sealed class PersonRepository(SmartInsureDbContext context)
             .FirstOrDefaultAsync(
                 person => person.DocumentNumber == documentNumber, cancellationToken);
 
+    public async Task<Person?> GetByIdWithRolesAsync(Guid id, CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .Include(person => person.Roles)
+            .FirstOrDefaultAsync(person => person.Id == id, cancellationToken);
+
     public async Task<(IReadOnlyList<BrokerageListItemDto> Items, long TotalCount)> ListBrokeragesAsync(
         int page,
         int pageSize,

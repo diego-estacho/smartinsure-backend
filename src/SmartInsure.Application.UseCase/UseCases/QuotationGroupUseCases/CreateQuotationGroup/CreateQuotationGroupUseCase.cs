@@ -25,11 +25,21 @@ public sealed class CreateQuotationGroupUseCase(
     {
         var scopeMode = ParseScopeMode(request.ScopeMode);
 
-        _ = await personRepository.GetByIdAsync(request.PolicyHolderId, cancellationToken)
+        var policyHolder = await personRepository.GetByIdWithRolesAsync(request.PolicyHolderId, cancellationToken)
             ?? throw new NotFoundException("Tomador não encontrado.");
 
-        _ = await personRepository.GetByIdAsync(request.InsuredId, cancellationToken)
+        if (policyHolder.GetRole(EPersonRole.PolicyHolder) is null)
+        {
+            throw new NotFoundException("Tomador não encontrado.");
+        }
+
+        var insured = await personRepository.GetByIdWithRolesAsync(request.InsuredId, cancellationToken)
             ?? throw new NotFoundException("Segurado não encontrado.");
+
+        if (insured.GetRole(EPersonRole.Insured) is null)
+        {
+            throw new NotFoundException("Segurado não encontrado.");
+        }
 
         _ = await modalityRepository.GetByIdAsync(request.ModalityId, cancellationToken)
             ?? throw new NotFoundException("Modalidade não encontrada.");

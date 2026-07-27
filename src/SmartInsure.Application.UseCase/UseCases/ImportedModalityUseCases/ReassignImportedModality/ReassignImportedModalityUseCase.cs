@@ -27,6 +27,10 @@ public sealed class ReassignImportedModalityUseCase(
             ?? throw new NotFoundException("Modalidade não encontrada no catálogo.");
 
         imported.LinkToModality(request.ModalityId, EModalityLinkSource.Manual);
+
+        // RN-037: reatribuir reavalia o item — se estava Ignorado, volta a ser visível no mapa e na fila.
+        imported.Restore();
+
         await unitOfWork.CommitAsync(cancellationToken);
 
         return new ReassignImportedModalityResponse(
