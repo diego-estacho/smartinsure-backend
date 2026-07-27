@@ -8,7 +8,12 @@ public interface IPersonBureauImporter
     Task<PersonBureauImport?> ImportLegalPersonAsync(
         string cnpj,
         EPersonRole role,
+        bool assignRole,
         CancellationToken cancellationToken);
 }
 
-public sealed record PersonBureauImport(Person Person, bool IsPrivateSector);
+public sealed record PersonBureauImport(
+    Person Person,
+    bool IsPrivateSector,
+    string? LegalNatureCode,
+    string? LegalNatureName);

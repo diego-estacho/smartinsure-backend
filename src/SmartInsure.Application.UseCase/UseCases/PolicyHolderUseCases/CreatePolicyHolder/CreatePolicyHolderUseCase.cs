@@ -38,7 +38,7 @@ public sealed class CreatePolicyHolderUseCase(
         }
 
         var imported = await personBureauImporter.ImportLegalPersonAsync(
-            headquartersCnpj, EPersonRole.PolicyHolder, cancellationToken);
+            headquartersCnpj, EPersonRole.PolicyHolder, assignRole: true, cancellationToken);
         if (imported is null)
         {
             throw new BusinessRuleException(NotFoundMessage);

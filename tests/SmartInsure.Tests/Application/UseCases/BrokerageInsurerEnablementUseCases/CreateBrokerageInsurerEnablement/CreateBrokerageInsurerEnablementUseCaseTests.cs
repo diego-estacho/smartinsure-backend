@@ -47,7 +47,7 @@ public class CreateBrokerageInsurerEnablementUseCaseTests
     {
         _personRepository.GetBrokerageByIdAsync(BrokerageId, Arg.Any<CancellationToken>())
             .Returns(new BrokerageDetailsDto(
-                BrokerageId, "12345678000195", "Corretora Alfa Ltda.", null, null, null, true, "Active", null));
+                BrokerageId, "12345678000195", "Corretora Alfa Ltda.", null, null, null, true, "Active", "Active", null, null, null, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), 0, null));
 
         _insurerRepository.GetByIdAsync(InsurerId, Arg.Any<CancellationToken>())
             .Returns(Insurer.Create(
@@ -102,7 +102,7 @@ public class CreateBrokerageInsurerEnablementUseCaseTests
     {
         _personRepository.GetBrokerageByIdAsync(BrokerageId, Arg.Any<CancellationToken>())
             .Returns(new BrokerageDetailsDto(
-                BrokerageId, "12345678000195", "Corretora Alfa Ltda.", null, null, null, true, "Active", null));
+                BrokerageId, "12345678000195", "Corretora Alfa Ltda.", null, null, null, true, "Active", "Active", null, null, null, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), 0, null));
         _insurerRepository.GetByIdAsync(InsurerId, Arg.Any<CancellationToken>())
             .Returns((Insurer?)null);
 
