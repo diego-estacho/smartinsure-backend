@@ -8,8 +8,9 @@ namespace SmartInsure.Integration.CalculationEngines.PlugV2;
 /// <summary>
 /// Camada anticorrupção (ADR-045): traduz o payload do PlugV2 (GetGroupAndModalities) para o
 /// contrato do motor (`ImportedCatalogResult`). Nada do modelo do fornecedor sai daqui.
-/// Ramo pelo BranchCode: 75 = Público, 76 = Privado (dev observado 2026-07-22). Modalidade de
-/// ramo desconhecido é descartada (não há como posicioná-la com segurança — RN-035).
+/// Ramo pelo BranchCode SUSEP: 0775 = Público, 0776 = Privado (75/76 nos formatos curtos
+/// observados em modalidades, dev observado 2026-07-22). Modalidade de ramo desconhecido é
+/// descartada (não há como posicioná-la com segurança — RN-035).
 /// </summary>
 public static class PlugV2ModalityAclMapper
 {
@@ -18,7 +19,16 @@ public static class PlugV2ModalityAclMapper
     /// <summary>Retorna (resultado, houveErroNoEnvelope, mensagemDeErro).</summary>
     public static (ImportedCatalogResult Result, bool EnvelopeError, string? ErrorMessage) Map(string rawJson)
     {
-        var envelope = JsonSerializer.Deserialize<PlugV2BaseResponse<List<PlugV2GroupsAndModalities>>>(rawJson, Options);
+        PlugV2BaseResponse<List<PlugV2GroupsAndModalities>>? envelope;
+
+        try
+        {
+            envelope = JsonSerializer.Deserialize<PlugV2BaseResponse<List<PlugV2GroupsAndModalities>>>(rawJson, Options);
+        }
+        catch (JsonException)
+        {
+            envelope = null;
+        }
 
         if (envelope is null || envelope.HasError || envelope.StatusCode != 200 || envelope.Response is null)
         {
@@ -93,9 +103,13 @@ public static class PlugV2ModalityAclMapper
         switch (branchCode?.Trim())
         {
             case "75":
+            case "775":
+            case "0775":
                 branch = ESuretyBranch.Public;
                 return true;
             case "76":
+            case "776":
+            case "0776":
                 branch = ESuretyBranch.Private;
                 return true;
             default:

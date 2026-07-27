@@ -41,6 +41,7 @@ public sealed class ImportedAdditionalCoverageRepository(SmartInsureDbContext co
         => await (
             from coverage in Set.AsNoTracking()
             where coverage.Status == EImportedAdditionalCoverageStatus.Active
+                && !coverage.IsIgnored
                 && coverage.AdditionalCoverageId != null
             join modality in Context.Set<ImportedModality>().AsNoTracking()
                 on coverage.ImportedModalityId equals modality.Id

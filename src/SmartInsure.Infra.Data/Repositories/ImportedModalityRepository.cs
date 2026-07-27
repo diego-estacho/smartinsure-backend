@@ -47,6 +47,9 @@ public sealed class ImportedModalityRepository(SmartInsureDbContext context)
                 && imported.ModalityId == null
             join insurer in Context.Set<Insurer>().AsNoTracking()
                 on imported.InsurerId equals insurer.Id
+            join importedGroup in Context.Set<ImportedGroup>().AsNoTracking()
+                on imported.ImportedGroupId equals importedGroup.Id into importedGroups
+            from importedGroup in importedGroups.DefaultIfEmpty()
             select new PendingImportedModalityDto(
                 imported.Id,
                 insurer.Id,
@@ -54,10 +57,7 @@ public sealed class ImportedModalityRepository(SmartInsureDbContext context)
                 imported.OriginName,
                 imported.Branch.ToString(),
                 imported.EngineModalityName,
-                Context.Set<ImportedGroup>()
-                    .Where(ig => ig.Id == imported.ImportedGroupId)
-                    .Select(ig => ig.Name)
-                    .FirstOrDefault() ?? string.Empty))
+                (importedGroup == null ? null : importedGroup.Name) ?? string.Empty))
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<ImportableModalityForCoverageDto>> ListImportableForCoverageAsync(
@@ -67,13 +67,13 @@ public sealed class ImportedModalityRepository(SmartInsureDbContext context)
             where imported.InsurerId == insurerId
                 && imported.Status == EImportedModalityStatus.Active
                 && !imported.IsIgnored
+            join importedGroup in Context.Set<ImportedGroup>().AsNoTracking()
+                on imported.ImportedGroupId equals importedGroup.Id into importedGroups
+            from importedGroup in importedGroups.DefaultIfEmpty()
             select new ImportableModalityForCoverageDto(
                 imported.Id,
                 imported.OriginName,
-                Context.Set<ImportedGroup>()
-                    .Where(ig => ig.Id == imported.ImportedGroupId)
-                    .Select(ig => ig.Type)
-                    .FirstOrDefault(),
+                importedGroup == null ? null : importedGroup.Type,
                 imported.Branch))
             .ToListAsync(cancellationToken);
 }

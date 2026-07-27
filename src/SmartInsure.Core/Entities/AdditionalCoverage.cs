@@ -1,4 +1,5 @@
 using SmartInsure.Core.Enumerators;
+using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Core.Entities;
 
@@ -30,9 +31,25 @@ public sealed class AdditionalCoverage : EntityBase
     /// <summary>RN-040: o Administrador edita o nome canônico.</summary>
     public void Rename(string name) => Name = name.Trim();
 
-    /// <summary>RN-040/RN-046: o Administrador ativa a Cobertura Adicional canônica.</summary>
-    public void Activate() => Status = EAdditionalCoverageStatus.Active;
+    /// <summary>RN-040/RN-046: o Administrador ativa a Cobertura Adicional canônica; ativar quem já está Ativa é conflito de estado.</summary>
+    public void Activate()
+    {
+        if (Status == EAdditionalCoverageStatus.Active)
+        {
+            throw new ConflictException("A cobertura adicional já está ativa.");
+        }
+
+        Status = EAdditionalCoverageStatus.Active;
+    }
 
     /// <summary>RN-040/RN-046: o Administrador inativa a Cobertura Adicional canônica (não é excluída).</summary>
-    public void Deactivate() => Status = EAdditionalCoverageStatus.Inactive;
+    public void Deactivate()
+    {
+        if (Status == EAdditionalCoverageStatus.Inactive)
+        {
+            throw new ConflictException("A cobertura adicional já está inativa.");
+        }
+
+        Status = EAdditionalCoverageStatus.Inactive;
+    }
 }

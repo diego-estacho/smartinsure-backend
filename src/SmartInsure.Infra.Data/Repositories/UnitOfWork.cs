@@ -12,6 +12,9 @@ public sealed class UnitOfWork(SmartInsureDbContext context) : IUnitOfWork
     public async Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken)
         => new EfTransaction(await context.Database.BeginTransactionAsync(cancellationToken));
 
+    public void DiscardChanges()
+        => context.ChangeTracker.Clear();
+
     private sealed class EfTransaction(IDbContextTransaction transaction) : ITransaction
     {
         public Task CommitAsync(CancellationToken cancellationToken)
