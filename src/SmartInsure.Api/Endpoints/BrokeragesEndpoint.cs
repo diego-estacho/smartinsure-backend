@@ -7,6 +7,8 @@ using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.ChangeBrokerage
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.CreateBrokerage.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.CreateBrokerage.Requests;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.CreateBrokerage.Responses;
+using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.ExportBrokerages.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.ExportBrokerages.Requests;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.GetBrokerage.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.GetBrokerage.Requests;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.GetBrokerage.Responses;
@@ -43,6 +45,10 @@ public sealed class BrokeragesEndpoint : CarterModule
         // RN-052: consulta de CNPJ somente leitura (rota literal antes de /{id:guid}).
         app.MapGet("/preview", PreviewAsync)
             .Produces<BrokeragePreviewResponse>(StatusCodes.Status200OK);
+
+        // RN-018: exportação da listagem para .xlsx (rota literal antes de /{id:guid}).
+        app.MapGet("/export", ExportAsync)
+            .Produces(StatusCodes.Status200OK, contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
         app.MapGet("/{id:guid}", GetAsync)
             .Produces<GetBrokerageResponse>(StatusCodes.Status200OK);
@@ -100,6 +106,32 @@ public sealed class BrokeragesEndpoint : CarterModule
             useCase,
             new PreviewBrokerageByCnpjRequest(cnpj ?? string.Empty),
             validator);
+
+    private static async Task<IResult> ExportAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        IExportBrokeragesUseCase useCase,
+        string? q,
+        string? situation,
+        Guid? insurerId,
+        string? calculationEngine,
+        string? sector,
+        DateTime? registeredFrom,
+        DateTime? registeredTo)
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new ExportBrokeragesRequest
+            {
+                Search = q,
+                Situation = situation,
+                InsurerId = insurerId,
+                CalculationEngine = calculationEngine,
+                Sector = sector,
+                RegisteredFrom = registeredFrom,
+                RegisteredTo = registeredTo,
+            },
+            resultFactory: response => Results.File(response.Content, response.ContentType, response.FileName));
 
     private static async Task<IResult> GetAsync(
         HttpContext httpContext,
