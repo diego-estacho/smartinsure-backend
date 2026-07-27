@@ -124,15 +124,15 @@ Estado inicial do agregado montado no wizard de nova oferta. Nesta fase o backen
 
 ### Cotação — resultado (proposto em 2026-07-27 — aguardando ratificação da PO)
 
-Classificação **estável** do resultado de uma Cotação, exposta por nome estável e traduzida a partir do retorno da Seguradora (RN-054). O conjunto de classificações é pequeno e não cresce; a esteira e os motivos são **dado** que acompanha a classificação — assim uma esteira ou um motivo novo da Seguradora não cria um status novo.
+Classificação **estável** do resultado de uma Cotação, exposta por nome estável e traduzida a partir do retorno da Seguradora (RN-058). O conjunto de classificações é pequeno e não cresce; a esteira e os motivos são **dado** que acompanha a classificação — assim uma esteira ou um motivo novo da Seguradora não cria um status novo.
 
 | Resultado | Nome estável (API) | Significado | Seguível? |
 |---|---|---|---|
-| **Automático** | `Automatic` | Emissão automática disponível pela Seguradora | Sim (RN-055) |
-| **Análise** | `Analysis` | Depende de esteira da Seguradora (ver Esteira); a proposta segue no portal da Seguradora | Somente esteira de Subscrição, nesta fase (RN-055) |
+| **Automático** | `Automatic` | Emissão automática disponível pela Seguradora | Sim (RN-059) |
+| **Análise** | `Analysis` | Depende de esteira da Seguradora (ver Esteira); a proposta segue no portal da Seguradora | Somente esteira de Subscrição, nesta fase (RN-059) |
 | **Indisponível/Recusado** | `Unavailable` | Seguradora não oferta, não pôde cotar ou recusou; acompanha a lista de motivos informada | Não |
 | **Não-reconhecido** | `Unrecognized` | Resultado que a plataforma não classificou; exibido sem prêmio e registrado para revisão | Não |
 
-> Um resultado desconhecido/novo da Seguradora recai **sempre** em Não-reconhecido — nunca é convertido em silêncio para Automático nem exibe prêmio (RN-054).
+> Um resultado desconhecido/novo da Seguradora recai **sempre** em Não-reconhecido — nunca é convertido em silêncio para Automático nem exibe prêmio (RN-058).
 
-**Esteira** da Cotação em Análise (exposta por nome estável): **Subscrição** (`Underwriting`), **Crédito** (`Credit`), **PEP** (`Pep`), **Resseguro** (`Reinsurance`), **Cadastro** (`Registration`). A lista cresce como dado conforme a Seguradora informa; nesta fase, apenas a esteira de **Subscrição** é seguível (RN-055).
+**Esteira** da Cotação em Análise (exposta por nome estável): **Subscrição** (`Underwriting`), **Crédito** (`Credit`), **PEP** (`Pep`), **Resseguro** (`Reinsurance`), **Cadastro** (`Registration`). A lista cresce como dado conforme a Seguradora informa; nesta fase, apenas a esteira de **Subscrição** é seguível (RN-059).

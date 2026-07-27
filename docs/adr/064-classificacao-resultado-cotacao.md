@@ -1,5 +1,5 @@
 ---
-id: ADR-063
+id: ADR-064
 title: Classificação do resultado da Cotação — status do parceiro traduzido para conjunto de domínio estável
 status: proposed
 tags: [dominio, integracoes]
@@ -8,11 +8,11 @@ supersedes: []
 evidence: []
 ---
 
-# ADR-063: Classificação do resultado da Cotação — status do parceiro traduzido para conjunto de domínio estável
+# ADR-064: Classificação do resultado da Cotação — status do parceiro traduzido para conjunto de domínio estável
 
 ## Status
 
-Proposto em 2026-07-27 — aguardando ratificação da PO ([OPEN-07](../product-specs/open-decisions.md)). Refina a etapa de cotações (RN-052..RN-057). Estende o ACL do Motor ([ADR-045](045-motor-services-providers-acl.md)) e a distinção Domain/Integration ([ADR-028](028-domain-integration-events.md)) para o resultado da Cotação; enums como string ([ADR-031](031-enums-string.md)).
+Proposto em 2026-07-27 — aguardando ratificação da PO ([OPEN-07](../product-specs/open-decisions.md)). Refina a etapa de cotações (RN-056..RN-061). Estende o ACL do Motor ([ADR-045](045-motor-services-providers-acl.md)) e a distinção Domain/Integration ([ADR-028](028-domain-integration-events.md)) para o resultado da Cotação; enums como string ([ADR-031](031-enums-string.md)).
 
 ## Contexto
 
@@ -26,9 +26,9 @@ Cada Cotação carrega o resultado que a Seguradora devolve pelo Motor de Cálcu
 - O resultado da Cotação no domínio é um **conjunto pequeno e fechado** de classificações estáveis, persistidas como string (ADR-031): `Automatic`, `Analysis`, `Unavailable`, `Unrecognized`.
 - **Motivo e esteira são dado que acompanha a classificação, não classificação nova.** A esteira da `Analysis` (`Underwriting`/`Credit`/`Pep`/`Reinsurance`/`Registration`, exposta por nome estável) e a lista de motivos do `Unavailable` são campos — assim uma esteira ou um motivo novo do parceiro NÃO cria um status de domínio novo nem obriga tocar telas.
 - A tradução parceiro→domínio vive **num único lugar**: o mapper da ACL do PlugV2 (ADR-045). Nenhum `if` de status do parceiro fora da ACL; o modelo do parceiro nunca vaza para o domínio (ADR-028).
-- Todo resultado que a ACL **não reconhece** DEVE recair em `Unrecognized` — **nunca** convertido em silêncio para outra classificação. `Unrecognized` é exibido sem prêmio, não é seguível, e é registrado/alertado para revisão (RN-054).
+- Todo resultado que a ACL **não reconhece** DEVE recair em `Unrecognized` — **nunca** convertido em silêncio para outra classificação. `Unrecognized` é exibido sem prêmio, não é seguível, e é registrado/alertado para revisão (RN-058).
 - Uma Cotação sem prêmio aplicável (`Analysis`, `Unavailable`, `Unrecognized`) NÃO expõe valor de prêmio.
-- A **seguibilidade** (RN-055) é derivada de (classificação, esteira): `Automatic` e `Analysis`+`Underwriting` são seguíveis nesta fase; as demais não.
+- A **seguibilidade** (RN-059) é derivada de (classificação, esteira): `Automatic` e `Analysis`+`Underwriting` são seguíveis nesta fase; as demais não.
 
 ## De-para PLUG V2 → resultado da Cotação (referência — a confirmar contra o contrato vigente)
 
@@ -37,7 +37,7 @@ Cada Cotação carrega o resultado que a Seguradora devolve pelo Motor de Cálcu
 | Resultado do parceiro (PLUG V2) | Classificação | Esteira / motivo |
 |---|---|---|
 | Sucesso / emissão automática | `Automatic` | — |
-| Esteira de subscrição | `Analysis` | `Underwriting` (seguível — RN-055) |
+| Esteira de subscrição | `Analysis` | `Underwriting` (seguível — RN-059) |
 | Esteira de cadastro | `Analysis` | `Registration` |
 | Esteira de PEP | `Analysis` | `Pep` |
 | Esteira de crédito | `Analysis` | `Credit` |
@@ -46,9 +46,9 @@ Cada Cotação carrega o resultado que a Seguradora devolve pelo Motor de Cálcu
 | Cobertura indisponível | `Unavailable` | motivo: cobertura indisponível |
 | Tomador nomeado | `Unavailable` | motivo: tomador nomeado — **[A CONFIRMAR: caso à parte/acionável?]** |
 | Recusa da Seguradora | `Unavailable` | motivos informados pela Seguradora |
-| Falha de integração (timeout/erro do parceiro) | `Unavailable` | motivo: falha de integração (transitória, RN-053) — **[A CONFIRMAR: distinguir de recusa de negócio p/ permitir re-tentar]** |
+| Falha de integração (timeout/erro do parceiro) | `Unavailable` | motivo: falha de integração (transitória, RN-057) — **[A CONFIRMAR: distinguir de recusa de negócio p/ permitir re-tentar]** |
 | Desconhecido / novo / não mapeado | `Unrecognized` | — |
 
 ## Consequências
 
-Suportar uma esteira ou motivo novo do parceiro é **dado** no mapper da ACL, não um status de domínio novo espalhado por telas — a classe de bug do "status novo em N lugares" some, e o desconhecido é sempre visível e seguro (nunca vira emissão/prêmio falso). Custo: a ACL exige teste cobrindo **cada** resultado do parceiro, inclusive o caminho `Unrecognized`; a lista de esteiras/motivos exibíveis cresce como dado (rótulos fora do domínio, ADR-031). A seguibilidade por (classificação, esteira) é regra de negócio (RN-055) — mudá-la é RN, não código solto. Se um dia a granularidade fina de resultado precisar virar comportamento (ex.: tratar cada recusa diferente), entra por dado/esteira, sem reabrir esta ADR.
+Suportar uma esteira ou motivo novo do parceiro é **dado** no mapper da ACL, não um status de domínio novo espalhado por telas — a classe de bug do "status novo em N lugares" some, e o desconhecido é sempre visível e seguro (nunca vira emissão/prêmio falso). Custo: a ACL exige teste cobrindo **cada** resultado do parceiro, inclusive o caminho `Unrecognized`; a lista de esteiras/motivos exibíveis cresce como dado (rótulos fora do domínio, ADR-031). A seguibilidade por (classificação, esteira) é regra de negócio (RN-059) — mudá-la é RN, não código solto. Se um dia a granularidade fina de resultado precisar virar comportamento (ex.: tratar cada recusa diferente), entra por dado/esteira, sem reabrir esta ADR.
