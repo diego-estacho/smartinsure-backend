@@ -19,6 +19,9 @@ public sealed class Quotation : EntityBase
 
     public Guid QuotationGroupId { get; private set; }
 
+    /// <summary>Corretora que solicitou a cotação — permite ao consumidor/reconciliador resolver a Habilitação.</summary>
+    public Guid BrokerageId { get; private set; }
+
     public Guid InsurerId { get; private set; }
 
     public EQuotationProcessingStatus ProcessingStatus { get; private set; }
@@ -66,10 +69,11 @@ public sealed class Quotation : EntityBase
             || (Result == EQuotationResult.Analysis && AnalysisTrack == EAnalysisTrack.Underwriting));
 
     /// <summary>RN-057/ADR-050: cria a Cotação em Requested (persistida antes de enfileirar o fan-out).</summary>
-    public static Quotation Request(Guid quotationGroupId, Guid insurerId)
+    public static Quotation Request(Guid quotationGroupId, Guid brokerageId, Guid insurerId)
         => new()
         {
             QuotationGroupId = quotationGroupId,
+            BrokerageId = brokerageId,
             InsurerId = insurerId,
             ProcessingStatus = EQuotationProcessingStatus.Requested,
         };

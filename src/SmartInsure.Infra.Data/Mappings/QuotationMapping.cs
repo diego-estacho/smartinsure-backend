@@ -15,7 +15,12 @@ public sealed class QuotationMapping : IEntityTypeConfiguration<Quotation>
         builder.Property(quotation => quotation.Id).ValueGeneratedNever();
 
         builder.Property(quotation => quotation.QuotationGroupId).IsRequired();
+        builder.Property(quotation => quotation.BrokerageId).IsRequired();
         builder.Property(quotation => quotation.InsurerId).IsRequired();
+
+        builder.HasOne<Person>()
+            .WithMany()
+            .HasForeignKey(quotation => quotation.BrokerageId);
 
         // Uma Cotação por (Grupo, Seguradora) — o fan-out não duplica (RN-057).
         builder.HasIndex(quotation => new { quotation.QuotationGroupId, quotation.InsurerId }).IsUnique();
