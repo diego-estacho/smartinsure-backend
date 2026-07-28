@@ -77,6 +77,49 @@ public sealed class CreatePolicyHolderBranchUseCaseTests
 
     [Fact]
     [Trait("RuleId", "RN-052")]
+    public async Task ExecuteAsync_PessoaInexistente_DeveLancarNotFound()
+    {
+        var policyHolderId = Guid.NewGuid();
+
+        var personRepository = Substitute.For<IPersonRepository>();
+        var branchRegistrar = Substitute.For<IBranchRegistrar>();
+
+        personRepository.GetByIdWithRolesAsync(policyHolderId, Arg.Any<CancellationToken>())
+            .Returns((Person?)null);
+
+        var useCase = new CreatePolicyHolderBranchUseCase(personRepository, branchRegistrar);
+        var request = new CreatePolicyHolderBranchRequest(policyHolderId, BranchCnpj);
+
+        var action = () => useCase.ExecuteAsync(request, CancellationToken.None);
+
+        await action.Should().ThrowAsync<NotFoundException>();
+        await branchRegistrar.DidNotReceiveWithAnyArgs().RegisterAsync(default!, default);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
+    public async Task ExecuteAsync_PessoaSemPapelTomador_DeveLancarNotFound()
+    {
+        // Pessoa cadastrada, mas sem AssignRole(PolicyHolder) — não é Tomador.
+        var person = Person.Create(PolicyHolderCnpj, "Alfa Ltda", "Alfa", Guid.NewGuid());
+
+        var personRepository = Substitute.For<IPersonRepository>();
+        var branchRegistrar = Substitute.For<IBranchRegistrar>();
+
+        personRepository.GetByIdWithRolesAsync(person.Id, Arg.Any<CancellationToken>())
+            .Returns(person);
+
+        var useCase = new CreatePolicyHolderBranchUseCase(personRepository, branchRegistrar);
+        var request = new CreatePolicyHolderBranchRequest(person.Id, BranchCnpj);
+
+        var action = () => useCase.ExecuteAsync(request, CancellationToken.None);
+
+        await action.Should().ThrowAsync<NotFoundException>();
+        await branchRegistrar.DidNotReceiveWithAnyArgs().RegisterAsync(default!, default);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
     public async Task ExecuteAsync_FilialNaoLocalizadaNoBiro_DeveDevolverAviso()
     {
         var policyHolder = NewPolicyHolder();
