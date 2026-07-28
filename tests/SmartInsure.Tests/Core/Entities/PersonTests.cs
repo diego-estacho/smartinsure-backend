@@ -156,4 +156,54 @@ public class PersonTests
 
         person.IsHeadquarters.Should().BeFalse();
     }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
+    public void LinkToHeadquarters_DeveVincularFilialAMatrizDaMesmaRaiz()
+    {
+        var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
+        var branch = Person.Create("11222333000262", "Filial LTDA", null, Guid.NewGuid());
+
+        branch.LinkToHeadquarters(headquarters);
+
+        branch.HeadquartersPersonId.Should().Be(headquarters.Id);
+        headquarters.HeadquartersPersonId.Should().BeNull();
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
+    public void LinkToHeadquarters_DeveRecusarMatrizDeOutraRaiz()
+    {
+        var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
+        var branch = Person.Create("99888777000282", "Outra Raiz", null, Guid.NewGuid());
+
+        var act = () => branch.LinkToHeadquarters(headquarters);
+
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
+    public void LinkToHeadquarters_DeveRecusarMatrizComoFilialDeSiMesma()
+    {
+        var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
+        var other = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
+
+        var act = () => headquarters.LinkToHeadquarters(other);
+
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
+    public void LinkToHeadquarters_DeveSerIdempotente()
+    {
+        var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
+        var branch = Person.Create("11222333000262", "Filial LTDA", null, Guid.NewGuid());
+
+        branch.LinkToHeadquarters(headquarters);
+        branch.LinkToHeadquarters(headquarters);
+
+        branch.HeadquartersPersonId.Should().Be(headquarters.Id);
+    }
 }

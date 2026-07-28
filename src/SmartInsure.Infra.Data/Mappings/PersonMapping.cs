@@ -37,6 +37,11 @@ public sealed class PersonMapping : IEntityTypeConfiguration<Person>
             .WithMany()
             .HasForeignKey(entity => entity.LegalNatureId);
 
+        // RN-052/ADR-063: Filial vinculada à matriz (self-FK), coluna criada pela migration Flyway.
+        builder.Property(entity => entity.HeadquartersPersonId);
+
+        builder.HasIndex(entity => entity.HeadquartersPersonId);
+
         builder.HasMany(entity => entity.Addresses)
             .WithOne()
             .HasForeignKey(address => address.PersonId)

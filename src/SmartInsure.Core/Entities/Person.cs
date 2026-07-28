@@ -30,6 +30,8 @@ public sealed class Person : EntityBase
 
     public LegalNature? LegalNature { get; private set; }
 
+    public Guid? HeadquartersPersonId { get; private set; }
+
     public IReadOnlyCollection<PersonAddress> Addresses => _addresses.AsReadOnly();
 
     public IReadOnlyCollection<PersonRole> Roles => _roles.AsReadOnly();
@@ -127,6 +129,32 @@ public sealed class Person : EntityBase
     /// <summary>RN-016: matriz é o estabelecimento de ordem /0001 do CNPJ (só pessoa jurídica).</summary>
     public bool IsHeadquarters
         => Type == EPersonType.J && DocumentNumber[8..12] == "0001";
+
+    /// <summary>RN-052/ADR-063: a Filial é uma Pessoa jurídica vinculada à matriz da mesma raiz de CNPJ.</summary>
+    public void LinkToHeadquarters(Person headquarters)
+    {
+        if (Type != EPersonType.J || IsHeadquarters)
+        {
+            throw new BusinessRuleException("Somente uma filial (pessoa jurídica de ordem diferente de /0001) pode ter matriz.");
+        }
+
+        if (!headquarters.IsHeadquarters)
+        {
+            throw new BusinessRuleException("A matriz informada não é um estabelecimento de ordem /0001.");
+        }
+
+        if (headquarters.DocumentNumber[..8] != DocumentNumber[..8])
+        {
+            throw new BusinessRuleException("A matriz deve pertencer à mesma raiz de CNPJ da filial.");
+        }
+
+        if (HeadquartersPersonId is not null && HeadquartersPersonId != headquarters.Id)
+        {
+            throw new ConflictException("A filial já está vinculada a outra matriz.");
+        }
+
+        HeadquartersPersonId = headquarters.Id;
+    }
 
     /// <summary>RN-026: adiciona endereço complementar (não principal).</summary>
     public void AddAdditionalAddress(
