@@ -26,11 +26,11 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 ## RN-058 — Resultado da Cotação: classificação estável, esteira e motivos
 
-**Descrição.** Toda Cotação carrega um **resultado classificado de forma estável**: *Automático*, *Análise*, *Indisponível/Recusado* ou *Não-reconhecido*. Quando em *Análise*, a Cotação registra a **esteira** correspondente (subscrição, crédito, PEP, resseguro, cadastro). Quando *Indisponível/Recusado*, registra a **lista de motivos** informada pela Seguradora.
+**Descrição.** Toda Cotação carrega um **resultado classificado de forma estável**: *Automático*, *Análise*, *Indisponível/Recusado* ou *Não-reconhecido*. Quando em *Análise*, a Cotação registra a **esteira** correspondente (subscrição, crédito, PEP, resseguro, cadastro). Quando *Indisponível/Recusado*, registra a **lista de motivos** informada pela Seguradora. À parte da classificação, a Cotação também registra se a Seguradora **exige Contragarantia (CCG)** para emitir — dado capturado na cotação e exibido ao corretor; a assinatura da CCG é da etapa de emissão (fora desta fase).
 
 **Pré-condições.** Cotação obtida de uma Seguradora (RN-057).
 
-**Critério de aceitação.** O resultado informado pela Seguradora é traduzido para uma das quatro classificações e, conforme o caso, para a esteira ou os motivos. Uma Cotação sem prêmio aplicável (Análise, Indisponível/Recusado, Não-reconhecido) não apresenta valor de prêmio. Um resultado que a plataforma **não reconhece** é classificado como *Não-reconhecido*: fica visível ao corretor identificado como não classificado, **sem prêmio, não seguível**, e é registrado para revisão — **nunca** é apresentado como *Automático* nem exibe prêmio.
+**Critério de aceitação.** O resultado informado pela Seguradora é traduzido para uma das quatro classificações e, conforme o caso, para a esteira ou os motivos. Uma Cotação sem prêmio aplicável (Análise, Indisponível/Recusado, Não-reconhecido) não apresenta valor de prêmio. Um resultado que a plataforma **não reconhece** é classificado como *Não-reconhecido*: fica visível ao corretor identificado como não classificado, **sem prêmio, não seguível**, e é registrado para revisão — **nunca** é apresentado como *Automático* nem exibe prêmio. Quando a Seguradora informa exigência de Contragarantia (CCG), a Cotação registra esse veredito e a plataforma o exibe ao corretor, independentemente da classificação.
 
 **Casos limite.** Resultado novo ou desconhecido da Seguradora recai sempre em *Não-reconhecido*, jamais convertido em silêncio para outra classificação. Ausência de motivos num *Indisponível/Recusado*: apresenta indisponibilidade sem detalhamento, sem impedir as demais Cotações.
 
