@@ -14,6 +14,7 @@ Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de enti
 | **Cotação** | `Quotation` | O retorno de UMA seguradora para um Grupo de Cotação: prêmio, condições, prazo | N por Grupo de Cotação (uma por seguradora) | o pedido do corretor |
 | **Proposta** | `Proposal` | A cotação aceita pelo corretor, em processamento na seguradora até a emissão | 0..1 por Grupo de Cotação | qualquer coisa antes do aceite |
 | **Apólice** | `Policy` | O documento emitido pela seguradora | 0..1 por proposta | — |
+| **Contragarantia (CCG)** | `CounterGuarantee` | Garantia adicional que a Seguradora pode exigir para emitir; na Cotação vem como veredito (exige ou não) + dados informativos (limite máximo sem CCG, se já assinada), capturado como atributo da Cotação. A assinatura/contrato da CCG é da emissão (proposto em 2026-07-27 — aguardando ratificação da PO) | 0..1 por Cotação | uma esteira de análise; uma classificação de resultado |
 | **Seguradora** | `Insurer` | Quem precifica e emite. A OnPoint é um *hub* de seguradoras, não uma seguradora | — | — |
 | **Corretora / Corretor** | `Brokerage` / `Broker` | A empresa cliente da plataforma / o usuário dela | — | — |
 | **Dados de contato da Corretora** | `ContactEmail` / `ContactPhone` / `ResponsibleName` | E-mail, telefone e responsável informados como cadastro complementar da Corretora, no vínculo de papel Corretor; opcionais (ratificado por Diego Estácho no lugar da PO em 2026-07-25 — registrar confirmação da PO) | 0..1 cada por Corretora | dados da Pessoa (razão social, endereço principal, Natureza Jurídica) |
@@ -124,3 +125,18 @@ Estado inicial do agregado montado no wizard de nova oferta. Nesta fase o backen
 | Status | Nome estável (API) | Significado | Transições permitidas |
 |---|---|---|---|
 | **Rascunho** | `Draft` | Grupo de Cotação criado/atualizado no wizard (tomador, segurado, escopo, modalidade, valor segurado, vigência, coberturas), ainda sem Cotações solicitadas às Seguradoras | Rascunho → (estados de cotação/emissão, a definir com a PO — OPEN-07) |
+
+### Cotação — resultado (proposto em 2026-07-27 — aguardando ratificação da PO)
+
+Classificação **estável** do resultado de uma Cotação, exposta por nome estável e traduzida a partir do retorno da Seguradora (RN-058). O conjunto de classificações é pequeno e não cresce; a esteira e os motivos são **dado** que acompanha a classificação — assim uma esteira ou um motivo novo da Seguradora não cria um status novo.
+
+| Resultado | Nome estável (API) | Significado | Seguível? |
+|---|---|---|---|
+| **Automático** | `Automatic` | Emissão automática disponível pela Seguradora | Sim (RN-059) |
+| **Análise** | `Analysis` | Depende de esteira da Seguradora (ver Esteira); a proposta segue no portal da Seguradora | Somente esteira de Subscrição, nesta fase (RN-059) |
+| **Indisponível/Recusado** | `Unavailable` | Seguradora não oferta, não pôde cotar ou recusou; acompanha a lista de motivos informada | Não |
+| **Não-reconhecido** | `Unrecognized` | Resultado que a plataforma não classificou; exibido sem prêmio e registrado para revisão | Não |
+
+> Um resultado desconhecido/novo da Seguradora recai **sempre** em Não-reconhecido — nunca é convertido em silêncio para Automático nem exibe prêmio (RN-058).
+
+**Esteira** da Cotação em Análise (exposta por nome estável): **Subscrição** (`Underwriting`), **Crédito** (`Credit`), **PEP** (`Pep`), **Resseguro** (`Reinsurance`), **Cadastro** (`Registration`). A lista cresce como dado conforme a Seguradora informa; nesta fase, apenas a esteira de **Subscrição** é seguível (RN-059).
