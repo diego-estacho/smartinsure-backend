@@ -18,6 +18,9 @@ public sealed class QuotationGroup : EntityBase
 
     public Guid PolicyHolderId { get; private set; }
 
+    /// <summary>RN-053: estabelecimento cotado — Filial escolhida; nulo significa a matriz (ADR-063).</summary>
+    public Guid? BranchPersonId { get; private set; }
+
     public Guid InsuredId { get; private set; }
 
     public Guid ModalityId { get; private set; }
@@ -44,6 +47,7 @@ public sealed class QuotationGroup : EntityBase
     /// <summary>RN-050: o Grupo de Cotação nasce em Rascunho ao concluir a etapa de risco.</summary>
     public static QuotationGroup Create(
         Guid policyHolderId,
+        Guid? branchPersonId,
         Guid insuredId,
         Guid modalityId,
         decimal insuredAmount,
@@ -57,6 +61,7 @@ public sealed class QuotationGroup : EntityBase
         var group = new QuotationGroup
         {
             PolicyHolderId = policyHolderId,
+            BranchPersonId = branchPersonId,
             InsuredId = insuredId,
             ModalityId = modalityId,
             InsuredAmount = insuredAmount,
@@ -76,6 +81,7 @@ public sealed class QuotationGroup : EntityBase
     /// <summary>RN-051: enquanto Rascunho, atualiza os dados no lugar (mesmo id); o estado não muda aqui.</summary>
     public void UpdateDraft(
         Guid policyHolderId,
+        Guid? branchPersonId,
         Guid insuredId,
         Guid modalityId,
         decimal insuredAmount,
@@ -87,6 +93,7 @@ public sealed class QuotationGroup : EntityBase
         bool includesLaborCoverage)
     {
         PolicyHolderId = policyHolderId;
+        BranchPersonId = branchPersonId;
         InsuredId = insuredId;
         ModalityId = modalityId;
         InsuredAmount = insuredAmount;

@@ -46,6 +46,7 @@ public sealed class CreateQuotationGroupUseCase(
 
         var group = QuotationGroup.Create(
             request.PolicyHolderId,
+            branchPersonId: null, // RN-053: Task 8 vai roteá-lo pela request; até então, matriz (ADR-063).
             request.InsuredId,
             request.ModalityId,
             request.InsuredAmount,

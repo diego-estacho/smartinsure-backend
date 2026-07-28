@@ -54,6 +54,7 @@ public sealed class UpdateQuotationGroupUseCase(
 
         group.UpdateDraft(
             request.PolicyHolderId,
+            branchPersonId: group.BranchPersonId, // RN-053: Task 8 vai roteá-lo pela request; preserva por ora.
             request.InsuredId,
             request.ModalityId,
             request.InsuredAmount,

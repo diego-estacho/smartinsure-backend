@@ -28,7 +28,7 @@ public class UpdateQuotationGroupUseCaseTests
 
     private static QuotationGroup ExistingDraft()
         => QuotationGroup.Create(
-            Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
+            Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(),
             500m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
             EQuotationScopeMode.All, [], false, false);
 
