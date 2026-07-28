@@ -206,4 +206,49 @@ public class PersonTests
 
         branch.HeadquartersPersonId.Should().Be(headquarters.Id);
     }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
+    public void LinkToHeadquarters_DeveRecusarPessoaFisica_QuandoTentaVincularAMatriz()
+    {
+        var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
+
+        // CPF (11 dígitos, dígitos verificadores válidos) com a mesma raiz da matriz —
+        // isola o guard de Type != J: sem ele, o guard de raiz também não pegaria.
+        var person = Person.Create("112.223.339-61", "Pessoa Fisica", null, null);
+
+        var act = () => person.LinkToHeadquarters(headquarters);
+
+        act.Should().Throw<BusinessRuleException>();
+        person.Type.Should().Be(EPersonType.F);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
+    public void LinkToHeadquarters_DeveRecusarArgumentoQueNaoEMatriz()
+    {
+        var branch = Person.Create("11222333000262", "Filial LTDA", null, Guid.NewGuid());
+
+        // Estabelecimento da mesma raiz, ordem /0003 — não é matriz (/0001).
+        var notHeadquarters = Person.Create("11222333000343", "Outra Filial LTDA", null, Guid.NewGuid());
+
+        var act = () => branch.LinkToHeadquarters(notHeadquarters);
+
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
+    public void LinkToHeadquarters_DeveRecusarRevinculoAMatrizDiferente()
+    {
+        var firstHeadquarters = Person.Create("11222333000181", "Matriz A LTDA", null, Guid.NewGuid());
+        var secondHeadquarters = Person.Create("11222333000181", "Matriz B LTDA", null, Guid.NewGuid());
+        var branch = Person.Create("11222333000262", "Filial LTDA", null, Guid.NewGuid());
+
+        branch.LinkToHeadquarters(firstHeadquarters);
+
+        var act = () => branch.LinkToHeadquarters(secondHeadquarters);
+
+        act.Should().Throw<ConflictException>();
+    }
 }
