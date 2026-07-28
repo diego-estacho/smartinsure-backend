@@ -20,6 +20,7 @@ namespace SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons;
 public sealed class SearchPersonsUseCase(
     IPersonRepository personRepository,
     IPersonBureauImporter personBureauImporter,
+    IBranchRegistrar branchRegistrar,
     IUnitOfWork unitOfWork) : ISearchPersonsUseCase
 {
     private const string NotFoundNotice = "CNPJ não localizado na fonte de dados cadastrais.";
@@ -81,23 +82,28 @@ public sealed class SearchPersonsUseCase(
         EPersonRole role,
         CancellationToken cancellationToken)
     {
-        var headquartersCnpj = CnpjValidator.HeadquartersOf(branchCnpj);
+        // RN-052: cadastra matriz e Filial pelo Birô e vincula; a Filial deixa de ser
+        // indicação transitória (RN-016 revisada) e passa a existir como dado.
+        var registration = await branchRegistrar.RegisterAsync(branchCnpj, cancellationToken);
 
-        var existing = await personRepository.GetByDocumentNumberAsync(
-            headquartersCnpj, cancellationToken);
-
-        if (existing is not null)
+        if (registration is null)
         {
-            await AssignRoleByDocumentAsync(headquartersCnpj, role, cancellationToken);
-
-            return new SearchPersonsResponse([MapItem(existing, branchCnpj, role)]);
+            return new SearchPersonsResponse([], NotFoundNotice);
         }
 
-        var imported = await ImportFromBureauAsync(headquartersCnpj, role, cancellationToken);
+        var headquartersCnpj = CnpjValidator.HeadquartersOf(branchCnpj);
 
-        return imported is null
+        // RN-017: BranchRegistrar nunca atribui Papel (ADR-063) — permanece com o caller.
+        await AssignRoleByDocumentAsync(headquartersCnpj, role, cancellationToken);
+
+        var headquarters = await personRepository.GetByDocumentNumberAsync(
+            headquartersCnpj, cancellationToken);
+
+        return headquarters is null
             ? new SearchPersonsResponse([], NotFoundNotice)
-            : new SearchPersonsResponse([MapItem(imported, branchCnpj)]);
+            : new SearchPersonsResponse(
+                [MapItem(headquarters, branchCnpj, role, registration.BranchId)],
+                registration.Notice);
     }
 
     /// <summary>RN-017: vincula o papel via change tracker; idempotente na entidade.</summary>
@@ -159,7 +165,8 @@ public sealed class SearchPersonsUseCase(
     private static PersonSearchItemResponse MapItem(
         PersonSearchItemDto item,
         string? preSelectedBranchDocumentNumber = null,
-        EPersonRole? ensuredRole = null)
+        EPersonRole? ensuredRole = null,
+        Guid? preSelectedBranchId = null)
         => new(
             item.Id,
             item.DocumentNumber,
@@ -178,7 +185,8 @@ public sealed class SearchPersonsUseCase(
                     item.MainAddress.Neighborhood,
                     item.MainAddress.City,
                     item.MainAddress.State),
-            preSelectedBranchDocumentNumber);
+            preSelectedBranchDocumentNumber,
+            preSelectedBranchId);
 
     private static IReadOnlyList<string> EnsureRole(
         IReadOnlyList<string> roles, EPersonRole? ensuredRole)
