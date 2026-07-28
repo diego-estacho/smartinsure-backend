@@ -359,6 +359,9 @@ public class SearchPersonsUseCaseTests
 
         response.Items.Should().ContainSingle(item => item.DocumentNumber == HeadquartersCnpj);
         response.Items[0].PreSelectedBranchId.Should().BeNull();
+        // RN-016 (Casos limite): sem Filial localizada, o documento dela também não é
+        // devolvido — do contrário a resposta anunciaria uma Filial pré-selecionada sem id.
+        response.Items[0].PreSelectedBranchDocumentNumber.Should().BeNull();
         response.Notice.Should().Be(notice);
     }
 

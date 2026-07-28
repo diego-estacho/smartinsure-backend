@@ -24,6 +24,17 @@ public sealed class BranchRegistrar(
     public async Task<BranchRegistration?> RegisterAsync(
         string branchCnpj, CancellationToken cancellationToken)
     {
+        // RN-052 (Casos limite): CNPJ inválido é recusado antes de qualquer consulta — sem
+        // isso, um dígito verificador incorreto preserva a raiz e ainda resolve a matriz
+        // (HeadquartersOf usa só os 8 primeiros dígitos), o que gastaria uma chamada paga ao
+        // Birô (OPEN-04) por um CNPJ de Filial que não pode existir. Validado aqui — o único
+        // lugar — porque os dois caminhos que chegam a esta classe (busca de Pessoa e ficha do
+        // Tomador) precisam da mesma garantia.
+        if (!CnpjValidator.IsValid(branchCnpj))
+        {
+            throw new BusinessRuleException("O CNPJ informado é inválido.");
+        }
+
         if (CnpjValidator.IsHeadquarters(branchCnpj))
         {
             throw new BusinessRuleException("O CNPJ informado é de matriz, não de filial.");

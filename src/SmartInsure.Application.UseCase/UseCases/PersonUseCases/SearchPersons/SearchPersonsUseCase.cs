@@ -105,10 +105,18 @@ public sealed class SearchPersonsUseCase(
         // Defensivo: registration não nulo já implica que o registrar comitou a matriz
         // nesta mesma DbContext, então headquarters nulo aqui não é alcançável na
         // prática — fallback mantido apenas por segurança, não é um bug a "corrigir".
+        // RN-016 (Casos limite): Filial não localizada no Birô devolve a matriz SEM Filial
+        // pré-selecionada — o documento da Filial só acompanha a resposta quando ela de fato
+        // existe (registration.BranchId não nulo); do contrário ficaria com o documento
+        // preenchido e o id nulo, uma pré-seleção inconsistente que o contrato não deveria expor.
         return headquarters is null
             ? new SearchPersonsResponse([], NotFoundNotice)
             : new SearchPersonsResponse(
-                [MapItem(headquarters, branchCnpj, role, registration.BranchId)],
+                [MapItem(
+                    headquarters,
+                    registration.BranchId is null ? null : branchCnpj,
+                    role,
+                    registration.BranchId)],
                 registration.Notice);
     }
 

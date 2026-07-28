@@ -167,4 +167,22 @@ public class BranchRegistrarTests
         await _personBureauImporter.DidNotReceiveWithAnyArgs().ImportLegalPersonAsync(
             default!, default, default);
     }
+
+    [Fact]
+    [Trait("RuleId", "RN-052")]
+    public async Task RegisterAsync_CnpjInvalido_DeveSerRecusadoAntesDeQualquerConsulta()
+    {
+        // Mesma raiz de BranchCnpj, dígito verificador incorreto (typo no último dígito) — o
+        // caso concreto do finding: a raiz continua resolvendo a matriz, então só a validação
+        // de dígitos evita a chamada paga ao Birô (OPEN-04) por um CNPJ que não pode existir.
+        const string invalidCnpj = "11444777000243";
+
+        var action = () => _registrar.RegisterAsync(invalidCnpj, CancellationToken.None);
+
+        await action.Should().ThrowAsync<BusinessRuleException>();
+        await _personRepository.DidNotReceiveWithAnyArgs()
+            .GetTrackedByDocumentNumberAsync(default!, default);
+        await _personBureauImporter.DidNotReceiveWithAnyArgs().ImportLegalPersonAsync(
+            default!, default, default);
+    }
 }
