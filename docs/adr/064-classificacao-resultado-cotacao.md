@@ -31,7 +31,7 @@ A resposta da cotação carrega o **status imediato** do resultado. O **status d
 - Todo resultado que a ACL **não reconhece** DEVE recair em `Unrecognized` — **nunca** convertido em silêncio para outra classificação. `Unrecognized` é exibido sem prêmio, não é seguível, e é registrado/alertado para revisão (RN-058).
 - Uma Cotação sem prêmio aplicável (`Analysis`, `Unavailable`, `Unrecognized`) NÃO expõe valor de prêmio.
 - A **seguibilidade** (RN-059) é derivada de (classificação, esteira): `Automatic` e `Analysis`+`Underwriting` são seguíveis nesta fase; as demais não.
-- **Contragarantia (CCG) é ortogonal à classificação, não uma esteira nem um status.** A resposta da cotação traz um veredito de que a Seguradora **exige CCG** para emitir, mais dados informativos (limite máximo sem CCG, se já assinada). Isso é capturado como **atributo da Cotação** e exibido ao corretor; uma Cotação `Automatic` pode exigir CCG. O ciclo de assinatura do contrato de CCG é da **etapa de emissão** (fora desta fase).
+- **Contragarantia (CCG) é ortogonal à classificação, não uma esteira nem um status.** A resposta da cotação traz um veredito de que a Seguradora **exige CCG** para emitir, mais dados informativos (limite máximo sem CCG, se já assinada). Isso é capturado como **atributo da Cotação** e exibido ao corretor; uma Cotação `Automatic` pode exigir CCG. Uma Cotação que exige CCG **permanece seguível** — o corretor segue até a emissão normalmente e a exigência só é enforçada no emitir (barrado sem a CCG assinada — confirmado pela PO). O ciclo de assinatura do contrato de CCG é da **etapa de emissão** (fora desta fase).
 
 ## De-para PLUG V2 → resultado da Cotação (eixo imediato — 11 valores, conferidos na fonte)
 
