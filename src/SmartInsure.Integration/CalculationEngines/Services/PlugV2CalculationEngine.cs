@@ -43,6 +43,15 @@ public sealed class PlugV2CalculationEngine(
         return client.GetModalityObjectAsync(connection, brokerCnpj, modalityUniqueId, cancellationToken);
     }
 
+    /// <summary>RN-056/057: solicita a Cotação de UMA Seguradora via PlugV2 (POST /Cotation).</summary>
+    public Task<QuotationEngineResult> RunQuotationAsync(
+        string? connectionParameters, QuotationEngineRequest request, CancellationToken cancellationToken)
+    {
+        var connection = PlugV2ConnectionParameters.Parse(connectionParameters);
+        var client = serviceProvider.GetRequiredService<PlugV2RunQuotationClient>();
+        return client.RunQuotationAsync(connection, request, cancellationToken);
+    }
+
     public Task<ImportedAdditionalCoverageResult> GetAdditionalCoveragesAsync(
         string? connectionParameters,
         string brokerCnpj,

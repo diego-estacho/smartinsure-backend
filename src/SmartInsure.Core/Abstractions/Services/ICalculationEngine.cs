@@ -60,6 +60,17 @@ public interface ICalculationEngine
     /// </summary>
     Task<ModalityObjectResult> GetModalityObjectAsync(
         string? connectionParameters, string brokerCnpj, string modalityUniqueId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-056..058: solicita a Cotação de UMA Seguradora (InsuranceUniqueId). A ACL do provider (ADR-045)
+    /// traduz o status do parceiro para a classificação de domínio + esteira/motivos + veredito de CCG
+    /// (ADR-064); status desconhecido recai em Unrecognized. Exceções de integração/transporte sobem
+    /// como CalculationEngineException (a falha isolada por Seguradora é tratada na aplicação — RN-057).
+    /// </summary>
+    Task<QuotationEngineResult> RunQuotationAsync(
+        string? connectionParameters,
+        QuotationEngineRequest request,
+        CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -103,3 +114,65 @@ public sealed record ModalityObjectResult(
 
 /// <summary>Cláusula particular como recebida da fonte (RN-048).</summary>
 public sealed record ModalityClauseData(string ExternalId, string Name, string? Text, string? JsonTag);
+
+/// <summary>Entrada para solicitar a Cotação de uma Seguradora (RN-056).</summary>
+public sealed record QuotationEngineRequest
+{
+    public required string BrokerCnpj { get; init; }
+
+    public required string PolicyHolderCnpj { get; init; }
+
+    public required string InsuredCpfCnpj { get; init; }
+
+    /// <summary>Identificador externo da Seguradora (= Insurer.ReferenceExternalId).</summary>
+    public required string InsuranceUniqueId { get; init; }
+
+    public required string ModalityGlobalId { get; init; }
+
+    public required string ModalityName { get; init; }
+
+    public string? ModalityGroupType { get; init; }
+
+    public required decimal InsuredAmount { get; init; }
+
+    public required DateOnly CoverageStartDate { get; init; }
+
+    public required DateOnly CoverageEndDate { get; init; }
+
+    public bool IncludesPenaltyCoverage { get; init; }
+
+    public bool IncludesLaborCoverage { get; init; }
+}
+
+/// <summary>
+/// Resultado traduzido de uma Cotação (RN-058, ADR-064). Classificação estável + esteira/motivos +
+/// veredito de CCG. Sem prêmio quando não aplicável (Análise/Indisponível/Não-reconhecido).
+/// </summary>
+public sealed record QuotationEngineResult
+{
+    public required EQuotationResult Result { get; init; }
+
+    public EAnalysisTrack? AnalysisTrack { get; init; }
+
+    public decimal? Premium { get; init; }
+
+    public decimal? CommissionPercentage { get; init; }
+
+    public decimal? CommissionValue { get; init; }
+
+    public decimal? Tax { get; init; }
+
+    public decimal? AvailableLimit { get; init; }
+
+    public string? ProposalExternalId { get; init; }
+
+    public string? ProposalNumber { get; init; }
+
+    public bool RequiresCcg { get; init; }
+
+    public decimal? CcgMaxLimitWithoutNeed { get; init; }
+
+    public bool CcgSigned { get; init; }
+
+    public IReadOnlyList<string> Reasons { get; init; } = [];
+}

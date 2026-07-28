@@ -48,6 +48,9 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
             .HasMaxLength(20)
             .IsRequired();
 
+        // RN-059: Cotação escolhida (referência simples, sem FK para evitar ciclo com Quotation.QuotationGroupId).
+        builder.Property(group => group.SelectedQuotationId);
+
         // Histórico consultável por tomador e por segurado.
         builder.HasIndex(group => group.PolicyHolderId);
         builder.HasIndex(group => group.InsuredId);

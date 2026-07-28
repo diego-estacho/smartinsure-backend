@@ -38,6 +38,9 @@ public sealed class QuotationGroup : EntityBase
 
     public EQuotationGroupStatus Status { get; private set; }
 
+    /// <summary>RN-059: a Cotação escolhida pelo corretor para seguir; nula quando nenhuma foi escolhida.</summary>
+    public Guid? SelectedQuotationId { get; private set; }
+
     /// <summary>Seguradoras do escopo, quando o modo é Specific (vazio quando All).</summary>
     public IReadOnlyCollection<QuotationGroupInsurer> SelectedInsurers => _selectedInsurers.AsReadOnly();
 
@@ -98,6 +101,12 @@ public sealed class QuotationGroup : EntityBase
 
         ReplaceSelectedInsurers(scopeMode, insurerIds);
     }
+
+    /// <summary>RN-059: marca a Cotação escolhida (a validação de seguibilidade é do use case, que conhece a Cotação).</summary>
+    public void SelectQuotation(Guid quotationId) => SelectedQuotationId = quotationId;
+
+    /// <summary>RN-060: o recálculo/invalidação por mudança de dados descarta a escolha anterior.</summary>
+    public void ClearSelection() => SelectedQuotationId = null;
 
     private void ReplaceSelectedInsurers(EQuotationScopeMode scopeMode, IEnumerable<Guid> insurerIds)
     {

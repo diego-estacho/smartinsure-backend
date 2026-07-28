@@ -36,6 +36,11 @@ public static class DependencyInjection
             .AddStandardResilienceHandler();
         services.AddScoped<PlugV2AdditionalCoveragesClient>();
 
+        // RN-056/ADR-044: POST /Cotation — base URL por Habilitação, resiliência no client nomeado.
+        services.AddHttpClient(PlugV2RunQuotationClient.HttpClientName)
+            .AddStandardResilienceHandler();
+        services.AddScoped<PlugV2RunQuotationClient>();
+
         return services;
     }
 }
