@@ -247,6 +247,18 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                     && person.DocumentNumber.Substring(8, 4) == "0001",
                 cancellationToken);
 
+    public async Task<Person?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken)
+        => await Set.FirstOrDefaultAsync(person => person.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyList<PersonBranchDto>> ListBranchesAsync(
+        Guid headquartersPersonId, CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .Where(person => person.HeadquartersPersonId == headquartersPersonId)
+            .OrderBy(person => person.DocumentNumber)
+            .Select(person => new PersonBranchDto(
+                person.Id, person.DocumentNumber, person.Name, person.SocialName))
+            .ToListAsync(cancellationToken);
+
     private static IQueryable<PersonSearchItemDto> ProjectItems(IQueryable<Person> query)
         => query.Select(person => new PersonSearchItemDto(
             person.Id,

@@ -61,4 +61,11 @@ public interface IPersonRepository : IRepository<Person>
     Task<Person?> GetTrackedPolicyHolderByIdAsync(
         Guid personId,
         CancellationToken cancellationToken);
+
+    /// <summary>RN-052: Pessoa rastreada por id, para vincular a Filial à matriz.</summary>
+    Task<Person?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>RN-052: Filiais vinculadas a uma matriz, ordenadas por documento.</summary>
+    Task<IReadOnlyList<PersonBranchDto>> ListBranchesAsync(
+        Guid headquartersPersonId, CancellationToken cancellationToken);
 }
