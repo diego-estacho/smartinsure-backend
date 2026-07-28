@@ -13,7 +13,7 @@ public sealed class PersonBureauImporter(
 {
     public async Task<PersonBureauImport?> ImportLegalPersonAsync(
         string cnpj,
-        EPersonRole role,
+        EPersonRole? role,
         CancellationToken cancellationToken)
     {
         var complement = await bureauProvider.GetPersonComplementAsync(
@@ -28,7 +28,13 @@ public sealed class PersonBureauImporter(
         var legalNature = await ResolveLegalNatureAsync(complement, cancellationToken);
 
         var person = Person.Create(cnpj, complement.Name, complement.TradeName, legalNature.Id);
-        person.AssignRole(role);
+
+        // RN-052/ADR-063: papel nulo não atribui Papel da Pessoa (caso da Filial).
+        if (role is not null)
+        {
+            person.AssignRole(role.Value);
+        }
+
         person.AddMainAddress(
             complement.ZipCode,
             complement.Street,
@@ -41,7 +47,9 @@ public sealed class PersonBureauImporter(
         return new PersonBureauImport(person, legalNature.IsPrivate);
     }
 
-    private static string PersonTypeName(EPersonRole role)
+    // RN-052/ADR-063: papel nulo (Filial ou matriz do cadastro em cadeia) envia rótulo "Tomador"
+    // ao Birô — mesmo contexto de negócio das pré-condições da RN-052 (busca/ficha de tomador).
+    private static string PersonTypeName(EPersonRole? role)
         => role switch
         {
             EPersonRole.Insured => "Segurado",

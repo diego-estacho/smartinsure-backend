@@ -38,6 +38,9 @@ public static class DependencyInjection
         // Serviço compartilhado por use cases; fora da convenção I{Ação}UseCase → {Ação}UseCase.
         services.AddScoped<IPersonBureauImporter, PersonBureauImporter>();
 
+        // Cadastro em cadeia da Filial (RN-052), consumido pelos use cases de Tomador/Filial.
+        services.AddScoped<IBranchRegistrar, BranchRegistrar>();
+
         // Serviço de importação de modalidades (RN-034), orquestrado pelo timer das Functions.
         services.AddScoped<IModalityImporter, ModalityImporter>();
 
