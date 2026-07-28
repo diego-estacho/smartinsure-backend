@@ -15,7 +15,10 @@ namespace SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons;
 /// RN-013: busca por trecho de nome (nome/nome social) ou documento; pessoa já
 /// cadastrada vem da base, sem Birô e sem atualização. RN-014: CNPJ não cadastrado é
 /// importado do Birô uma única vez. RN-016: no contexto de tomador só matriz; CNPJ de
-/// filial resolve a matriz com a filial pré-selecionada.
+/// filial resolve a matriz com a filial pré-selecionada. RN-052: essa resolução delega a
+/// IBranchRegistrar — cadastro de matriz/Filial pelo Birô e vínculo entre elas passam a
+/// ser responsabilidade do registrar; este use case só reage ao BranchRegistration
+/// devolvido.
 /// </summary>
 public sealed class SearchPersonsUseCase(
     IPersonRepository personRepository,
@@ -99,6 +102,9 @@ public sealed class SearchPersonsUseCase(
         var headquarters = await personRepository.GetByDocumentNumberAsync(
             headquartersCnpj, cancellationToken);
 
+        // Defensivo: registration não nulo já implica que o registrar comitou a matriz
+        // nesta mesma DbContext, então headquarters nulo aqui não é alcançável na
+        // prática — fallback mantido apenas por segurança, não é um bug a "corrigir".
         return headquarters is null
             ? new SearchPersonsResponse([], NotFoundNotice)
             : new SearchPersonsResponse(

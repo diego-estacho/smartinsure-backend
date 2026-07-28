@@ -221,6 +221,12 @@ public class SearchPersonsUseCaseTests
             "Alfa", null, true, Arg.Any<CancellationToken>());
     }
 
+    // RN-052: a origem da matriz — já cadastrada ou importada do Birô nesta chamada — é
+    // decidida dentro de IBranchRegistrar (Task 4) e não é mais observável a partir deste
+    // use case, que apenas delega ao registrar e reage ao BranchRegistration devolvido.
+    // Por isso um único teste cobre as duas origens possíveis aqui (o mock do registrar é
+    // idêntico nos dois casos); a distinção "já cadastrada vs. importada do Birô"
+    // propriamente dita é responsabilidade dos testes de BranchRegistrar.
     [Fact]
     [Trait("RuleId", "RN-016")]
     public async Task Execute_DeveResolverMatrizDaBase_QuandoTomadorInformaFilial()
@@ -231,6 +237,9 @@ public class SearchPersonsUseCaseTests
             .Returns(new BranchRegistration(Guid.NewGuid(), branchId, null));
         _personRepository.GetByDocumentNumberAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
             .Returns(Item(HeadquartersCnpj));
+        var tracked = Person.Create(HeadquartersCnpj, "Alfa Ltda", null, Guid.NewGuid());
+        _personRepository.GetTrackedByDocumentNumberAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
+            .Returns(tracked);
 
         var response = await _useCase.ExecuteAsync(
             new SearchPersonsRequest(BranchCnpj, "PolicyHolder"), CancellationToken.None);
@@ -238,35 +247,12 @@ public class SearchPersonsUseCaseTests
         response.Items.Should().ContainSingle(item => item.DocumentNumber == HeadquartersCnpj);
         response.Items[0].PreSelectedBranchDocumentNumber.Should().Be(BranchCnpj);
         response.Items[0].PreSelectedBranchId.Should().Be(branchId);
+        // RN-017: BranchRegistrar não atribui Papel (ADR-063) — só este AssignRoleByDocumentAsync
+        // dá à matriz o papel de PolicyHolder neste fluxo.
+        tracked.Roles.Should().ContainSingle(role => role.Role == EPersonRole.PolicyHolder);
+        await _branchRegistrar.Received(1).RegisterAsync(BranchCnpj, Arg.Any<CancellationToken>());
         await _bureauProvider.DidNotReceiveWithAnyArgs()
             .GetPersonComplementAsync(default!, default!, default, default);
-    }
-
-    // RN-052: a decisão de importar a matriz do Birô (quando ausente da base) passou a
-    // viver dentro de IBranchRegistrar (Task 4) — não é mais observável a partir deste use
-    // case, que apenas delega e reage ao BranchRegistration devolvido. Por isso este teste
-    // não configura mais o IBureauProvider diretamente; ele verifica que o registrar foi
-    // chamado com o CNPJ da filial e que o resultado devolvido por ele chega inteiro na
-    // resposta (matriz + PreSelectedBranchId). A cobertura do caminho "matriz sem cadastro
-    // → importa do Birô" propriamente dito é responsabilidade dos testes de BranchRegistrar.
-    [Fact]
-    [Trait("RuleId", "RN-016")]
-    public async Task Execute_DeveImportarMatrizDoBiro_QuandoFilialSemMatrizCadastrada()
-    {
-        SearchReturns();
-        var branchId = Guid.NewGuid();
-        _branchRegistrar.RegisterAsync(BranchCnpj, Arg.Any<CancellationToken>())
-            .Returns(new BranchRegistration(Guid.NewGuid(), branchId, null));
-        _personRepository.GetByDocumentNumberAsync(HeadquartersCnpj, Arg.Any<CancellationToken>())
-            .Returns(Item(HeadquartersCnpj));
-
-        var response = await _useCase.ExecuteAsync(
-            new SearchPersonsRequest(BranchCnpj, "PolicyHolder"), CancellationToken.None);
-
-        response.Items.Should().ContainSingle(item => item.DocumentNumber == HeadquartersCnpj);
-        response.Items[0].PreSelectedBranchDocumentNumber.Should().Be(BranchCnpj);
-        response.Items[0].PreSelectedBranchId.Should().Be(branchId);
-        await _branchRegistrar.Received(1).RegisterAsync(BranchCnpj, Arg.Any<CancellationToken>());
     }
 
     [Fact]
