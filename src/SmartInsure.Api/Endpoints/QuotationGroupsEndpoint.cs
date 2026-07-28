@@ -57,6 +57,7 @@ public sealed class QuotationGroupsEndpoint : CarterModule
             new UpdateQuotationGroupRequest(
                 id,
                 body.PolicyHolderId,
+                body.BranchId,
                 body.InsuredId,
                 body.ModalityId,
                 body.InsuredAmount,
@@ -72,6 +73,7 @@ public sealed class QuotationGroupsEndpoint : CarterModule
 /// <summary>Corpo do PUT do Grupo de Cotação — o id vem da rota.</summary>
 public sealed record UpdateQuotationGroupBody(
     Guid PolicyHolderId,
+    Guid? BranchId,
     Guid InsuredId,
     Guid ModalityId,
     decimal InsuredAmount,

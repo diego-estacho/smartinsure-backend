@@ -2,6 +2,7 @@ namespace SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.Create
 
 /// <summary>Dados de entrada para criar o Grupo de Cotação em Rascunho ao concluir a etapa de risco (RN-050).</summary>
 /// <param name="PolicyHolderId">Tomador (Pessoa com papel PolicyHolder).</param>
+/// <param name="BranchId">RN-053: estabelecimento cotado — Filial do Tomador; ausente significa a matriz.</param>
 /// <param name="InsuredId">Segurado (Pessoa com papel Insured).</param>
 /// <param name="ModalityId">Modalidade escolhida no catálogo do Smart.</param>
 /// <param name="InsuredAmount">Importância segurada (valor segurado).</param>
@@ -13,6 +14,7 @@ namespace SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.Create
 /// <param name="IncludesLaborCoverage">Cobertura Trabalhista/Previdenciária marcada (provisório).</param>
 public sealed record CreateQuotationGroupRequest(
     Guid PolicyHolderId,
+    Guid? BranchId,
     Guid InsuredId,
     Guid ModalityId,
     decimal InsuredAmount,
