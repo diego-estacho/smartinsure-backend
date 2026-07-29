@@ -28,6 +28,9 @@ public interface IPersonRepository : IRepository<Person>
     /// <summary>Pessoa por id com os Papéis carregados, para conferir o Papel exigido (RN-013/RN-017).</summary>
     Task<Person?> GetByIdWithRolesAsync(Guid id, CancellationToken cancellationToken);
 
+    /// <summary>Resumo da Pessoa por id (nome, documento, nome social e endereço principal), para reidratar o Grupo de Cotação (RN-051).</summary>
+    Task<PersonSearchItemDto?> GetSummaryByIdAsync(Guid id, CancellationToken cancellationToken);
+
     /// <summary>
     /// RN-018: lista Pessoas jurídicas com Papel da Pessoa de corretor, com busca, filtros
     /// combinados (situação, seguradora, motor, setor, período) e contagem por situação — tudo no servidor.

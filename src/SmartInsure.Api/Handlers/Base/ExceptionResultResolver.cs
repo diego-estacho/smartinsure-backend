@@ -21,6 +21,12 @@ public sealed class ExceptionResultResolver(
         BusinessRuleException businessRule => problemFactory.Problem(
             httpContext, StatusCodes.Status422UnprocessableEntity, "Regra de negócio impede a operação.", businessRule.Message),
 
+        // Falha/recusa do Motor de Cálculo (provedor): a mensagem já é tratada e traz o motivo real
+        // (ex.: "TAG obrigatória não informada"); surge nas operações síncronas (minuta, limites). É
+        // devolvida ao cliente para o corretor ver o porquê — não é erro inesperado (500).
+        CalculationEngineException engineFailure => problemFactory.Problem(
+            httpContext, StatusCodes.Status502BadGateway, "Falha na comunicação com a seguradora.", engineFailure.Message),
+
         UnauthorizedException unauthorized => problemFactory.Problem(
             httpContext, StatusCodes.Status401Unauthorized, "Falha de autenticação.", unauthorized.Message),
 
