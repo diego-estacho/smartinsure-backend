@@ -16,7 +16,7 @@ public sealed class UserBrokerageMembershipMapping : IEntityTypeConfiguration<Us
         builder.Property(membership => membership.BrokerageId).IsRequired();
         builder.Property(membership => membership.ProfileId).IsRequired();
 
-        // RN-034: no máximo um vínculo por Usuário × Corretora.
+        // RN-064: no máximo um vínculo por Usuário × Corretora.
         builder.HasIndex(membership => new { membership.UserId, membership.BrokerageId }).IsUnique();
 
         builder.HasOne<User>()

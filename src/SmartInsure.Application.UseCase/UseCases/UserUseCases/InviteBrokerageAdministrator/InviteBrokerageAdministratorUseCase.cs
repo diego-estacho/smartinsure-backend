@@ -15,8 +15,8 @@ using SmartInsure.Infra.CrossCutting.Options;
 namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.InviteBrokerageAdministrator;
 
 /// <summary>
-/// RN-036 — o Administrador do Sistema convida um Corretor Administrador, informando as Corretoras.
-/// O Usuário nasce Pendente com Convite de primeiro acesso (RN-035) e o Perfil fixo Corretor
+/// RN-066 — o Administrador do Sistema convida um Corretor Administrador, informando as Corretoras.
+/// O Usuário nasce Pendente com Convite de primeiro acesso (RN-065) e o Perfil fixo Corretor
 /// Administrador em cada Corretora informada. A autorização (só Administrador do Sistema) é do endpoint.
 /// </summary>
 public sealed class InviteBrokerageAdministratorUseCase(
@@ -48,7 +48,7 @@ public sealed class InviteBrokerageAdministratorUseCase(
                 "Já existe uma identidade com este e-mail no provedor de identidade.");
         }
 
-        // RN-036: cada Corretora informada precisa existir (papel Broker) e estar Ativa.
+        // RN-066: cada Corretora informada precisa existir (papel Broker) e estar Ativa.
         foreach (var brokerageId in request.BrokerageIds)
         {
             var brokerage = await personRepository.GetTrackedBrokerageByIdAsync(brokerageId, cancellationToken)
@@ -75,12 +75,12 @@ public sealed class InviteBrokerageAdministratorUseCase(
             user = User.Create(request.Name, email, externalIdentity);
             await userRepository.AddAsync(user, cancellationToken);
 
-            // RN-035: Convite de primeiro acesso.
+            // RN-065: Convite de primeiro acesso.
             var (invitation, token) = Invitation.Create(user.Id, invitationOptions.Value.LinkExpiryDays);
             plainToken = token;
             await invitationRepository.AddAsync(invitation, cancellationToken);
 
-            // RN-036: um vínculo Corretor Administrador por Corretora informada.
+            // RN-066: um vínculo Corretor Administrador por Corretora informada.
             foreach (var brokerageId in request.BrokerageIds)
             {
                 await membershipRepository.AddAsync(
@@ -108,7 +108,7 @@ public sealed class InviteBrokerageAdministratorUseCase(
             throw;
         }
 
-        // RN-035: link enviado pós-commit; falha de e-mail não desfaz a criação (reenviável).
+        // RN-065: link enviado pós-commit; falha de e-mail não desfaz a criação (reenviável).
         try
         {
             await invitationMailer.SendAsync(

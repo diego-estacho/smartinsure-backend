@@ -15,7 +15,7 @@ public sealed class ProfilePermissionMapping : IEntityTypeConfiguration<ProfileP
         builder.Property(profilePermission => profilePermission.ProfileId).IsRequired();
         builder.Property(profilePermission => profilePermission.PermissionId).IsRequired();
 
-        // RN-032/RN-033: par Perfil×Permissão único.
+        // RN-062/RN-063: par Perfil×Permissão único.
         builder.HasIndex(profilePermission => new { profilePermission.ProfileId, profilePermission.PermissionId })
             .IsUnique();
 

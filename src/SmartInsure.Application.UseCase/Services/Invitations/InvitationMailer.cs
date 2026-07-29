@@ -6,7 +6,7 @@ using SmartInsure.Infra.CrossCutting.Options;
 
 namespace SmartInsure.Application.UseCase.Services.Invitations;
 
-/// <summary>RN-035: monta o link a partir da URL configurada e envia o e-mail de Convite.</summary>
+/// <summary>RN-065: monta o link a partir da URL configurada e envia o e-mail de Convite.</summary>
 public sealed class InvitationMailer(
     IMailService mailService,
     IOptions<InvitationOptions> invitationOptions) : IInvitationMailer

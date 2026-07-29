@@ -36,7 +36,7 @@ public sealed class AuthenticateUserUseCase(
             throw new UnauthorizedException(InvalidCredentialsMessage);
         }
 
-        // RN-005/RN-046: só o Usuário Ativo acessa. Credencial já validada: a recusa é regra de
+        // RN-005/RN-076: só o Usuário Ativo acessa. Credencial já validada: a recusa é regra de
         // negócio (422), não falha de autenticação (ADR-012). A situação só é revelada a quem provou
         // conhecer a senha.
         if (user.Status == EUserStatus.Inactive)

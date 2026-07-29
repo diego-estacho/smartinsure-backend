@@ -10,8 +10,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.UserUseCases.AcceptInvitation;
 
-/// <summary>RN-035 — aceite do convite: define senha + ativa Usuário (RN-002: Pendente→Ativo).</summary>
-[Trait("RuleId", "RN-035")]
+/// <summary>RN-065 — aceite do convite: define senha + ativa Usuário (RN-002: Pendente→Ativo).</summary>
+[Trait("RuleId", "RN-065")]
 [Trait("RuleId", "RN-002")]
 public class AcceptInvitationUseCaseTests
 {

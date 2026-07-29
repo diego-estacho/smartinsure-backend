@@ -16,9 +16,9 @@ using SmartInsure.Infra.CrossCutting.Options;
 
 namespace SmartInsure.Tests.Application.UseCases.UserUseCases.CreateUser;
 
-/// <summary>RN-001/RN-035 — Criação de Usuário + Convite.</summary>
+/// <summary>RN-001/RN-065 — Criação de Usuário + Convite.</summary>
 [Trait("RuleId", "RN-001")]
-[Trait("RuleId", "RN-035")]
+[Trait("RuleId", "RN-065")]
 public class CreateUserUseCaseTests
 {
     private readonly IUserRepository _repository = Substitute.For<IUserRepository>();

@@ -11,8 +11,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.UserUseCases.ChangeUserActivation;
 
-/// <summary>RN-046 — inativação/reativação de Usuário (Administrador do Sistema).</summary>
-[Trait("RuleId", "RN-046")]
+/// <summary>RN-076 — inativação/reativação de Usuário (Administrador do Sistema).</summary>
+[Trait("RuleId", "RN-076")]
 public class ChangeUserActivationUseCaseTests
 {
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();

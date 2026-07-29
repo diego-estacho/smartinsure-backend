@@ -2,13 +2,13 @@
 
 ## RN-001 — Criação de Usuário
 
-> Revisão proposta em 2026-07-23 (grill-rn, jornada Perfis e Permissões / [OPEN-06](../open-decisions.md)): a senha inicial padrão dá lugar ao primeiro acesso por Convite (RN-035). Aguardando ratificação da PO — o texto abaixo já reflete a proposta.
+> Revisão proposta em 2026-07-23 (grill-rn, jornada Perfis e Permissões / [OPEN-06](../open-decisions.md)): a senha inicial padrão dá lugar ao primeiro acesso por Convite (RN-065). Aguardando ratificação da PO — o texto abaixo já reflete a proposta.
 
-**Descrição.** A criação de Usuário é feita pelos fluxos de criação/convite da jornada Perfis e Permissões (RN-036, RN-038 a RN-041), informando nome e e-mail. O Usuário nasce com identidade registrada no provedor de identidade e na situação Pendente, sem senha própria — o primeiro acesso ocorre por Convite (RN-035).
+**Descrição.** A criação de Usuário é feita pelos fluxos de criação/convite da jornada Perfis e Permissões (RN-066, RN-068 a RN-071), informando nome e e-mail. O Usuário nasce com identidade registrada no provedor de identidade e na situação Pendente, sem senha própria — o primeiro acesso ocorre por Convite (RN-065).
 
-**Pré-condições.** Solicitante autenticado e autorizado a criar Usuário no Escopo em questão (RN-036, RN-038 a RN-041); e-mail informado não cadastrado na plataforma nem no provedor de identidade.
+**Pré-condições.** Solicitante autenticado e autorizado a criar Usuário no Escopo em questão (RN-066, RN-068 a RN-071); e-mail informado não cadastrado na plataforma nem no provedor de identidade.
 
-**Critério de aceitação.** Ao criar um Usuário com nome e e-mail válidos, ele passa a existir na plataforma guardando a referência ao identificador da sua identidade no provedor de identidade, na situação Pendente, sem senha própria (a identidade nasce sem credencial de acesso utilizável pelo Usuário — a senha é definida por ele no primeiro acesso), e recebe um Convite para o primeiro acesso (RN-035). Em nenhum momento existe Usuário na plataforma sem identidade correspondente no provedor de identidade.
+**Critério de aceitação.** Ao criar um Usuário com nome e e-mail válidos, ele passa a existir na plataforma guardando a referência ao identificador da sua identidade no provedor de identidade, na situação Pendente, sem senha própria (a identidade nasce sem credencial de acesso utilizável pelo Usuário — a senha é definida por ele no primeiro acesso), e recebe um Convite para o primeiro acesso (RN-065). Em nenhum momento existe Usuário na plataforma sem identidade correspondente no provedor de identidade.
 
 **Nome de usuário no provedor de identidade.** A identidade nasce com nome de usuário derivado do e-mail, no formato aceito pelo provedor (apenas letras, números e underline): prefixo do ambiente (ex.: `dev_insp`) seguido de underline e do e-mail com todo caractere não alfanumérico substituído por underline; o resultado é limitado a 39 caracteres, não termina em underline (underline final vira `0`) e fica em minúsculas. O e-mail permanece o identificador de negócio; o nome de usuário é detalhe de integração e não é exibido na plataforma. Mesma derivação usada no InsurePoint legado.
 
@@ -16,15 +16,15 @@
 
 ## RN-002 — Ativação do Usuário no primeiro acesso
 
-> Revisão proposta em 2026-07-23 (grill-rn, jornada Perfis e Permissões / [OPEN-06](../open-decisions.md)): a ativação passa a ocorrer pelo link de Convite (RN-035), sem senha inicial padrão nem autenticação prévia. Aguardando ratificação da PO — o texto abaixo já reflete a proposta.
+> Revisão proposta em 2026-07-23 (grill-rn, jornada Perfis e Permissões / [OPEN-06](../open-decisions.md)): a ativação passa a ocorrer pelo link de Convite (RN-065), sem senha inicial padrão nem autenticação prévia. Aguardando ratificação da PO — o texto abaixo já reflete a proposta.
 
-**Descrição.** O Usuário na situação Pendente torna-se Ativo ao concluir o primeiro acesso pelo link de Convite (RN-035), definindo uma senha própria.
+**Descrição.** O Usuário na situação Pendente torna-se Ativo ao concluir o primeiro acesso pelo link de Convite (RN-065), definindo uma senha própria.
 
-**Pré-condições.** Usuário na situação Pendente, portador de um Convite com link válido (RN-035).
+**Pré-condições.** Usuário na situação Pendente, portador de um Convite com link válido (RN-065).
 
 **Critério de aceitação.** Ao abrir o link de Convite válido e definir a própria senha, a situação do Usuário passa de Pendente para Ativo. Enquanto o primeiro acesso não for concluído, o Usuário permanece Pendente e não acessa a plataforma (RN-005).
 
-**Casos limite.** Link de Convite usado, expirado ou substituído por reenvio: primeiro acesso recusado, orientando solicitar novo Convite (RN-035); o Usuário permanece Pendente. Tentativa de acesso sem concluir o primeiro acesso: recusada, o Usuário permanece Pendente.
+**Casos limite.** Link de Convite usado, expirado ou substituído por reenvio: primeiro acesso recusado, orientando solicitar novo Convite (RN-065); o Usuário permanece Pendente. Tentativa de acesso sem concluir o primeiro acesso: recusada, o Usuário permanece Pendente.
 
 ## RN-005 — Autenticação de Usuário com e-mail e senha
 

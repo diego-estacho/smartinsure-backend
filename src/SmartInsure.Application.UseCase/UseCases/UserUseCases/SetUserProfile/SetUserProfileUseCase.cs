@@ -10,7 +10,7 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile;
 
 /// <summary>
-/// RN-012 — concessão/revogação do Perfil (agora entidade — RN-032); a plataforma nunca fica sem
+/// RN-012 — concessão/revogação do Perfil (agora entidade — RN-062); a plataforma nunca fica sem
 /// Administrador do Sistema; cache de perfil invalidado para efeito imediato.
 /// </summary>
 public sealed class SetUserProfileUseCase(

@@ -6,10 +6,177 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5158/"
+      "url": "http://localhost:5159/"
     }
   ],
   "paths": {
+    "/api/v1/additional-coverage-imports/run": {
+      "post": {
+        "tags": [
+          "AdditionalCoverageImportsEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalCoverageImportSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages/map": {
+      "get": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdditionalCoverageMapResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages": {
+      "post": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdditionalCoverageNameBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages/{id}": {
+      "put": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdditionalCoverageNameBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages/{id}/activate": {
+      "post": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivateAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/additional-coverages/{id}/inactivate": {
+      "post": {
+        "tags": [
+          "AdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InactivateAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "tags": [
@@ -270,10 +437,55 @@
             }
           },
           {
-            "name": "status",
+            "name": "q",
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "situation",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "insurerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "calculationEngine",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "registeredFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "registeredTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],
@@ -283,7 +495,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfBrokerageListItemResponse"
+                  "$ref": "#/components/schemas/ListBrokeragesResponse"
                 }
               }
             }
@@ -318,6 +530,34 @@
         }
       }
     },
+    "/api/v1/brokerages/preview": {
+      "get": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "cnpj",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrokeragePreviewResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/brokerages/{id}": {
       "get": {
         "tags": [
@@ -341,6 +581,74 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GetBrokerageResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBrokerageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBrokerageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/brokerages/{id}/history": {
+      "get": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBrokerageHistoryResponse"
                 }
               }
             }
@@ -545,6 +853,236 @@
         }
       }
     },
+    "/api/v1/imported-additional-coverages/{id}/link": {
+      "post": {
+        "tags": [
+          "ImportedAdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkImportedAdditionalCoverageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkImportedAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-additional-coverages/{id}/unlink": {
+      "post": {
+        "tags": [
+          "ImportedAdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnlinkImportedAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-additional-coverages/{id}/ignore": {
+      "post": {
+        "tags": [
+          "ImportedAdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IgnoreImportedAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-additional-coverages/{id}/restore": {
+      "post": {
+        "tags": [
+          "ImportedAdditionalCoveragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreImportedAdditionalCoverageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-modalities/{id}/reassign": {
+      "post": {
+        "tags": [
+          "ImportedModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReassignImportedModalityBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReassignImportedModalityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-modalities/{id}/ignore": {
+      "post": {
+        "tags": [
+          "ImportedModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IgnoreImportedModalityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imported-modalities/{id}/restore": {
+      "post": {
+        "tags": [
+          "ImportedModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreImportedModalityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/insurers": {
       "post": {
         "tags": [
@@ -725,6 +1263,231 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ChangeInsurerStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modalities": {
+      "post": {
+        "tags": [
+          "ModalitiesEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateModalityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateModalityResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "includeInactive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfModalityListItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modalities/{id}": {
+      "put": {
+        "tags": [
+          "ModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModalityBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateModalityResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetModalityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modalities/{id}/status": {
+      "patch": {
+        "tags": [
+          "ModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeModalityStatusBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeModalityStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modality-imports/run": {
+      "post": {
+        "tags": [
+          "ModalityImportsEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModalityImportSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modality-map": {
+      "get": {
+        "tags": [
+          "ModalityMapEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModalityMapResponse"
                 }
               }
             }
@@ -1053,6 +1816,75 @@
         }
       }
     },
+    "/api/v1/quotation-groups": {
+      "post": {
+        "tags": [
+          "QuotationGroupsEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuotationGroupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateQuotationGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{id}": {
+      "put": {
+        "tags": [
+          "QuotationGroupsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuotationGroupBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateQuotationGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/users": {
       "post": {
         "tags": [
@@ -1144,6 +1976,22 @@
   },
   "components": {
     "schemas": {
+      "ActivateAdditionalCoverageResponse": {
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "ActivateUserResponse": {
         "required": [
           "id",
@@ -1156,6 +2004,79 @@
             "format": "uuid"
           },
           "status": {
+            "type": "string"
+          }
+        }
+      },
+      "AdditionalCoverageImportSummaryResponse": {
+        "required": [
+          "modalitiesProcessed",
+          "modalitiesSucceeded",
+          "modalitiesFailed",
+          "failures"
+        ],
+        "type": "object",
+        "properties": {
+          "modalitiesProcessed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "modalitiesSucceeded": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "modalitiesFailed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AdditionalCoverageMapResponse": {
+        "required": [
+          "coverages",
+          "pending"
+        ],
+        "type": "object",
+        "properties": {
+          "coverages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CanonicalCoverageItem"
+            }
+          },
+          "pending": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendingCoverageItem"
+            }
+          }
+        }
+      },
+      "AdditionalCoverageNameBody": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
             "type": "string"
           }
         }
@@ -1303,6 +2224,33 @@
           }
         }
       },
+      "BrokerageHistoryEventResponse": {
+        "required": [
+          "type",
+          "subject",
+          "occurredAt",
+          "author"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "author": {
+            "type": "string"
+          }
+        }
+      },
       "BrokerageInsurerEnablementListItemResponse": {
         "required": [
           "id",
@@ -1355,7 +2303,12 @@
           "name",
           "socialName",
           "isPrivateSector",
-          "status"
+          "status",
+          "situation",
+          "registeredAt",
+          "enabledInsurerCount",
+          "enabledInsurerNames",
+          "calculationEngines"
         ],
         "type": "object",
         "properties": {
@@ -1383,6 +2336,198 @@
           },
           "status": {
             "type": "string"
+          },
+          "situation": {
+            "type": "string"
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabledInsurerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "enabledInsurerNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "calculationEngines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BrokeragePreviewAddressResponse": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "BrokeragePreviewResponse": {
+        "required": [
+          "documentNumber",
+          "name",
+          "socialName",
+          "legalNatureCode",
+          "legalNatureName",
+          "isPrivateSector",
+          "alreadyRegistered",
+          "existingBrokerageId",
+          "mainAddress"
+        ],
+        "type": "object",
+        "properties": {
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "alreadyRegistered": {
+            "type": "boolean"
+          },
+          "existingBrokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "mainAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BrokeragePreviewAddressResponse"
+              }
+            ]
+          }
+        }
+      },
+      "BrokerageSituationCountsResponse": {
+        "required": [
+          "all",
+          "active",
+          "incomplete",
+          "inactive"
+        ],
+        "type": "object",
+        "properties": {
+          "all": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "active": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "incomplete": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "inactive": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           }
         }
       },
@@ -1394,6 +2539,33 @@
         "properties": {
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "CanonicalCoverageItem": {
+        "required": [
+          "id",
+          "name",
+          "status",
+          "linked"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "linked": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkedCoverageItem"
+            }
           }
         }
       },
@@ -1478,6 +2650,53 @@
           }
         }
       },
+      "ChangeModalityStatusBody": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeModalityStatusResponse": {
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateAdditionalCoverageResponse": {
+        "required": [
+          "id",
+          "name",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "CreateBrokerageInsurerEnablementRequest": {
         "required": [
           "brokerageId",
@@ -1544,13 +2763,37 @@
         }
       },
       "CreateBrokerageRequest": {
-        "required": [
-          "cnpj"
-        ],
         "type": "object",
         "properties": {
           "cnpj": {
             "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "activateOnSave": {
+            "type": "boolean"
           }
         }
       },
@@ -1564,6 +2807,12 @@
           "legalNatureName",
           "isPrivateSector",
           "status",
+          "situation",
+          "contactEmail",
+          "contactPhone",
+          "responsibleName",
+          "registeredAt",
+          "enabledInsurerCount",
           "mainAddress"
         ],
         "type": "object",
@@ -1604,6 +2853,39 @@
           },
           "status": {
             "type": "string"
+          },
+          "situation": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabledInsurerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           },
           "mainAddress": {
             "oneOf": [
@@ -1691,6 +2973,55 @@
             ]
           },
           "referenceExternalId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateModalityRequest": {
+        "required": [
+          "name",
+          "description",
+          "initialStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "initialStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateModalityResponse": {
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
             "type": [
               "null",
               "string"
@@ -1829,6 +3160,137 @@
                 "$ref": "#/components/schemas/ImportedPolicyHolderAddressResponse"
               }
             ]
+          }
+        }
+      },
+      "CreateQuotationGroupRequest": {
+        "required": [
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage"
+        ],
+        "type": "object",
+        "properties": {
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateQuotationGroupResponse": {
+        "required": [
+          "id",
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
           }
         }
       },
@@ -2080,6 +3542,20 @@
           }
         }
       },
+      "GetBrokerageHistoryResponse": {
+        "required": [
+          "events"
+        ],
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrokerageHistoryEventResponse"
+            }
+          }
+        }
+      },
       "GetBrokerageInsurerEnablementResponse": {
         "required": [
           "id",
@@ -2135,6 +3611,12 @@
           "legalNatureName",
           "isPrivateSector",
           "status",
+          "situation",
+          "contactEmail",
+          "contactPhone",
+          "responsibleName",
+          "registeredAt",
+          "enabledInsurerCount",
           "mainAddress"
         ],
         "type": "object",
@@ -2175,6 +3657,39 @@
           },
           "status": {
             "type": "string"
+          },
+          "situation": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabledInsurerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           },
           "mainAddress": {
             "oneOf": [
@@ -2272,6 +3787,33 @@
           }
         }
       },
+      "GetModalityResponse": {
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "GetPolicyHolderResponse": {
         "required": [
           "id",
@@ -2331,6 +3873,38 @@
             "items": {
               "$ref": "#/components/schemas/PolicyHolderAppointmentResponse"
             }
+          }
+        }
+      },
+      "IgnoreImportedAdditionalCoverageResponse": {
+        "required": [
+          "importedCoverageId",
+          "ignored"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ignored": {
+            "type": "boolean"
+          }
+        }
+      },
+      "IgnoreImportedModalityResponse": {
+        "required": [
+          "importedModalityId",
+          "ignored"
+        ],
+        "type": "object",
+        "properties": {
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ignored": {
+            "type": "boolean"
           }
         }
       },
@@ -2446,6 +4020,22 @@
           }
         }
       },
+      "InactivateAdditionalCoverageResponse": {
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "InsurerListItemResponse": {
         "required": [
           "id",
@@ -2484,19 +4074,73 @@
           }
         }
       },
-      "PagedResponseOfBrokerageInsurerEnablementListItemResponse": {
+      "LinkedCoverageItem": {
+        "required": [
+          "importedCoverageId",
+          "insurerName",
+          "modalityName",
+          "coverageName"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "modalityName": {
+            "type": "string"
+          },
+          "coverageName": {
+            "type": "string"
+          }
+        }
+      },
+      "LinkImportedAdditionalCoverageBody": {
+        "required": [
+          "additionalCoverageId"
+        ],
+        "type": "object",
+        "properties": {
+          "additionalCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "LinkImportedAdditionalCoverageResponse": {
+        "required": [
+          "importedCoverageId",
+          "additionalCoverageId"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "additionalCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ListBrokeragesResponse": {
         "required": [
           "items",
           "page",
           "pageSize",
-          "totalCount"
+          "totalCount",
+          "counts"
         ],
         "type": "object",
         "properties": {
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/BrokerageInsurerEnablementListItemResponse"
+              "$ref": "#/components/schemas/BrokerageListItemResponse"
             }
           },
           "page": {
@@ -2523,6 +4167,9 @@
             ],
             "format": "int64"
           },
+          "counts": {
+            "$ref": "#/components/schemas/BrokerageSituationCountsResponse"
+          },
           "totalPages": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
@@ -2533,7 +4180,166 @@
           }
         }
       },
-      "PagedResponseOfBrokerageListItemResponse": {
+      "MapInsurerResponse": {
+        "required": [
+          "insurerId",
+          "insurerName",
+          "count",
+          "origins"
+        ],
+        "type": "object",
+        "properties": {
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "count": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "origins": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ModalityImportSummaryResponse": {
+        "required": [
+          "insurersProcessed",
+          "insurersSucceeded",
+          "insurersFailed",
+          "failures"
+        ],
+        "type": "object",
+        "properties": {
+          "insurersProcessed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "insurersSucceeded": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "insurersFailed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ModalityListItemResponse": {
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "ModalityMapEntryResponse": {
+        "required": [
+          "modalityId",
+          "name",
+          "status",
+          "offered",
+          "branches",
+          "insurers"
+        ],
+        "type": "object",
+        "properties": {
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "offered": {
+            "type": "boolean"
+          },
+          "branches": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "insurers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MapInsurerResponse"
+            }
+          }
+        }
+      },
+      "ModalityMapResponse": {
+        "required": [
+          "modalities",
+          "pending"
+        ],
+        "type": "object",
+        "properties": {
+          "modalities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModalityMapEntryResponse"
+            }
+          },
+          "pending": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendingImportedModalityResponse"
+            }
+          }
+        }
+      },
+      "PagedResponseOfBrokerageInsurerEnablementListItemResponse": {
         "required": [
           "items",
           "page",
@@ -2545,7 +4351,7 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/BrokerageListItemResponse"
+              "$ref": "#/components/schemas/BrokerageInsurerEnablementListItemResponse"
             }
           },
           "page": {
@@ -2680,6 +4486,55 @@
           }
         }
       },
+      "PagedResponseOfModalityListItemResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModalityListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
       "PagedResponseOfPolicyHolderListItemResponse": {
         "required": [
           "items",
@@ -2726,6 +4581,75 @@
               "string"
             ],
             "format": "int64"
+          }
+        }
+      },
+      "PendingCoverageItem": {
+        "required": [
+          "id",
+          "importedModalityId",
+          "insurerName",
+          "modalityName",
+          "coverageName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "modalityName": {
+            "type": "string"
+          },
+          "coverageName": {
+            "type": "string"
+          }
+        }
+      },
+      "PendingImportedModalityResponse": {
+        "required": [
+          "importedModalityId",
+          "insurerId",
+          "insurerName",
+          "originName",
+          "branch",
+          "engineModalityName",
+          "groupName"
+        ],
+        "type": "object",
+        "properties": {
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "originName": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "engineModalityName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "groupName": {
+            "type": "string"
           }
         }
       },
@@ -3001,6 +4925,71 @@
           }
         }
       },
+      "ReassignImportedModalityBody": {
+        "required": [
+          "modalityId"
+        ],
+        "type": "object",
+        "properties": {
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ReassignImportedModalityResponse": {
+        "required": [
+          "importedModalityId",
+          "modalityId",
+          "linkSource"
+        ],
+        "type": "object",
+        "properties": {
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "linkSource": {
+            "type": "string"
+          }
+        }
+      },
+      "RestoreImportedAdditionalCoverageResponse": {
+        "required": [
+          "importedCoverageId",
+          "ignored"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ignored": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RestoreImportedModalityResponse": {
+        "required": [
+          "importedModalityId",
+          "ignored"
+        ],
+        "type": "object",
+        "properties": {
+          "importedModalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ignored": {
+            "type": "boolean"
+          }
+        }
+      },
       "SearchPersonsResponse": {
         "required": [
           "items"
@@ -3047,6 +5036,73 @@
             "format": "uuid"
           },
           "profile": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "UnlinkImportedAdditionalCoverageResponse": {
+        "required": [
+          "importedCoverageId"
+        ],
+        "type": "object",
+        "properties": {
+          "importedCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "UpdateAdditionalCoverageResponse": {
+        "required": [
+          "id",
+          "name",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateBrokerageBody": {
+        "required": [
+          "socialName",
+          "contactEmail",
+          "contactPhone",
+          "responsibleName"
+        ],
+        "type": "object",
+        "properties": {
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
             "type": [
               "null",
               "string"
@@ -3189,6 +5245,51 @@
           }
         }
       },
+      "UpdateModalityBody": {
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "UpdateModalityResponse": {
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "UpdatePolicyHolderAddressBody": {
         "required": [
           "zipCode",
@@ -3244,10 +5345,147 @@
             ]
           }
         }
+      },
+      "UpdateQuotationGroupBody": {
+        "required": [
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage"
+        ],
+        "type": "object",
+        "properties": {
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateQuotationGroupResponse": {
+        "required": [
+          "id",
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
       }
     }
   },
   "tags": [
+    {
+      "name": "AdditionalCoverageImportsEndpoint"
+    },
+    {
+      "name": "AdditionalCoveragesEndpoint"
+    },
     {
       "name": "AuthenticationEndpoint"
     },
@@ -3264,13 +5502,31 @@
       "name": "CreditInquiriesEndpoint"
     },
     {
+      "name": "ImportedAdditionalCoveragesEndpoint"
+    },
+    {
+      "name": "ImportedModalitiesEndpoint"
+    },
+    {
       "name": "InsurersEndpoint"
+    },
+    {
+      "name": "ModalitiesEndpoint"
+    },
+    {
+      "name": "ModalityImportsEndpoint"
+    },
+    {
+      "name": "ModalityMapEndpoint"
     },
     {
       "name": "PersonsEndpoint"
     },
     {
       "name": "PolicyHoldersEndpoint"
+    },
+    {
+      "name": "QuotationGroupsEndpoint"
     },
     {
       "name": "UsersEndpoint"

@@ -1,7 +1,7 @@
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Vínculo entre um Perfil e uma Permissão (RN-032/RN-033). Uma Permissão do catálogo
+/// Vínculo entre um Perfil e uma Permissão (RN-062/RN-063). Uma Permissão do catálogo
 /// aparece no Perfil quando marcada.
 /// </summary>
 public sealed class ProfilePermission : EntityBase

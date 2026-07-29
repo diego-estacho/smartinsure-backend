@@ -5,7 +5,7 @@ namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile.V
 
 /// <summary>
 /// Validador de forma para concessão/revogação de perfil. O nome nulo revoga; quando informado,
-/// não pode ser vazio — a existência do Perfil é resolvida no caso de uso (RN-012/RN-032).
+/// não pode ser vazio — a existência do Perfil é resolvida no caso de uso (RN-012/RN-062).
 /// </summary>
 public sealed class SetUserProfileValidator : AbstractValidator<SetUserProfileRequest>
 {

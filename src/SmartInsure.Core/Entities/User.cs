@@ -50,7 +50,7 @@ public sealed class User : EntityBase
         Status = EUserStatus.Active;
     }
 
-    /// <summary>RN-046: inativa o Usuário Ativo (Usuário Inativo não acessa a plataforma).</summary>
+    /// <summary>RN-076: inativa o Usuário Ativo (Usuário Inativo não acessa a plataforma).</summary>
     public void Deactivate()
     {
         if (Status != EUserStatus.Active)
@@ -61,7 +61,7 @@ public sealed class User : EntityBase
         Status = EUserStatus.Inactive;
     }
 
-    /// <summary>RN-046: reativa o Usuário Inativo (Inativo → Ativo).</summary>
+    /// <summary>RN-076: reativa o Usuário Inativo (Inativo → Ativo).</summary>
     public void Reactivate()
     {
         if (Status != EUserStatus.Inactive)

@@ -16,7 +16,7 @@ public sealed class UserPolicyHolderMembershipMapping : IEntityTypeConfiguration
         builder.Property(membership => membership.PolicyHolderId).IsRequired();
         builder.Property(membership => membership.ProfileId).IsRequired();
 
-        // RN-034: no máximo um vínculo por Usuário × Tomador.
+        // RN-064: no máximo um vínculo por Usuário × Tomador.
         builder.HasIndex(membership => new { membership.UserId, membership.PolicyHolderId }).IsUnique();
 
         builder.HasOne<User>()

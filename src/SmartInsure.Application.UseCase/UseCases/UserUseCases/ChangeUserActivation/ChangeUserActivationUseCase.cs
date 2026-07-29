@@ -8,10 +8,10 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.ChangeUserActivation;
 
 /// <summary>
-/// RN-046 — inativa/reativa um Usuário. Nesta fatia a operação é do Administrador do Sistema
+/// RN-076 — inativa/reativa um Usuário. Nesta fatia a operação é do Administrador do Sistema
 /// (autorização no endpoint); a ação por escopo (Corretor/Tomador Administrador, usuário comum
-/// com permissão) fica para a fatia dependente de escopo/enforcement ([OPEN-12]). Usuário Inativo
-/// não acessa a plataforma (RN-005/RN-046).
+/// com permissão) fica para a fatia dependente de escopo/enforcement ([OPEN-20]). Usuário Inativo
+/// não acessa a plataforma (RN-005/RN-076).
 /// </summary>
 public sealed class ChangeUserActivationUseCase(
     IUserRepository userRepository,
@@ -31,7 +31,7 @@ public sealed class ChangeUserActivationUseCase(
         }
         else
         {
-            // RN-046: a inativação não pode deixar a plataforma sem Administrador do Sistema.
+            // RN-076: a inativação não pode deixar a plataforma sem Administrador do Sistema.
             var systemAdministrator = await profileRepository.GetSystemAdministratorAsync(cancellationToken);
 
             if (systemAdministrator is not null

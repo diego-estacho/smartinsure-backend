@@ -27,7 +27,7 @@ public interface ICasdoorApi
         CancellationToken cancellationToken);
 
     /// <summary>
-    /// RN-035: atualiza a identidade do Usuário (usado pra definir/alterar a senha).
+    /// RN-065: atualiza a identidade do Usuário (usado pra definir/alterar a senha).
     /// NOTA: a semântica (merge/update total) depende do deployment Casdoor.
     /// Confirmação necessária no PR para o comportamento exato.
     /// </summary>

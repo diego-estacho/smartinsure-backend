@@ -1,5 +1,5 @@
 ---
-id: ADR-060
+id: ADR-065
 title: Escopo ativo (Corretora/Tomador) carregado como claim
 status: proposed
 tags: [api, seguranca, dominio]
@@ -8,11 +8,11 @@ supersedes: []
 evidence: []
 ---
 
-# ADR-060: Escopo ativo (Corretora/Tomador) carregado como claim
+# ADR-065: Escopo ativo (Corretora/Tomador) carregado como claim
 
 ## Status
 
-Proposto (2026-07-23) — aguardando ratificação do dono de arquitetura. Direção decidida na condução da jornada (mecânica da [OPEN-11](../product-specs/open-decisions.md)); endereça a RN-034. Só vira Aceito com a ratificação; a fatia 1b (implementação) não começa antes disso.
+Proposto (2026-07-23) — aguardando ratificação do dono de arquitetura. Direção decidida na condução da jornada (mecânica da [OPEN-19](../product-specs/open-decisions.md)); endereça a RN-034. Só vira Aceito com a ratificação; a fatia 1b (implementação) não começa antes disso.
 
 ## Decisão (normativa)
 
@@ -31,5 +31,5 @@ Opções consideradas: claim no token (escolhida — coerente com ADR-014); sess
 
 - Troca de Escopo ativo custa uma reemissão de acesso (aceitável — ação pontual do Usuário).
 - A invalidação de cache de identidade na troca de Perfil (ADR-014) vale também para a claim de Escopo.
-- **Em aberto (não decidido por este ADR):** qual o Escopo ativo padrão no primeiro acesso quando há mais de um vínculo (única vira ativa? seleção obrigatória?) — segue na [OPEN-11](../product-specs/open-decisions.md), com sabor de PO/UX.
+- **Em aberto (não decidido por este ADR):** qual o Escopo ativo padrão no primeiro acesso quando há mais de um vínculo (única vira ativa? seleção obrigatória?) — segue na [OPEN-19](../product-specs/open-decisions.md), com sabor de PO/UX.
 - A implementação do carregamento/troca da claim é a fatia 1b da jornada; a fatia 1a entrega apenas os vínculos que a seleção valida.

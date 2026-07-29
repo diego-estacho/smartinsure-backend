@@ -1,7 +1,7 @@
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Vínculo do Usuário com um Tomador (RN-034), portador do Perfil do Usuário naquele Tomador.
+/// Vínculo do Usuário com um Tomador (RN-064), portador do Perfil do Usuário naquele Tomador.
 /// Um Usuário pode ter vários; no máximo um por Tomador. O Tomador é uma Person (papel PolicyHolder).
 /// </summary>
 public sealed class UserPolicyHolderMembership : EntityBase

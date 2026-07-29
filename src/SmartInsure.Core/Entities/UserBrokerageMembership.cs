@@ -1,7 +1,7 @@
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Vínculo do Usuário com uma Corretora (RN-034), portador do Perfil do Usuário naquela Corretora.
+/// Vínculo do Usuário com uma Corretora (RN-064), portador do Perfil do Usuário naquela Corretora.
 /// Um Usuário pode ter vários; no máximo um por Corretora. A Corretora é uma Person (papel Broker).
 /// </summary>
 public sealed class UserBrokerageMembership : EntityBase

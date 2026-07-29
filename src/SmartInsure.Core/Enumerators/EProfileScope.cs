@@ -1,7 +1,7 @@
 namespace SmartInsure.Core.Enumerators;
 
 /// <summary>
-/// Escopo do Perfil (glossário `ProfileScope`, RN-032): domínio em que o Perfil vale.
+/// Escopo do Perfil (glossário `ProfileScope`, RN-062): domínio em que o Perfil vale.
 /// Persistido como string (ADR-031).
 /// </summary>
 public enum EProfileScope

@@ -16,7 +16,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfraData(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool registerMongo = true)
     {
         // ICurrentUserAccessor é opcional por design (ADR-035): ausente = execução de sistema.
         services.AddScoped(provider =>
@@ -39,21 +40,35 @@ public static class DependencyInjection
         services.AddScoped<ILegalNatureRepository, LegalNatureRepository>();
         services.AddScoped<IBrokerageInsurerEnablementRepository, BrokerageInsurerEnablementRepository>();
         services.AddScoped<IPolicyHolderAppointmentRepository, PolicyHolderAppointmentRepository>();
+        services.AddScoped<IModalityRepository, ModalityRepository>();
+        services.AddScoped<IImportedGroupRepository, ImportedGroupRepository>();
+        services.AddScoped<IImportedModalityRepository, ImportedModalityRepository>();
+        services.AddScoped<IImportedModalityTagRepository, ImportedModalityTagRepository>();
+        services.AddScoped<IImportedModalityParticularClauseRepository, ImportedModalityParticularClauseRepository>();
+        services.AddScoped<IAdditionalCoverageRepository, AdditionalCoverageRepository>();
+        services.AddScoped<IImportedAdditionalCoverageRepository, ImportedAdditionalCoverageRepository>();
         services.AddScoped<ICreditInquiryRepository, CreditInquiryRepository>();
+        services.AddScoped<IQuotationGroupRepository, QuotationGroupRepository>();
 
-        services.AddOptions<MongoOptions>()
-            .BindConfiguration(MongoOptions.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        // Mongo é opcional por host: a API valida na inicialização (MongoOptions [Required] +
+        // ValidateOnStart), mas o job de importação (SmartInsure.Functions) não usa Mongo — passa
+        // registerMongo:false para não exigir config de Mongo só para bootar o host.
+        if (registerMongo)
+        {
+            services.AddOptions<MongoOptions>()
+                .BindConfiguration(MongoOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
-        services.AddSingleton<IMongoClient>(provider =>
-            new MongoClient(provider.GetRequiredService<IOptions<MongoOptions>>().Value.ConnectionString));
+            services.AddSingleton<IMongoClient>(provider =>
+                new MongoClient(provider.GetRequiredService<IOptions<MongoOptions>>().Value.ConnectionString));
 
-        services.AddSingleton(provider =>
-            provider.GetRequiredService<IMongoClient>()
-                .GetDatabase(provider.GetRequiredService<IOptions<MongoOptions>>().Value.Database));
+            services.AddSingleton(provider =>
+                provider.GetRequiredService<IMongoClient>()
+                    .GetDatabase(provider.GetRequiredService<IOptions<MongoOptions>>().Value.Database));
 
-        services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
+            services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
+        }
 
         return services;
     }

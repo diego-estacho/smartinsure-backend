@@ -11,8 +11,8 @@ using Microsoft.Extensions.Options;
 
 namespace SmartInsure.Tests.Application.UseCases.UserUseCases.ResendInvitation;
 
-/// <summary>RN-035 — reenvio do convite: invalida anterior + envia novo.</summary>
-[Trait("RuleId", "RN-035")]
+/// <summary>RN-065 — reenvio do convite: invalida anterior + envia novo.</summary>
+[Trait("RuleId", "RN-065")]
 public class ResendInvitationUseCaseTests
 {
     private readonly IInvitationRepository _invitationRepository = Substitute.For<IInvitationRepository>();

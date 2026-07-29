@@ -1,0 +1,7 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.ModalityImportUseCases.RunModalityImport.Requests;
+using SmartInsure.Application.UseCase.UseCases.ModalityImportUseCases.RunModalityImport.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.ModalityImportUseCases.RunModalityImport.Interfaces;
+
+public interface IRunModalityImportUseCase : IUseCase<RunModalityImportRequest, ModalityImportSummaryResponse>;

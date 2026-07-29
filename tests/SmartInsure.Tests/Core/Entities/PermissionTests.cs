@@ -4,7 +4,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>Invariantes da entidade Permissão (catálogo — base da RN-033).</summary>
+/// <summary>Invariantes da entidade Permissão (catálogo — base da RN-063).</summary>
 public class PermissionTests
 {
     [Fact]

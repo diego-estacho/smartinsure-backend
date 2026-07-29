@@ -18,6 +18,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Default commitado do OPEN-10 (ModalityImport:Schedule, 30 min) — ver XML doc de
+         ModalityImportFunction para as ressalvas de resolução do host de Functions. -->
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SmartInsure.Application.UseCase\SmartInsure.Application.UseCase.csproj" />
     <ProjectReference Include="..\SmartInsure.Core\SmartInsure.Core.csproj" />
     <ProjectReference Include="..\SmartInsure.Infra.Data\SmartInsure.Infra.Data.csproj" />

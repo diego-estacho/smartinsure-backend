@@ -32,7 +32,7 @@ public sealed class UserMapping : IEntityTypeConfiguration<User>
             .HasMaxLength(20)
             .IsRequired();
 
-        // RN-012/RN-032: Perfil (Escopo System) opcional, referenciado por FK (nullable).
+        // RN-012/RN-062: Perfil (Escopo System) opcional, referenciado por FK (nullable).
         builder.Property(user => user.ProfileId);
         builder.HasOne(user => user.Profile)
             .WithMany()

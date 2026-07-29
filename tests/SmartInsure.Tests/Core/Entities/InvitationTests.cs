@@ -3,8 +3,8 @@ using SmartInsure.Core.Entities;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-035 — convite de primeiro acesso: token único, validade, reenviável.</summary>
-[Trait("RuleId", "RN-035")]
+/// <summary>RN-065 — convite de primeiro acesso: token único, validade, reenviável.</summary>
+[Trait("RuleId", "RN-065")]
 public class InvitationTests
 {
     [Fact]

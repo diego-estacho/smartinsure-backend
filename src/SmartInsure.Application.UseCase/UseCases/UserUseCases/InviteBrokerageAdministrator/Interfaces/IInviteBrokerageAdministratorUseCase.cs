@@ -4,6 +4,6 @@ using SmartInsure.Application.UseCase.UseCases.UserUseCases.InviteBrokerageAdmin
 
 namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.InviteBrokerageAdministrator.Interfaces;
 
-/// <summary>Contrato do convite de Corretor Administrador (RN-036).</summary>
+/// <summary>Contrato do convite de Corretor Administrador (RN-066).</summary>
 public interface IInviteBrokerageAdministratorUseCase
     : IUseCase<InviteBrokerageAdministratorRequest, InviteBrokerageAdministratorResponse>;

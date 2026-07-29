@@ -1,7 +1,7 @@
-# Exec-plan 0008 — Fundação do modelo de Perfil (RN-032, RN-033, refatoração da RN-012)
+# Exec-plan 0008 — Fundação do modelo de Perfil (RN-062, RN-063, refatoração da RN-012)
 
 Status: em andamento — fatia 0 da jornada Perfis e Permissões (slug provisório `perfis-permissoes`, AB# pendente)
-Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/SECURITY.md`, RNs em `docs/product-specs/regras-de-negocio/perfis-e-permissoes.md` (RN-032, RN-033) e `usuarios.md` (RN-012), glossário (termos `Profile`/`Permission`/`ProfileScope` — propostos 2026-07-23, ratificados pela PO), OPEN-03/OPEN-09.
+Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/SECURITY.md`, RNs em `docs/product-specs/regras-de-negocio/perfis-e-permissoes.md` (RN-062, RN-063) e `usuarios.md` (RN-012), glossário (termos `Profile`/`Permission`/`ProfileScope` — propostos 2026-07-23, ratificados pela PO), OPEN-03/OPEN-17.
 
 ## Objetivo
 
@@ -10,7 +10,7 @@ Primeira fatia da jornada Perfis e Permissões: transformar **Perfil de enum em 
 ## Escopo e não-escopo (fatia 0)
 
 - **No escopo:** entidades `Profile`/`Permission`/`ProfilePermission` + `ProfileScope`; migrations das tabelas; seed do Perfil fixo `SystemAdministrator` (dado de catálogo, precedente `LegalNatures`); migração de `Users.Profile` → `Users.ProfileId` (backfill + drop da coluna antiga); refatoração de `SetUserProfileUseCase`/validator/claims para a entidade; remoção de `EUserProfile`.
-- **Fora do escopo (fatias seguintes):** catálogo de códigos de Permissão e **enforcement por permissão** (RN-033 completa) — as tabelas nascem, mas nenhuma feature declara/consome permissão ainda; autorização segue por role derivada do nome do Perfil. Criação de Perfil customizado, vínculos Usuário↔Corretora/Tomador, convite, gestão. Perfis-base Corretor/Tomador dependem da OPEN-09.
+- **Fora do escopo (fatias seguintes):** catálogo de códigos de Permissão e **enforcement por permissão** (RN-063 completa) — as tabelas nascem, mas nenhuma feature declara/consome permissão ainda; autorização segue por role derivada do nome do Perfil. Criação de Perfil customizado, vínculos Usuário↔Corretora/Tomador, convite, gestão. Perfis-base Corretor/Tomador dependem da OPEN-17.
 
 ## Tarefas
 
@@ -21,7 +21,7 @@ Primeira fatia da jornada Perfis e Permissões: transformar **Perfil de enum em 
 - [ ] Application: `SetUserProfileUseCase` resolve o Perfil por nome e a guarda de último admin por `ProfileId`; `SetUserProfileValidator` sem `Enum.TryParse`.
 - [ ] Api: `UserProfileClaimsTransformation` lê `Profile.Name` (constante), não o enum.
 - [ ] Remover `EUserProfile.cs` — zero referências no codebase.
-- [ ] Testes `[Trait("RuleId", "RN-012")]` (grant/revoke/guarda sobre a entidade) e `[Trait("RuleId", "RN-032")]` (modelo Profile: Create, escopo, permissões); `Permission`/mapeamentos cobertos sem RuleId (RN-033 completa é fatia de enforcement).
+- [ ] Testes `[Trait("RuleId", "RN-012")]` (grant/revoke/guarda sobre a entidade) e `[Trait("RuleId", "RN-062")]` (modelo Profile: Create, escopo, permissões); `Permission`/mapeamentos cobertos sem RuleId (RN-063 completa é fatia de enforcement).
 - [ ] `dotnet build` + `dotnet test` verdes; `check-harness.py` verde; migration validada no banco de dev.
 - [ ] PR: dbmigration (→ develop) antes do backend (→ main), mesmo vínculo (AB# pendente).
 
@@ -41,5 +41,5 @@ Primeira fatia da jornada Perfis e Permissões: transformar **Perfil de enum em 
 - Migrations: 4 arquivos (`Permissions`, `Profiles`, `ProfilePermissions`, `migrar-user-profile-para-entidade`) no padrão do repo (guards de existência, FK Restrict, seed do Perfil `SystemAdministrator` como dado de catálogo à la `LegalNatures`, backfill + drop da coluna `Users.Profile`).
 - **NÃO aplicadas a nenhum banco nesta execução** (Docker daemon local indisponível). Diferente das entregas anteriores (ex.: 0006 aplicou a migration na VPS via sqlcmd, só o baseline Flyway ficou pendente): esta fatia está **abaixo do bar de verificação do harness** — `validar migration no banco de dev` (Passo 5) segue em aberto e é a migration mais arriscada da fatia (DDL + DML: seed, ALTER+FK, UPDATE, DROP). **Aplicar no banco de dev GATEIA o PR.**
 - Contrato: `PUT /users/{id}/profile` inalterado (request/response por nome de perfil) — sem regeneração de `openapi.json` nem impacto no front.
-- Débito técnico rastreado: `IX_Profiles_Name` é único global; RN-039/RN-040 exigem nome único **por Escopo** — a fatia 4 precisa de migration nova que substitua esse índice por composto/filtrado (registrado no `tech-debt-tracker.md`).
+- Débito técnico rastreado: `IX_Profiles_Name` é único global; RN-069/RN-070 exigem nome único **por Escopo** — a fatia 4 precisa de migration nova que substitua esse índice por composto/filtrado (registrado no `tech-debt-tracker.md`).
 - Pendências: aplicar migrations no banco de dev (Docker/VPS) — gate do PR; AB#/PBI; PR (dbmigration → develop antes do backend → main); fatias 1..5 da jornada.

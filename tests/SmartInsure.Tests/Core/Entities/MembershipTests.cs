@@ -3,8 +3,8 @@ using SmartInsure.Core.Entities;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-034 — vínculos do Usuário com Corretora e Tomador (um Perfil por vínculo).</summary>
-[Trait("RuleId", "RN-034")]
+/// <summary>RN-064 — vínculos do Usuário com Corretora e Tomador (um Perfil por vínculo).</summary>
+[Trait("RuleId", "RN-064")]
 public class MembershipTests
 {
     [Fact]

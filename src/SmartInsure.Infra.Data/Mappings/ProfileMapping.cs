@@ -16,7 +16,7 @@ public sealed class ProfileMapping : IEntityTypeConfiguration<Profile>
             .HasMaxLength(100)
             .IsRequired();
 
-        // RN-032: nome de Perfil único (nesta fatia só há Escopo System).
+        // RN-062: nome de Perfil único (nesta fatia só há Escopo System).
         builder.HasIndex(profile => profile.Name).IsUnique();
 
         builder.Property(profile => profile.Scope)
@@ -30,7 +30,7 @@ public sealed class ProfileMapping : IEntityTypeConfiguration<Profile>
         builder.Property(profile => profile.BrokerageId);
         builder.Property(profile => profile.PolicyHolderId);
 
-        // Coleção privada de Permissões do Perfil (RN-032/RN-033).
+        // Coleção privada de Permissões do Perfil (RN-062/RN-063).
         builder.HasMany(profile => profile.Permissions)
             .WithOne()
             .HasForeignKey(profilePermission => profilePermission.ProfileId)

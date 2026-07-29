@@ -1,50 +1,102 @@
-using SmartInsure.Application.UseCase.ModelsBase;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.ListBrokerages.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.ListBrokerages.Requests;
 using SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.ListBrokerages.Responses;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.BrokerageUseCases.ListBrokerages;
 
-/// <summary>RN-018 — Pessoas jurídicas com papel Corretor, filtradas por situação opcional.</summary>
+/// <summary>
+/// RN-018 — lista Pessoas jurídicas com papel Corretor, com busca e filtros combinados server-side,
+/// e a contagem por situação apresentada (RN-053) para as abas. Filtro/ordenação/paginação no banco.
+/// </summary>
 public sealed class ListBrokeragesUseCase(IPersonRepository personRepository) : IListBrokeragesUseCase
 {
-    public async Task<PagedResponse<BrokerageListItemResponse>> ExecuteAsync(
+    public async Task<ListBrokeragesResponse> ExecuteAsync(
         ListBrokeragesRequest request,
         CancellationToken cancellationToken)
     {
         var page = Math.Max(request.Page, 1);
         var pageSize = Math.Clamp(request.PageSize, 1, 100);
-        var status = ParseStatus(request.Status);
 
-        var (items, totalCount) = await personRepository.ListBrokeragesAsync(
-            page, pageSize, status, cancellationToken);
+        var query = new BrokerageListQuery(
+            page,
+            pageSize,
+            request.Search,
+            ParseSituation(request.Situation),
+            request.InsurerId,
+            ParseCalculationEngine(request.CalculationEngine),
+            ParseSector(request.Sector),
+            request.RegisteredFrom?.Date,
+            request.RegisteredTo?.Date.AddDays(1).AddTicks(-1));
 
-        var responses = items
+        var result = await personRepository.ListBrokeragesAsync(query, cancellationToken);
+
+        var items = result.Items
             .Select(item => new BrokerageListItemResponse(
                 item.Id,
                 item.DocumentNumber,
                 item.Name,
                 item.SocialName,
                 item.IsPrivateSector,
-                item.Status))
+                item.Status,
+                item.Situation,
+                item.RegisteredAt,
+                item.EnabledInsurerCount,
+                item.EnabledInsurerNames,
+                item.CalculationEngines))
             .ToList();
 
-        return new PagedResponse<BrokerageListItemResponse>(
-            responses, page, pageSize, totalCount);
+        return new ListBrokeragesResponse(
+            items,
+            page,
+            pageSize,
+            result.TotalCount,
+            new BrokerageSituationCountsResponse(
+                result.Counts.All,
+                result.Counts.Active,
+                result.Counts.Incomplete,
+                result.Counts.Inactive));
     }
 
-    private static EPersonRoleStatus? ParseStatus(string? status)
+    private static EBrokerageSituation? ParseSituation(string? value)
     {
-        if (string.IsNullOrWhiteSpace(status))
+        if (string.IsNullOrWhiteSpace(value))
         {
             return null;
         }
 
-        return Enum.TryParse<EPersonRoleStatus>(status, ignoreCase: true, out var parsed)
+        return Enum.TryParse<EBrokerageSituation>(value, ignoreCase: true, out var parsed)
             ? parsed
-            : throw new BusinessRuleException("A situação deve ser Active ou Inactive.");
+            : throw new BusinessRuleException("A situação deve ser Active, Incomplete ou Inactive.");
+    }
+
+    private static ECalculationEngine? ParseCalculationEngine(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return Enum.TryParse<ECalculationEngine>(value, ignoreCase: true, out var parsed)
+            ? parsed
+            : throw new BusinessRuleException("Motor de cálculo inválido.");
+    }
+
+    private static bool? ParseSector(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return value.Trim().ToLowerInvariant() switch
+        {
+            "private" or "privado" => true,
+            "public" or "publico" or "público" => false,
+            _ => throw new BusinessRuleException("O setor deve ser Public ou Private."),
+        };
     }
 }

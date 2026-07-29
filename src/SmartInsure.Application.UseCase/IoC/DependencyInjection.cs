@@ -1,6 +1,8 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using SmartInsure.Application.UseCase.Services.AdditionalCoverageImports;
 using SmartInsure.Application.UseCase.Services.Invitations;
+using SmartInsure.Application.UseCase.Services.ModalityImports;
 using SmartInsure.Application.UseCase.Services.PersonImports;
 
 namespace SmartInsure.Application.UseCase.IoC;
@@ -37,6 +39,12 @@ public static class DependencyInjection
         // Serviços compartilhados por use cases; fora da convenção I{Ação}UseCase → {Ação}UseCase.
         services.AddScoped<IPersonBureauImporter, PersonBureauImporter>();
         services.AddScoped<IInvitationMailer, InvitationMailer>();
+
+        // Serviço de importação de modalidades (RN-034), orquestrado pelo timer das Functions.
+        services.AddScoped<IModalityImporter, ModalityImporter>();
+
+        // Serviço de importação de Coberturas Adicionais (RN-044), orquestrado pelo timer e pelo disparo sob demanda.
+        services.AddScoped<IAdditionalCoverageImporter, AdditionalCoverageImporter>();
 
         return services;
     }

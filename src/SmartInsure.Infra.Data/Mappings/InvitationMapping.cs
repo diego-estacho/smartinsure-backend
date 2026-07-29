@@ -17,7 +17,7 @@ public sealed class InvitationMapping : IEntityTypeConfiguration<Invitation>
         builder.Property(invitation => invitation.ExpiresAtUtc).IsRequired();
         builder.Property(invitation => invitation.ConsumedAtUtc);
 
-        // RN-035: no máximo um convite ativo (ConsumedAtUtc IS NULL) por Usuário.
+        // RN-065: no máximo um convite ativo (ConsumedAtUtc IS NULL) por Usuário.
         builder.HasIndex(invitation => invitation.UserId)
             .IsUnique()
             .HasFilter("[ConsumedAtUtc] IS NULL");

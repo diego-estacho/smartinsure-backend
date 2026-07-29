@@ -16,6 +16,9 @@ public interface IBrokerageInsurerEnablementRepository : IRepository<BrokerageIn
     Task<(IReadOnlyList<BrokerageInsurerEnablementListItemDto> Items, long TotalCount)> ListAsync(
         Guid? brokerageId, int page, int pageSize, CancellationToken cancellationToken);
 
+    /// <summary>RN-034: Habilitações Ativas com CNPJ da Corretora e Referência de origem da Seguradora, para a importação.</summary>
+    Task<IReadOnlyList<ActiveEnablementImportDto>> ListActiveForImportAsync(CancellationToken cancellationToken);
+
     /// <summary>RN-029: lista Habilitações Ativas (Status = Active) da Corretora para consulta de crédito.</summary>
     Task<IReadOnlyList<BrokerageInsurerEnablement>> ListActiveByBrokerageAsync(
         Guid brokerageId, CancellationToken cancellationToken);

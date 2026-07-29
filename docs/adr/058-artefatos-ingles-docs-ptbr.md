@@ -17,7 +17,7 @@ Aceito
 ## Decisão (normativa)
 
 - Todo **artefato de código** DEVE ter nome em inglês: tipos, membros, arquivos, pastas, rotas de API, tabelas e colunas de banco, schemas do contrato OpenAPI e types gerados no front.
-- Cada termo do glossário tem um **nome técnico em inglês mapeado 1:1** no próprio glossário (ex.: Oferta → `Offer`, Usuário → `User`). Nome técnico nasce no glossário junto com o termo — a tradução é por decreto, nunca ad hoc.
+- Cada termo do glossário tem um **nome técnico em inglês mapeado 1:1** no próprio glossário (ex.: Grupo de Cotação → `QuotationGroup`, Usuário → `User`). Nome técnico nasce no glossário junto com o termo — a tradução é por decreto, nunca ad hoc.
 - **Documentação** (RNs, ADRs, exec-plans, READMEs), **UI** (labels, rotas de página, mensagens), mensagens de erro/validação da API e **commits** permanecem em pt-BR (ADR-019 segue valendo para cultura e mensagens).
 - Status expostos pela API usam o nome técnico estável em inglês (ex.: `Pending`, `Active`); a UI traduz por mapa nome→label pt-BR (ADR de consumo do contrato no front).
 - Nomes de métodos de teste seguem a convenção existente `Metodo_Resultado_Condicao` (ADR-056), com descrição em pt-BR permitida — não são renomeados por esta ADR.

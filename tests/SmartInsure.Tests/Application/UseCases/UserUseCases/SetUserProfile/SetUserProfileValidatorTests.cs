@@ -23,7 +23,7 @@ public class SetUserProfileValidatorTests
     public void Validate_DeveAprovar_QuandoProfileInformado()
         => _validator.Validate(Request(profile: "SystemAdministrator")).IsValid.Should().BeTrue();
 
-    // A validade do nome do Perfil é resolvida no caso de uso (RN-012/RN-032), não no validador de forma;
+    // A validade do nome do Perfil é resolvida no caso de uso (RN-012/RN-062), não no validador de forma;
     // aqui só recusamos nome em branco.
     [Fact]
     public void Validate_DeveRecusar_QuandoProfileEmBranco()

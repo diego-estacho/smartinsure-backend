@@ -10,6 +10,6 @@ public interface IProfileRepository : IRepository<Profile>
     /// <summary>Perfil fixo Administrador do Sistema (Escopo System) — chave natural, nunca o GUID (RN-012).</summary>
     Task<Profile?> GetSystemAdministratorAsync(CancellationToken cancellationToken);
 
-    /// <summary>Perfil fixo Corretor Administrador (Escopo Brokerage, global) — chave natural (RN-036).</summary>
+    /// <summary>Perfil fixo Corretor Administrador (Escopo Brokerage, global) — chave natural (RN-066).</summary>
     Task<Profile?> GetBrokerageAdministratorAsync(CancellationToken cancellationToken);
 }

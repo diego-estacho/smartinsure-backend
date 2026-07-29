@@ -16,8 +16,8 @@ using SmartInsure.Infra.CrossCutting.Options;
 
 namespace SmartInsure.Tests.Application.UseCases.UserUseCases.InviteBrokerageAdministrator;
 
-/// <summary>RN-036 — o Administrador do Sistema convida Corretor Administrador para Corretoras.</summary>
-[Trait("RuleId", "RN-036")]
+/// <summary>RN-066 — o Administrador do Sistema convida Corretor Administrador para Corretoras.</summary>
+[Trait("RuleId", "RN-066")]
 public class InviteBrokerageAdministratorUseCaseTests
 {
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();
@@ -81,7 +81,7 @@ public class InviteBrokerageAdministratorUseCaseTests
         response.Status.Should().Be("Pending");
         await _userRepository.Received(1).AddAsync(Arg.Any<User>(), Arg.Any<CancellationToken>());
         await _invitationRepository.Received(1).AddAsync(Arg.Any<Invitation>(), Arg.Any<CancellationToken>());
-        // RN-036: um vínculo Corretor Administrador por Corretora informada.
+        // RN-066: um vínculo Corretor Administrador por Corretora informada.
         await _membershipRepository.Received(2).AddAsync(
             Arg.Is<UserBrokerageMembership>(membership => membership.ProfileId == _brokerageAdministrator.Id),
             Arg.Any<CancellationToken>());

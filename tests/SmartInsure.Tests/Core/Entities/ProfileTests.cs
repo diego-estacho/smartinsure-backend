@@ -5,8 +5,8 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-032 — Perfil como conjunto de Permissões com Escopo.</summary>
-[Trait("RuleId", "RN-032")]
+/// <summary>RN-062 — Perfil como conjunto de Permissões com Escopo.</summary>
+[Trait("RuleId", "RN-062")]
 public class ProfileTests
 {
     [Fact]

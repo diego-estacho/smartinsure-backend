@@ -47,6 +47,12 @@ public class CreateBrokerageUseCaseTests
             "Sociedade Empresária Limitada",
             true,
             "Active",
+            "Active",
+            "contato@alfa.com.br",
+            null,
+            null,
+            new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            0,
             null);
 
     private static BureauPersonComplement Complement()
@@ -64,7 +70,7 @@ public class CreateBrokerageUseCaseTests
         _personRepository.GetTrackedByDocumentNumberAsync(Cnpj, Arg.Any<CancellationToken>())
             .Returns(person);
 
-        var response = await _useCase.ExecuteAsync(new CreateBrokerageRequest(Cnpj), CancellationToken.None);
+        var response = await _useCase.ExecuteAsync(new CreateBrokerageRequest { Cnpj = Cnpj }, CancellationToken.None);
 
         response.Status.Should().Be("Active");
         person.Roles.Should().ContainSingle(role => role.Role == EPersonRole.Broker
@@ -82,7 +88,7 @@ public class CreateBrokerageUseCaseTests
         _personRepository.GetTrackedByDocumentNumberAsync(Cnpj, Arg.Any<CancellationToken>())
             .Returns(person);
 
-        var action = () => _useCase.ExecuteAsync(new CreateBrokerageRequest(Cnpj), CancellationToken.None);
+        var action = () => _useCase.ExecuteAsync(new CreateBrokerageRequest { Cnpj = Cnpj }, CancellationToken.None);
 
         await action.Should().ThrowAsync<ConflictException>()
             .WithMessage("Corretora já cadastrada.");
@@ -98,7 +104,7 @@ public class CreateBrokerageUseCaseTests
         _personRepository.GetTrackedByDocumentNumberAsync(Cnpj, Arg.Any<CancellationToken>())
             .Returns(person);
 
-        var action = () => _useCase.ExecuteAsync(new CreateBrokerageRequest(Cnpj), CancellationToken.None);
+        var action = () => _useCase.ExecuteAsync(new CreateBrokerageRequest { Cnpj = Cnpj }, CancellationToken.None);
 
         await action.Should().ThrowAsync<ConflictException>()
             .WithMessage("Corretora já cadastrada.");
@@ -116,7 +122,7 @@ public class CreateBrokerageUseCaseTests
         _legalNatureRepository.GetByCodeAsync("2062", Arg.Any<CancellationToken>())
             .Returns(LegalNature.Create(2018, "2062", "Sociedade Empresária Limitada", true));
 
-        var response = await _useCase.ExecuteAsync(new CreateBrokerageRequest(Cnpj), CancellationToken.None);
+        var response = await _useCase.ExecuteAsync(new CreateBrokerageRequest { Cnpj = Cnpj }, CancellationToken.None);
 
         response.DocumentNumber.Should().Be(Cnpj);
         await _personRepository.Received(1).AddAsync(
@@ -135,10 +141,37 @@ public class CreateBrokerageUseCaseTests
         _bureauProvider.GetPersonComplementAsync(Cnpj, "Corretor", EBureau.ReceitaWS, Arg.Any<CancellationToken>())
             .Returns((BureauPersonComplement?)null);
 
-        var action = () => _useCase.ExecuteAsync(new CreateBrokerageRequest(Cnpj), CancellationToken.None);
+        var action = () => _useCase.ExecuteAsync(new CreateBrokerageRequest { Cnpj = Cnpj }, CancellationToken.None);
 
         await action.Should().ThrowAsync<BusinessRuleException>();
         await _personRepository.DidNotReceiveWithAnyArgs().AddAsync(default!, default);
         await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
+    }
+
+    [Fact]
+    public async Task Execute_DeveCriarInativaComComplementares_QuandoActivateOnSaveFalso()
+    {
+        var person = Person.Create(Cnpj, "Alfa Ltda", "Alfa", Guid.NewGuid());
+        _personRepository.GetTrackedByDocumentNumberAsync(Cnpj, Arg.Any<CancellationToken>())
+            .Returns(person);
+
+        await _useCase.ExecuteAsync(
+            new CreateBrokerageRequest
+            {
+                Cnpj = Cnpj,
+                SocialName = "Alfa Fantasia",
+                ContactEmail = "contato@alfa.com.br",
+                ContactPhone = "1140028922",
+                ResponsibleName = "Marina Bertoldi",
+                ActivateOnSave = false,
+            },
+            CancellationToken.None);
+
+        person.SocialName.Should().Be("Alfa Fantasia");
+        var role = person.GetRole(EPersonRole.Broker)!;
+        role.Status.Should().Be(EPersonRoleStatus.Inactive);
+        role.ContactEmail.Should().Be("contato@alfa.com.br");
+        role.ResponsibleName.Should().Be("Marina Bertoldi");
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 }

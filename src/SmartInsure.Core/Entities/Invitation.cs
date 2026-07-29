@@ -3,7 +3,7 @@ using System.Text;
 
 namespace SmartInsure.Core.Entities;
 
-/// <summary>RN-035: convite de primeiro acesso com token de uso único e validade.</summary>
+/// <summary>RN-065: convite de primeiro acesso com token de uso único e validade.</summary>
 public sealed class Invitation : EntityBase
 {
     private Invitation()
@@ -18,7 +18,7 @@ public sealed class Invitation : EntityBase
 
     public DateTime? ConsumedAtUtc { get; private set; }
 
-    /// <summary>RN-035: cria convite com token aleatório forte. Retorna (entidade, token plaintext).</summary>
+    /// <summary>RN-065: cria convite com token aleatório forte. Retorna (entidade, token plaintext).</summary>
     public static (Invitation invitation, string plainToken) Create(Guid userId, int expiryDays)
     {
         var plainToken = GenerateSecureToken();
@@ -35,13 +35,13 @@ public sealed class Invitation : EntityBase
         return (invitation, plainToken);
     }
 
-    /// <summary>RN-035: marca o convite como consumido (primeiro acesso realizado).</summary>
+    /// <summary>RN-065: marca o convite como consumido (primeiro acesso realizado).</summary>
     public void Consume()
     {
         ConsumedAtUtc = DateTime.UtcNow;
     }
 
-    /// <summary>RN-035: indica se o convite ainda é válido (não consumido e não expirado).</summary>
+    /// <summary>RN-065: indica se o convite ainda é válido (não consumido e não expirado).</summary>
     public bool IsValid() => ConsumedAtUtc == null && DateTime.UtcNow < ExpiresAtUtc;
 
     private static string GenerateSecureToken()

@@ -9,7 +9,7 @@ namespace SmartInsure.Tests.Architecture;
 /// <summary>
 /// Constrói o modelo EF (dispara OnModelCreating sem abrir conexão) para validar que os mappings
 /// Fluent API são coerentes — cobre o que os testes de caso de uso (mockados) não alcançam.
-/// Guarda o alinhamento das entidades novas de Perfil com as migrations (RN-032/RN-033).
+/// Guarda o alinhamento das entidades novas de Perfil com as migrations (RN-062/RN-063).
 /// </summary>
 public class ModelBuildingTests
 {

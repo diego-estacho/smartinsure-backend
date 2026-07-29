@@ -10,7 +10,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.AcceptInvitation;
 
-/// <summary>RN-035: aceite do convite de primeiro acesso — define a senha e ativa o Usuário.</summary>
+/// <summary>RN-065: aceite do convite de primeiro acesso — define a senha e ativa o Usuário.</summary>
 public sealed class AcceptInvitationUseCase(
     IInvitationRepository invitationRepository,
     IUserRepository userRepository,
@@ -44,11 +44,11 @@ public sealed class AcceptInvitationUseCase(
             throw new NotFoundException("Usuário não encontrado.");
         }
 
-        // RN-035: define a senha no provedor de identidade.
+        // RN-065: define a senha no provedor de identidade.
         await identityProvider.SetPasswordAsync(
             user.ExternalIdentity, request.Password, cancellationToken);
 
-        // RN-035: marca o convite como consumido.
+        // RN-065: marca o convite como consumido.
         invitation.Consume();
 
         // RN-002: ativa o Usuário (agora que a senha está definida).

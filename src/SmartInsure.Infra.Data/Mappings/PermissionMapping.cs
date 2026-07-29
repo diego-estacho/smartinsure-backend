@@ -16,7 +16,7 @@ public sealed class PermissionMapping : IEntityTypeConfiguration<Permission>
             .HasMaxLength(100)
             .IsRequired();
 
-        // RN-033: código único no catálogo.
+        // RN-063: código único no catálogo.
         builder.HasIndex(permission => permission.Code).IsUnique();
 
         builder.Property(permission => permission.Description)

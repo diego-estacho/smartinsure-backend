@@ -10,7 +10,7 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Api.Services;
 
-// RN-011 — o Perfil vira role; usa a entidade Profile (RN-032).
+// RN-011 — o Perfil vira role; usa a entidade Profile (RN-062).
 
 /// <summary>RN-011 — o Perfil do Usuário vira role nas claims; sem perfil, nenhuma role.</summary>
 [Trait("RuleId", "RN-011")]

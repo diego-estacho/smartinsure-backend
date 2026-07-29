@@ -24,7 +24,7 @@ using SmartInsure.Core.Constants;
 
 namespace SmartInsure.Api.Endpoints;
 
-/// <summary>Jornada Usuários: RN-001 (criação), RN-035 (convite), RN-012 (perfil).</summary>
+/// <summary>Jornada Usuários: RN-001 (criação), RN-065 (convite), RN-012 (perfil).</summary>
 public sealed class UsersEndpoint : CarterModule
 {
     public UsersEndpoint()
@@ -49,12 +49,12 @@ public sealed class UsersEndpoint : CarterModule
             .RequireAuthorization(Policies.SystemAdministrator)
             .Produces<SetUserProfileResponse>(StatusCodes.Status200OK);
 
-        // RN-036: somente o Administrador do Sistema convida Corretor Administrador.
+        // RN-066: somente o Administrador do Sistema convida Corretor Administrador.
         app.MapPost("/brokerage-administrators", InviteBrokerageAdministratorAsync)
             .RequireAuthorization(Policies.SystemAdministrator)
             .Produces<InviteBrokerageAdministratorResponse>(StatusCodes.Status201Created);
 
-        // RN-046: inativação/reativação de Usuário (nesta fatia, do Administrador do Sistema — [OPEN-12]).
+        // RN-076: inativação/reativação de Usuário (nesta fatia, do Administrador do Sistema — [OPEN-20]).
         app.MapPost("/{id:guid}/inactivate", InactivateAsync)
             .RequireAuthorization(Policies.SystemAdministrator)
             .Produces<ChangeUserActivationResponse>(StatusCodes.Status200OK);
@@ -64,7 +64,7 @@ public sealed class UsersEndpoint : CarterModule
             .Produces<ChangeUserActivationResponse>(StatusCodes.Status200OK);
     }
 
-    /// <summary>RN-046: inativa um Usuário (Administrador do Sistema).</summary>
+    /// <summary>RN-076: inativa um Usuário (Administrador do Sistema).</summary>
     private static async Task<IResult> InactivateAsync(
         HttpContext httpContext,
         RequestHandler handler,
@@ -73,7 +73,7 @@ public sealed class UsersEndpoint : CarterModule
         => await handler.TryHandleAsync(
             httpContext, useCase, new ChangeUserActivationRequest(id, Activate: false));
 
-    /// <summary>RN-046: reativa um Usuário (Administrador do Sistema).</summary>
+    /// <summary>RN-076: reativa um Usuário (Administrador do Sistema).</summary>
     private static async Task<IResult> ReactivateAsync(
         HttpContext httpContext,
         RequestHandler handler,
@@ -82,7 +82,7 @@ public sealed class UsersEndpoint : CarterModule
         => await handler.TryHandleAsync(
             httpContext, useCase, new ChangeUserActivationRequest(id, Activate: true));
 
-    /// <summary>RN-036: o Administrador do Sistema convida um Corretor Administrador para as Corretoras informadas.</summary>
+    /// <summary>RN-066: o Administrador do Sistema convida um Corretor Administrador para as Corretoras informadas.</summary>
     private static async Task<IResult> InviteBrokerageAdministratorAsync(
         HttpContext httpContext,
         RequestHandler handler,
@@ -109,7 +109,7 @@ public sealed class UsersEndpoint : CarterModule
             validator,
             response => Results.Created($"/api/v1/users/{response.Id}", response));
 
-    /// <summary>RN-035: primeiro acesso — aceita o convite e define a senha.</summary>
+    /// <summary>RN-065: primeiro acesso — aceita o convite e define a senha.</summary>
     private static async Task<IResult> AcceptInvitationAsync(
         HttpContext httpContext,
         RequestHandler handler,
@@ -122,7 +122,7 @@ public sealed class UsersEndpoint : CarterModule
             request,
             validator);
 
-    /// <summary>RN-035: reenvio do convite enquanto Pendente.</summary>
+    /// <summary>RN-065: reenvio do convite enquanto Pendente.</summary>
     private static async Task<IResult> ResendInvitationAsync(
         HttpContext httpContext,
         RequestHandler handler,

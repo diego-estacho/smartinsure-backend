@@ -4,9 +4,9 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Perfil (RN-032): conjunto nomeado de Permissões, com um Escopo (Sistema, uma Corretora ou um
+/// Perfil (RN-062): conjunto nomeado de Permissões, com um Escopo (Sistema, uma Corretora ou um
 /// Tomador). Perfis fixos (ex.: Administrador do Sistema) só têm as Permissões editadas pelo
-/// Administrador do Sistema (RN-043); customizados são criados no seu Escopo. Nesta fatia
+/// Administrador do Sistema (RN-073); customizados são criados no seu Escopo. Nesta fatia
 /// (exec-plan 0008) apenas o Escopo System é exercido; os vínculos de Corretora/Tomador entram na fatia 1.
 /// </summary>
 public sealed class Profile : EntityBase
@@ -46,7 +46,7 @@ public sealed class Profile : EntityBase
         };
     }
 
-    /// <summary>RN-032/RN-033: marca uma Permissão no Perfil (idempotente por Permissão).</summary>
+    /// <summary>RN-062/RN-063: marca uma Permissão no Perfil (idempotente por Permissão).</summary>
     public void AddPermission(Permission permission)
     {
         if (HasPermission(permission.Id))
@@ -57,7 +57,7 @@ public sealed class Profile : EntityBase
         _permissions.Add(ProfilePermission.Create(Id, permission.Id));
     }
 
-    /// <summary>RN-033: o Perfil concede a Permissão quando ela está marcada.</summary>
+    /// <summary>RN-063: o Perfil concede a Permissão quando ela está marcada.</summary>
     public bool HasPermission(Guid permissionId)
     {
         foreach (var profilePermission in _permissions)

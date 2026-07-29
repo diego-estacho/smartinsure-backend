@@ -12,7 +12,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.UseCases.UserUseCases.SetUserProfile;
 
-/// <summary>RN-012 — concessão/revogação do Perfil Administrador do Sistema (agora entidade — RN-032).</summary>
+/// <summary>RN-012 — concessão/revogação do Perfil Administrador do Sistema (agora entidade — RN-062).</summary>
 [Trait("RuleId", "RN-012")]
 public class SetUserProfileUseCaseTests
 {

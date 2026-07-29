@@ -3,7 +3,7 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// Permissão (RN-033): autorização atômica de uma operação, identificada por um Code único.
+/// Permissão (RN-063): autorização atômica de uma operação, identificada por um Code único.
 /// Catálogo declarado pela plataforma; <see cref="IsSystem"/> marca a Permissão fixa em código.
 /// </summary>
 public sealed class Permission : EntityBase

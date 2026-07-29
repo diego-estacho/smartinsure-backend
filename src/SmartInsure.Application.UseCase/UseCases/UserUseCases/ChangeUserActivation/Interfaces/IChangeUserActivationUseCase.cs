@@ -4,6 +4,6 @@ using SmartInsure.Application.UseCase.UseCases.UserUseCases.ChangeUserActivation
 
 namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.ChangeUserActivation.Interfaces;
 
-/// <summary>Contrato da inativação/reativação de Usuário (RN-046).</summary>
+/// <summary>Contrato da inativação/reativação de Usuário (RN-076).</summary>
 public interface IChangeUserActivationUseCase
     : IUseCase<ChangeUserActivationRequest, ChangeUserActivationResponse>;

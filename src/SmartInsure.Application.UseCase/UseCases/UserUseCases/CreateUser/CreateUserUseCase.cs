@@ -14,9 +14,9 @@ using SmartInsure.Infra.CrossCutting.Options;
 namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser;
 
 /// <summary>
-/// RN-001/RN-035 — Criação de Usuário: identidade criada primeiro no provedor de identidade;
+/// RN-001/RN-065 — Criação de Usuário: identidade criada primeiro no provedor de identidade;
 /// falha ao gravar na plataforma desfaz a identidade (compensação). Nunca existe
-/// Usuário sem identidade correspondente no provedor. RN-035 adiciona Convite por e-mail
+/// Usuário sem identidade correspondente no provedor. RN-065 adiciona Convite por e-mail
 /// no primeiro acesso (token de uso único).
 /// </summary>
 public sealed class CreateUserUseCase(
@@ -59,7 +59,7 @@ public sealed class CreateUserUseCase(
             user = User.Create(request.Name, email, externalIdentity);
             await userRepository.AddAsync(user, cancellationToken);
 
-            // RN-035: Usuário e Convite gravados na mesma transação (atômico).
+            // RN-065: Usuário e Convite gravados na mesma transação (atômico).
             var (invitation, token) = Invitation.Create(user.Id, invitationOptions.Value.LinkExpiryDays);
             plainToken = token;
             await invitationRepository.AddAsync(invitation, cancellationToken);
@@ -83,7 +83,7 @@ public sealed class CreateUserUseCase(
             throw;
         }
 
-        // RN-035: envio do link é pós-commit. Falha de e-mail NÃO desfaz a criação — o Usuário
+        // RN-065: envio do link é pós-commit. Falha de e-mail NÃO desfaz a criação — o Usuário
         // permanece Pendente e o Convite é reenviável; a falha é registrada.
         try
         {

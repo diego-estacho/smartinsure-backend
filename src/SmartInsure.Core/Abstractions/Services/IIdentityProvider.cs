@@ -26,7 +26,7 @@ public interface IIdentityProvider
     Task<bool> ValidateCredentialsAsync(string email, string password, CancellationToken cancellationToken);
 
     /// <summary>
-    /// RN-035: define a senha do Usuário no provedor (relay via credencial de app).
+    /// RN-065: define a senha do Usuário no provedor (relay via credencial de app).
     /// Usado no primeiro acesso (aceite do convite): o Usuário define a sua própria senha.
     /// NOTA: a semântica exata depende do deployment Casdoor (via /api/update-user ou equivalente).
     /// </summary>

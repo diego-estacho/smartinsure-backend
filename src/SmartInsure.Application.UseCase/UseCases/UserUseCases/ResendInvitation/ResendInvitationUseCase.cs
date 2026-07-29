@@ -11,7 +11,7 @@ using SmartInsure.Infra.CrossCutting.Options;
 
 namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.ResendInvitation;
 
-/// <summary>RN-035: reenvio do convite — invalida o anterior e envia novo por e-mail.</summary>
+/// <summary>RN-065: reenvio do convite — invalida o anterior e envia novo por e-mail.</summary>
 public sealed class ResendInvitationUseCase(
     IInvitationRepository invitationRepository,
     IUserRepository userRepository,
@@ -30,7 +30,7 @@ public sealed class ResendInvitationUseCase(
             throw new NotFoundException("Usuário não encontrado.");
         }
 
-        // RN-035: só Pendentes podem receber novo convite (a constraint DB garante um ativo).
+        // RN-065: só Pendentes podem receber novo convite (a constraint DB garante um ativo).
         var oldInvitation = await invitationRepository.GetPendingByUserAsync(user.Id, cancellationToken);
 
         if (oldInvitation is not null)
@@ -43,7 +43,7 @@ public sealed class ResendInvitationUseCase(
             await unitOfWork.CommitAsync(cancellationToken);
         }
 
-        // RN-035: gera novo convite.
+        // RN-065: gera novo convite.
         var (newInvitation, plainToken) = Invitation.Create(user.Id, invitationOptions.Value.LinkExpiryDays);
         await invitationRepository.AddAsync(newInvitation, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
