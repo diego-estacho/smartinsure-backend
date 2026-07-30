@@ -79,7 +79,7 @@ public sealed class ListUsersUseCase(
             return (null, policyHolderId);
         }
 
-        throw new UnauthorizedException(
+        throw new ForbiddenException(
             "Selecione a corretora ou o tomador ativo para consultar usuários.");
     }
 

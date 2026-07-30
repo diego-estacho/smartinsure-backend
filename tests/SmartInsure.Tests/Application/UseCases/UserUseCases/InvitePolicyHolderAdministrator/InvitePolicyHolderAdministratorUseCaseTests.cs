@@ -128,12 +128,12 @@ public sealed class InvitePolicyHolderAdministratorUseCaseTests
     {
         _scopeAuthorization.RequireBrokerageAdministratorAsync(
             ExternalIdentity, _brokerageId, Arg.Any<CancellationToken>())
-            .Returns<ScopeActor>(_ => throw new UnauthorizedException(
+            .Returns<ScopeActor>(_ => throw new ForbiddenException(
                 "Somente o Corretor Administrador da corretora ativa executa esta operação."));
 
         var act = async () => await _useCase.ExecuteAsync(Request(), CancellationToken.None);
 
-        await act.Should().ThrowAsync<UnauthorizedException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
         await _invitedUserService.DidNotReceiveWithAnyArgs().InviteAsync(default!, default);
     }
 }

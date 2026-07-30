@@ -46,7 +46,7 @@ public sealed class DeleteScopedProfileUseCase(
 
         if (profile.Scope != scope.Scope || owner != scope.OwnerId)
         {
-            throw new UnauthorizedException("Este perfil não pertence ao escopo que você administra.");
+            throw new ForbiddenException("Este perfil não pertence ao escopo que você administra.");
         }
 
         var usersWithProfile = await profileRepository.CountUsersByProfileAsync(

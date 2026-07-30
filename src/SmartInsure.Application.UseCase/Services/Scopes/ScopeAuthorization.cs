@@ -31,7 +31,7 @@ public sealed class ScopeAuthorization(
 
         var membership = await brokerageMembershipRepository.GetByUserAndBrokerageAsync(
             user.Id, brokerageId, cancellationToken)
-            ?? throw new UnauthorizedException("O usuário não está vinculado a esta corretora.");
+            ?? throw new ForbiddenException("O usuário não está vinculado a esta corretora.");
 
         var brokerageAdministrator = await profileRepository.GetBrokerageAdministratorAsync(cancellationToken)
             ?? throw new BusinessRuleException(
@@ -39,7 +39,7 @@ public sealed class ScopeAuthorization(
 
         if (membership.ProfileId != brokerageAdministrator.Id)
         {
-            throw new UnauthorizedException(
+            throw new ForbiddenException(
                 "Somente o Corretor Administrador da corretora ativa executa esta operação.");
         }
 
@@ -61,7 +61,7 @@ public sealed class ScopeAuthorization(
 
         var membership = await policyHolderMembershipRepository.GetByUserAndPolicyHolderAsync(
             user.Id, policyHolderId, cancellationToken)
-            ?? throw new UnauthorizedException("O usuário não está vinculado a este tomador.");
+            ?? throw new ForbiddenException("O usuário não está vinculado a este tomador.");
 
         var policyHolderAdministrator = await profileRepository.GetByNameAsync(
             ProfileNames.PolicyHolderAdministrator, cancellationToken)
@@ -70,7 +70,7 @@ public sealed class ScopeAuthorization(
 
         if (membership.ProfileId != policyHolderAdministrator.Id)
         {
-            throw new UnauthorizedException(
+            throw new ForbiddenException(
                 "Somente o Tomador Administrador do tomador ativo executa esta operação.");
         }
 

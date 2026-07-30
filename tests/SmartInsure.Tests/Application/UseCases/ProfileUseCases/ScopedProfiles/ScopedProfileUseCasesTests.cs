@@ -173,7 +173,7 @@ public sealed class ScopedProfileUseCasesTests
             new UpdateScopedProfileRequest(Identity, _brokerageId, null, deOutra.Id, "Operador", []),
             CancellationToken.None);
 
-        await act.Should().ThrowAsync<UnauthorizedException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
     }
 
     [Fact]

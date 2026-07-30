@@ -78,7 +78,7 @@ public sealed class GetProfileUseCase(
         // Perfil global do próprio tipo de Escopo (dono nulo) é visível; de outro dono, não.
         if (scope != administered.Scope || (owner is not null && owner != administered.OwnerId))
         {
-            throw new UnauthorizedException("Este perfil não pertence ao escopo que você administra.");
+            throw new ForbiddenException("Este perfil não pertence ao escopo que você administra.");
         }
     }
 }

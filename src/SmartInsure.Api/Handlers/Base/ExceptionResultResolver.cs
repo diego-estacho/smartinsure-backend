@@ -21,6 +21,9 @@ public sealed class ExceptionResultResolver(
         BusinessRuleException businessRule => problemFactory.Problem(
             httpContext, StatusCodes.Status422UnprocessableEntity, "Regra de negócio impede a operação.", businessRule.Message),
 
+        ForbiddenException forbidden => problemFactory.Problem(
+            httpContext, StatusCodes.Status403Forbidden, "Acesso negado.", forbidden.Message),
+
         UnauthorizedException unauthorized => problemFactory.Problem(
             httpContext, StatusCodes.Status401Unauthorized, "Falha de autenticação.", unauthorized.Message),
 

@@ -69,8 +69,10 @@ public sealed class UpdateFixedProfilePermissionsUseCaseTests
         profile.HasPermission(anterior.Id).Should().BeFalse();
     }
 
+    // O que a regra prende aqui é o alcance da RN-073 (este fluxo edita apenas Perfil fixo);
+    // a edição do customizado é RN-074, exercitada em ScopedProfileUseCasesTests.
     [Fact]
-    [Trait("RuleId", "RN-074")]
+    [Trait("RuleId", "RN-073")]
     public async Task Execute_DeveRecusarPerfilCustomizado_PorqueEleEhEditadoNoProprioEscopo()
     {
         var customizado = Profile.CreateForBrokerage("Operador", Guid.NewGuid());

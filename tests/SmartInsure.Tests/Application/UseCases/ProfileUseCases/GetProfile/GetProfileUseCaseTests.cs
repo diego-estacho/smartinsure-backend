@@ -134,7 +134,7 @@ public sealed class GetProfileUseCaseTests
         var act = async () => await _useCase.ExecuteAsync(
             BrokerageAdministratorRequest(profileId), CancellationToken.None);
 
-        await act.Should().ThrowAsync<UnauthorizedException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
     }
 
     [Fact]

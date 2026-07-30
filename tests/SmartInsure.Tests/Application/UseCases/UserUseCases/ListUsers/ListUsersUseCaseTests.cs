@@ -149,7 +149,7 @@ public sealed class ListUsersUseCaseTests
         var act = async () => await _useCase.ExecuteAsync(
             new ListUsersRequest { ExternalIdentity = "casdoor-comum" }, CancellationToken.None);
 
-        await act.Should().ThrowAsync<UnauthorizedException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
         await _userRepository.DidNotReceiveWithAnyArgs()
             .ListAsync(default, default, default, default, default, default, default);
     }

@@ -121,11 +121,11 @@ public sealed class InvitePolicyHolderUserUseCaseTests
     {
         _scopeAuthorization.RequirePolicyHolderAdministratorAsync(
             Identity, _policyHolderId, Arg.Any<CancellationToken>())
-            .Returns<ScopeActor>(_ => throw new UnauthorizedException("recusado"));
+            .Returns<ScopeActor>(_ => throw new ForbiddenException("recusado"));
 
         var act = async () => await _useCase.ExecuteAsync(
             Request(Guid.NewGuid()), CancellationToken.None);
 
-        await act.Should().ThrowAsync<UnauthorizedException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
     }
 }

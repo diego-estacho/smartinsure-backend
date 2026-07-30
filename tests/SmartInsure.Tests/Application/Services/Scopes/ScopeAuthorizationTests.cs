@@ -88,7 +88,7 @@ public sealed class ScopeAuthorizationTests
         var act = async () => await _authorization.RequireBrokerageAdministratorAsync(
             ExternalIdentity, _brokerageId, CancellationToken.None);
 
-        await act.Should().ThrowAsync<UnauthorizedException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class ScopeAuthorizationTests
         var act = async () => await _authorization.RequireBrokerageAdministratorAsync(
             ExternalIdentity, _brokerageId, CancellationToken.None);
 
-        await act.Should().ThrowAsync<UnauthorizedException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
     }
 
     [Fact]

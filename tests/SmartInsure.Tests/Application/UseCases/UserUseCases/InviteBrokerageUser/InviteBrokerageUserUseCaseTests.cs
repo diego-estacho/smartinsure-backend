@@ -93,6 +93,20 @@ public sealed class InviteBrokerageUserUseCaseTests
     }
 
     [Fact]
+    public async Task Execute_DeveRecusarPerfilCustomizadoDeOutraCorretora()
+    {
+        // RN-069/RN-072: perfil customizado vale só na Corretora dona dele.
+        var deOutraCorretora = Profile.CreateForBrokerage("Operador", Guid.NewGuid());
+        ArrangeProfile(deOutraCorretora);
+
+        var act = async () => await _useCase.ExecuteAsync(
+            Request(deOutraCorretora.Id), CancellationToken.None);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
+        await _invitedUserService.DidNotReceiveWithAnyArgs().InviteAsync(default!, default);
+    }
+
+    [Fact]
     public async Task Execute_DeveLancarNotFound_QuandoPerfilNaoExiste()
     {
         var profileId = Guid.NewGuid();
@@ -108,11 +122,11 @@ public sealed class InviteBrokerageUserUseCaseTests
     {
         _scopeAuthorization.RequireBrokerageAdministratorAsync(
             ExternalIdentity, _brokerageId, Arg.Any<CancellationToken>())
-            .Returns<ScopeActor>(_ => throw new UnauthorizedException("recusado"));
+            .Returns<ScopeActor>(_ => throw new ForbiddenException("recusado"));
 
         var act = async () => await _useCase.ExecuteAsync(Request(Guid.NewGuid()), CancellationToken.None);
 
-        await act.Should().ThrowAsync<UnauthorizedException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
         await _invitedUserService.DidNotReceiveWithAnyArgs().InviteAsync(default!, default);
     }
 }
