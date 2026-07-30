@@ -46,6 +46,61 @@ public sealed class Profile : EntityBase
         };
     }
 
+    /// <summary>
+    /// RN-069: Perfil customizado de uma Corretora — nasce vinculado a ela e só vale ali.
+    /// </summary>
+    public static Profile CreateForBrokerage(string name, Guid brokerageId)
+    {
+        var profile = Create(name, EProfileScope.Brokerage, isFixed: false);
+        profile.BrokerageId = brokerageId;
+
+        return profile;
+    }
+
+    /// <summary>RN-070: Perfil customizado de um Tomador — nasce vinculado a ele e só vale ali.</summary>
+    public static Profile CreateForPolicyHolder(string name, Guid policyHolderId)
+    {
+        var profile = Create(name, EProfileScope.PolicyHolder, isFixed: false);
+        profile.PolicyHolderId = policyHolderId;
+
+        return profile;
+    }
+
+    /// <summary>
+    /// RN-073/RN-074: Perfil fixo não muda nome, Escopo nem estrutura — só as Permissões dele,
+    /// e apenas pelo Administrador do Sistema. Renomear é exclusivo do Perfil customizado.
+    /// </summary>
+    public void Rename(string name)
+    {
+        if (IsFixed)
+        {
+            throw new BusinessRuleException("Perfil fixo da plataforma não pode ser renomeado.");
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new BusinessRuleException("O perfil precisa de um nome.");
+        }
+
+        Name = name.Trim();
+    }
+
+    /// <summary>
+    /// RN-063/RN-073/RN-074: substitui as Permissões marcadas pelo conjunto informado — o que
+    /// não está na lista deixa de valer. As Permissões vêm do catálogo fixo da plataforma.
+    /// </summary>
+    public void ReplacePermissions(IEnumerable<Permission> permissions)
+    {
+        var target = permissions.Select(permission => permission.Id).Distinct().ToList();
+
+        _permissions.RemoveAll(profilePermission => !target.Contains(profilePermission.PermissionId));
+
+        foreach (var permissionId in target.Where(id => !HasPermission(id)))
+        {
+            _permissions.Add(ProfilePermission.Create(Id, permissionId));
+        }
+    }
+
     /// <summary>RN-062/RN-063: marca uma Permissão no Perfil (idempotente por Permissão).</summary>
     public void AddPermission(Permission permission)
     {

@@ -20,4 +20,11 @@ public sealed class UserBrokerageMembershipRepository(SmartInsureDbContext conte
             .AnyAsync(
                 membership => membership.UserId == userId && membership.BrokerageId == brokerageId,
                 cancellationToken);
+
+    public async Task<UserBrokerageMembership?> GetByUserAndBrokerageAsync(
+        Guid userId, Guid brokerageId, CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .FirstOrDefaultAsync(
+                membership => membership.UserId == userId && membership.BrokerageId == brokerageId,
+                cancellationToken);
 }

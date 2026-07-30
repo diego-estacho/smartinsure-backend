@@ -20,4 +20,11 @@ public sealed class UserPolicyHolderMembershipRepository(SmartInsureDbContext co
             .AnyAsync(
                 membership => membership.UserId == userId && membership.PolicyHolderId == policyHolderId,
                 cancellationToken);
+
+    public async Task<UserPolicyHolderMembership?> GetByUserAndPolicyHolderAsync(
+        Guid userId, Guid policyHolderId, CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .FirstOrDefaultAsync(
+                membership => membership.UserId == userId && membership.PolicyHolderId == policyHolderId,
+                cancellationToken);
 }

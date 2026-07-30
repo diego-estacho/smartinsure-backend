@@ -16,8 +16,22 @@ public sealed class ProfileMapping : IEntityTypeConfiguration<Profile>
             .HasMaxLength(100)
             .IsRequired();
 
-        // RN-062: nome de Perfil único (nesta fatia só há Escopo System).
-        builder.HasIndex(profile => profile.Name).IsUnique();
+        // RN-069/RN-070 (TD-008): nome de Perfil único **por Escopo** — alinhado 1:1 com a migration
+        // V20260730060026 (índices únicos filtrados por Scope).
+        builder.HasIndex(profile => profile.Name)
+            .HasDatabaseName("IX_Profiles_Name_System")
+            .HasFilter("[Scope] = N'System'")
+            .IsUnique();
+
+        builder.HasIndex(profile => new { profile.BrokerageId, profile.Name })
+            .HasDatabaseName("IX_Profiles_Name_Brokerage")
+            .HasFilter("[Scope] = N'Brokerage'")
+            .IsUnique();
+
+        builder.HasIndex(profile => new { profile.PolicyHolderId, profile.Name })
+            .HasDatabaseName("IX_Profiles_Name_PolicyHolder")
+            .HasFilter("[Scope] = N'PolicyHolder'")
+            .IsUnique();
 
         builder.Property(profile => profile.Scope)
             .HasMaxLength(20)

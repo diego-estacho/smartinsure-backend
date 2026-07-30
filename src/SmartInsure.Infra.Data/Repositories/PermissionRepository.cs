@@ -13,4 +13,9 @@ public sealed class PermissionRepository(SmartInsureDbContext context)
         => await Set.AsNoTracking()
             .Where(permission => codes.Contains(permission.Code))
             .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Permission>> ListAllAsync(CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .OrderBy(permission => permission.Code)
+            .ToListAsync(cancellationToken);
 }
