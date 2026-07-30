@@ -38,10 +38,12 @@ public sealed class InvitePolicyHolderUserUseCase(
             throw new BusinessRuleException("O perfil escolhido não é de escopo de Tomador.");
         }
 
+        // Perfil de outro dono (outro Tomador) é recurso alheio → 403 (Forbidden).
+        // Diferente de escopo errado (422, BusinessRuleException) ou admin fora da hierarquia.
         if (profile.PolicyHolderId is { } profilePolicyHolderId
             && profilePolicyHolderId != actor.ScopeId)
         {
-            throw new BusinessRuleException("O perfil escolhido pertence a outro tomador.");
+            throw new ForbiddenException("O perfil escolhido pertence a outro tomador.");
         }
 
         // RN-068: o Perfil Tomador Administrador é concedido pelo Corretor Administrador.

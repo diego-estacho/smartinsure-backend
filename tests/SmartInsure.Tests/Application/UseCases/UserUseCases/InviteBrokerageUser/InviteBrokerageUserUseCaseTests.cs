@@ -102,7 +102,7 @@ public sealed class InviteBrokerageUserUseCaseTests
         var act = async () => await _useCase.ExecuteAsync(
             Request(deOutraCorretora.Id), CancellationToken.None);
 
-        await act.Should().ThrowAsync<BusinessRuleException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
         await _invitedUserService.DidNotReceiveWithAnyArgs().InviteAsync(default!, default);
     }
 

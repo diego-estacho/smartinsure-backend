@@ -87,7 +87,7 @@ public sealed class InvitePolicyHolderUserUseCaseTests
 
         var act = async () => await _useCase.ExecuteAsync(Request(profile.Id), CancellationToken.None);
 
-        await act.Should().ThrowAsync<BusinessRuleException>();
+        await act.Should().ThrowAsync<ForbiddenException>();
         await _invitedUserService.DidNotReceiveWithAnyArgs().InviteAsync(default!, default);
     }
 

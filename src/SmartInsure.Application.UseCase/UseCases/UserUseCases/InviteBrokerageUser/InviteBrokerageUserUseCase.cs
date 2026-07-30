@@ -39,9 +39,11 @@ public sealed class InviteBrokerageUserUseCase(
             throw new BusinessRuleException("O perfil escolhido não é de escopo de Corretora.");
         }
 
+        // Perfil de outro dono (outra Corretora) é recurso alheio → 403 (Forbidden).
+        // Diferente de escopo errado (422, BusinessRuleException) ou admin fora da hierarquia.
         if (profile.BrokerageId is { } profileBrokerageId && profileBrokerageId != actor.ScopeId)
         {
-            throw new BusinessRuleException("O perfil escolhido pertence a outra corretora.");
+            throw new ForbiddenException("O perfil escolhido pertence a outra corretora.");
         }
 
         // RN-066: o Perfil Corretor Administrador é concedido pelo Administrador do Sistema.
