@@ -9,6 +9,10 @@ public interface IImportedModalityRepository : IRepository<ImportedModality>
     Task<ImportedModality?> GetByInsurerAndSourceAsync(
         Guid insurerId, string sourceId, CancellationToken cancellationToken);
 
+    /// <summary>RN-062: Modalidade Importada Ativa de uma Seguradora vinculada a uma Modalidade (para ler Tag/Cláusulas da minuta).</summary>
+    Task<ImportedModality?> GetActiveByInsurerAndModalityAsync(
+        Guid insurerId, Guid modalityId, CancellationToken cancellationToken);
+
     /// <summary>RN-038: Modalidades Importadas Ativas da Seguradora (rastreadas), para desativar o que sumiu.</summary>
     Task<IReadOnlyList<ImportedModality>> ListActiveByInsurerAsync(
         Guid insurerId, CancellationToken cancellationToken);

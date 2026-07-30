@@ -2256,6 +2256,229 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "QuotationGroupsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetQuotationGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/quotations": {
+      "post": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunQuotationsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunQuotationsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListQuotationsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/quotations/{quotationId}/select": {
+      "post": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quotationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectQuotationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/quotations/{quotationId}/minuta": {
+      "get": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quotationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotationMinutaResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/quotations/{quotationId}/minuta/submit": {
+      "post": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quotationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitQuotationMinutaBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitQuotationTermsResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/users": {
@@ -4801,6 +5024,96 @@
           }
         }
       },
+      "GetQuotationGroupResponse": {
+        "required": [
+          "id",
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "modalityName",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage",
+          "status",
+          "selectedQuotationId",
+          "policyHolder",
+          "insured"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityName": {
+            "type": "string"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          },
+          "selectedQuotationId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "policyHolder": {
+            "$ref": "#/components/schemas/QuotationGroupPersonResponse"
+          },
+          "insured": {
+            "$ref": "#/components/schemas/QuotationGroupPersonResponse"
+          }
+        }
+      },
       "GetUserResponse": {
         "required": [
           "id",
@@ -5372,6 +5685,33 @@
               "string"
             ],
             "format": "int64"
+          }
+        }
+      },
+      "ListQuotationsResponse": {
+        "required": [
+          "quotationGroupId",
+          "selectedQuotationId",
+          "quotations"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "selectedQuotationId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "quotations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationListItemResponse"
+            }
           }
         }
       },
@@ -6321,6 +6661,320 @@
           }
         }
       },
+      "QuotationClauseInput": {
+        "required": [
+          "particularClauseExternalId",
+          "tags"
+        ],
+        "type": "object",
+        "properties": {
+          "particularClauseExternalId": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationTermInput"
+            }
+          }
+        }
+      },
+      "QuotationGroupPersonAddressResponse": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuotationGroupPersonResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName",
+          "mainAddress"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mainAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/QuotationGroupPersonAddressResponse"
+              }
+            ]
+          }
+        }
+      },
+      "QuotationListItemResponse": {
+        "required": [
+          "quotationId",
+          "insurerId",
+          "insurerName",
+          "insurerLogoUrl",
+          "processingStatus",
+          "result",
+          "analysisTrack",
+          "isFollowable",
+          "premium",
+          "commissionPercentage",
+          "commissionValue",
+          "tax",
+          "availableLimit",
+          "requiresCcg",
+          "ccgMaxLimitWithoutNeed",
+          "ccgSigned",
+          "reasons"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "insurerLogoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "processingStatus": {
+            "type": "string"
+          },
+          "result": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "analysisTrack": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isFollowable": {
+            "type": "boolean"
+          },
+          "premium": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionPercentage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionValue": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "tax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "availableLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "requiresCcg": {
+            "type": "boolean"
+          },
+          "ccgMaxLimitWithoutNeed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "ccgSigned": {
+            "type": "boolean"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "QuotationMinutaClauseResponse": {
+        "required": [
+          "externalId",
+          "name",
+          "clauseText",
+          "jsonTag"
+        ],
+        "type": "object",
+        "properties": {
+          "externalId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "clauseText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "jsonTag": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuotationMinutaResponse": {
+        "required": [
+          "tagJson",
+          "clauses"
+        ],
+        "type": "object",
+        "properties": {
+          "tagJson": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "clauses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationMinutaClauseResponse"
+            }
+          },
+          "filledTagsJson": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "filledClausesJson": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuotationTermInput": {
+        "required": [
+          "name",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
       "ReassignImportedModalityBody": {
         "required": [
           "modalityId"
@@ -6402,6 +7056,39 @@
           }
         }
       },
+      "RunQuotationsBody": {
+        "required": [
+          "brokerageId"
+        ],
+        "type": "object",
+        "properties": {
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "RunQuotationsResponse": {
+        "required": [
+          "quotationGroupId",
+          "requestedCount"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestedCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "ScopedProfileBody": {
         "required": [
           "name",
@@ -6443,6 +7130,23 @@
           }
         }
       },
+      "SelectQuotationResponse": {
+        "required": [
+          "quotationGroupId",
+          "selectedQuotationId"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "selectedQuotationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
       "SetUserProfileBody": {
         "required": [
           "profile"
@@ -6473,6 +7177,61 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "SubmitQuotationMinutaBody": {
+        "required": [
+          "brokerageId",
+          "terms",
+          "particularClauses"
+        ],
+        "type": "object",
+        "properties": {
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationTermInput"
+            }
+          },
+          "particularClauses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationClauseInput"
+            }
+          }
+        }
+      },
+      "SubmitQuotationTermsResponse": {
+        "required": [
+          "draftUrl",
+          "draftExternalId",
+          "draftCreatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "draftUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "draftExternalId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "draftCreatedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -7180,6 +7939,9 @@
     },
     {
       "name": "QuotationGroupsEndpoint"
+    },
+    {
+      "name": "QuotationsEndpoint"
     },
     {
       "name": "UsersEndpoint"

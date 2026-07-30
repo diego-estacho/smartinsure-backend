@@ -4,6 +4,9 @@ using SmartInsure.Api.Handlers.Base;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Requests;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Responses;
+using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.GetQuotationGroup.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.GetQuotationGroup.Requests;
+using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.GetQuotationGroup.Responses;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Requests;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Responses;
@@ -29,6 +32,9 @@ public sealed class QuotationGroupsEndpoint : CarterModule
 
         app.MapPut("/{id:guid}", UpdateAsync)
             .Produces<UpdateQuotationGroupResponse>(StatusCodes.Status200OK);
+
+        app.MapGet("/{id:guid}", GetAsync)
+            .Produces<GetQuotationGroupResponse>(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> CreateAsync(
@@ -43,6 +49,16 @@ public sealed class QuotationGroupsEndpoint : CarterModule
             request,
             validator,
             response => Results.Created($"/api/v1/quotation-groups/{response.Id}", response));
+
+    private static async Task<IResult> GetAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        IGetQuotationGroupUseCase useCase,
+        Guid id)
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new GetQuotationGroupRequest(id));
 
     private static async Task<IResult> UpdateAsync(
         HttpContext httpContext,

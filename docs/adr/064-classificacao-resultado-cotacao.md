@@ -1,7 +1,7 @@
 ---
 id: ADR-064
 title: Classificação do resultado da Cotação — status do parceiro traduzido para conjunto de domínio estável
-status: proposed
+status: accepted
 tags: [dominio, integracoes]
 applies-to: ["src/SmartInsure.Integration/CalculationEngines/**", "src/SmartInsure.Core/Enumerators/**", "src/SmartInsure.Core/Entities/Quotation.cs"]
 supersedes: []
@@ -12,7 +12,7 @@ evidence: []
 
 ## Status
 
-Proposto em 2026-07-27 — aguardando ratificação da PO ([OPEN-07](../product-specs/open-decisions.md)). Refina a etapa de cotações (RN-056..RN-061). Estende o ACL do Motor ([ADR-045](045-motor-services-providers-acl.md)) e a distinção Domain/Integration ([ADR-028](028-domain-integration-events.md)) para o resultado da Cotação; enums como string ([ADR-031](031-enums-string.md)). O conjunto de status do eixo imediato foi **conferido na fonte** (o gateway do fornecedor, que define os status).
+Aceito em 2026-07-28 — ratificado por Diego Estácho no lugar da PO ([OPEN-07](../product-specs/open-decisions.md)); registrar confirmação da PO. Refina a etapa de cotações (RN-056..RN-063). Estende o ACL do Motor ([ADR-045](045-motor-services-providers-acl.md)) e a distinção Domain/Integration ([ADR-028](028-domain-integration-events.md)) para o resultado da Cotação; enums como string ([ADR-031](031-enums-string.md)). O conjunto de status do eixo imediato foi **conferido na fonte** (o gateway do fornecedor, que define os status).
 
 ## Contexto
 
@@ -35,7 +35,7 @@ A resposta da cotação carrega o **status imediato** do resultado. O **status d
 
 ## De-para PLUG V2 → resultado da Cotação (eixo imediato — 11 valores, conferidos na fonte)
 
-> O conjunto abaixo é o **completo** do eixo imediato, conforme o gateway do fornecedor que define esses status. Resta **uma decisão de negócio** marcada **[A CONFIRMAR]** (tomador nomeado), que é da PO — não de contrato.
+> O conjunto abaixo é o **completo** do eixo imediato, conforme o gateway do fornecedor que define esses status. A decisão de negócio do **tomador nomeado** foi resolvida — indisponibilidade **informativa** (nomeação/transferência = evolução futura). Uma regra **conhecida** do gateway afeta o veredito por **cláusula particular** (`AllowAutomaticIssue`), fora deste eixo imediato e **não re-avaliada nesta fase** ([OPEN-21](../product-specs/open-decisions.md)).
 
 | Resultado do parceiro (PLUG V2) | Classificação | Esteira / motivo |
 |---|---|---|
@@ -47,13 +47,17 @@ A resposta da cotação carrega o **status imediato** do resultado. O **status d
 | Esteira de resseguro | `Analysis` | `Reinsurance` |
 | Modalidade indisponível | `Unavailable` | motivo: modalidade indisponível |
 | Cobertura indisponível | `Unavailable` | motivo: cobertura indisponível |
-| Tomador nomeado | `Unavailable` | motivo: tomador nomeado — **[A CONFIRMAR: beco sem saída ou acionável? — decisão de negócio/PO]** |
+| Tomador nomeado | `Unavailable` | motivo: tomador nomeado — **indisponibilidade informativa** (nomeação/transferência = evolução futura) |
 | Erro técnico / integração | `Unavailable` | motivo: falha técnica/integração (transitória — RN-057) |
 | Desconhecido / não mapeado | `Unrecognized` | — |
 
 **Ortogonal à tabela — Contragarantia (CCG):** a resposta traz o veredito booleano de **exigência de CCG** (+ limite máximo sem CCG, se já assinada), capturado como atributo da Cotação — não é linha desta tabela. A assinatura/contrato da CCG é da emissão (fora desta fase).
 
 **Fora do eixo imediato — status da proposta (followup):** aprovada/recusada/cancelada só aparecem no acompanhamento da proposta após a cotação, não na resposta da cotação; entram na demanda de followup, não aqui.
+
+**Motivo local (fora do provedor):** no modo *escolhidas* (RN-056), as Seguradoras habilitadas não selecionadas viram `Unavailable` com motivo **local** ("não incluída na solicitação") — motivo deliberado e conhecido nosso, não status do provedor mal-classificado; não fere a invariante (o `Unrecognized` continua reservado a status do provedor não mapeados).
+
+**Cláusula particular × veredito (conhecido, PARKED — OPEN-21):** o gateway tem regra, documentada e replicada em ~11 plugins de Seguradora, em que uma cláusula particular `AllowAutomaticIssue=false` (não-fixa) encaminha a proposta para a esteira de subscrição em vez de emitir automaticamente. Nesta fase o Passo 4 **não re-avalia** o veredito por marcação de cláusula (captura a minuta — RN-062 — e mantém o resultado da cotação); Tags/texto da minuta **não** alteram o veredito. A decisão de re-avaliar aguarda a PO ([OPEN-21](../product-specs/open-decisions.md)) e, se confirmada, entra como regra (RN) sem reabrir esta ADR.
 
 ## Consequências
 

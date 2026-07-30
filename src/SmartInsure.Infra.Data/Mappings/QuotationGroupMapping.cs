@@ -48,6 +48,19 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
             .HasMaxLength(20)
             .IsRequired();
 
+        // RN-059: a Cotação escolhida do Grupo — FK opcional, Restrict pela convenção global (ADR-034).
+        builder.HasOne<Quotation>()
+            .WithMany()
+            .HasForeignKey(group => group.SelectedQuotationId)
+            .IsRequired(false);
+
+        // RN-057/ADR-050: a Corretora da última solicitação — FK opcional a Pessoa (Restrict, ADR-034);
+        // usada pelo reconciliador para reconstruir o work item do fan-out após restart.
+        builder.HasOne<Person>()
+            .WithMany()
+            .HasForeignKey(group => group.BrokerageId)
+            .IsRequired(false);
+
         // Histórico consultável por tomador e por segurado.
         builder.HasIndex(group => group.PolicyHolderId);
         builder.HasIndex(group => group.InsuredId);

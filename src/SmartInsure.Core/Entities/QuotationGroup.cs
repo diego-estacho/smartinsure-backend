@@ -38,6 +38,16 @@ public sealed class QuotationGroup : EntityBase
 
     public EQuotationGroupStatus Status { get; private set; }
 
+    /// <summary>Cotação escolhida do Grupo para seguir (RN-059); nula enquanto nenhuma foi escolhida.</summary>
+    public Guid? SelectedQuotationId { get; private set; }
+
+    /// <summary>
+    /// Corretora dona da última solicitação de Cotações (RN-023/OPEN-03) — origem do fan-out. Persistida
+    /// para o reconciliador reconstruir o work item e reenfileirar as Cotações paradas em Requested após
+    /// restart/deploy (ADR-050); nula enquanto o Grupo nunca foi cotado.
+    /// </summary>
+    public Guid? BrokerageId { get; private set; }
+
     /// <summary>Seguradoras do escopo, quando o modo é Specific (vazio quando All).</summary>
     public IReadOnlyCollection<QuotationGroupInsurer> SelectedInsurers => _selectedInsurers.AsReadOnly();
 
@@ -114,4 +124,19 @@ public sealed class QuotationGroup : EntityBase
             _selectedInsurers.Add(QuotationGroupInsurer.Create(Id, insurerId));
         }
     }
+
+    /// <summary>
+    /// RN-059: marca a Cotação escolhida do Grupo. No máximo uma por Grupo; escolher outra substitui a
+    /// anterior. A validação de seguibilidade/posse é do use case (que tem a Cotação em mãos).
+    /// </summary>
+    public void SelectQuotation(Guid quotationId) => SelectedQuotationId = quotationId;
+
+    /// <summary>RN-060: o recálculo descarta a escolha — o risco a que ela se referia deixou de valer.</summary>
+    public void ClearSelection() => SelectedQuotationId = null;
+
+    /// <summary>
+    /// RN-057: registra a Corretora da solicitação corrente — o reconciliador (ADR-050) a usa para
+    /// reenfileirar as Cotações que ficaram em Requested após restart.
+    /// </summary>
+    public void AssignBrokerage(Guid brokerageId) => BrokerageId = brokerageId;
 }
