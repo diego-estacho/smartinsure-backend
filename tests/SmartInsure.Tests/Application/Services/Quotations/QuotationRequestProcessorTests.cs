@@ -89,8 +89,10 @@ public class QuotationRequestProcessorTests
         _quotation.ProcessingStatus.Should().Be(EQuotationProcessingStatus.Obtained);
         _quotation.Result.Should().Be(EQuotationResult.Automatic);
         _quotation.Premium.Should().Be(300m);
-        _quotationRepository.Received(1).Update(_quotation);
-        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+        // Lease carimbado (ADR-050) + resultado: dois Update/Commit (lease antes do provedor, resultado depois).
+        _quotation.ProcessingStartedAt.Should().NotBeNull();
+        _quotationRepository.Received(2).Update(_quotation);
+        await _unitOfWork.Received(2).CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -105,7 +107,8 @@ public class QuotationRequestProcessorTests
         _quotation.ProcessingStatus.Should().Be(EQuotationProcessingStatus.Failed);
         _quotation.Result.Should().Be(EQuotationResult.Unavailable);
         _quotation.Reasons.Should().NotBeEmpty();
-        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+        // Lease (antes do provedor) + falha (depois): dois commits.
+        await _unitOfWork.Received(2).CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -119,7 +122,8 @@ public class QuotationRequestProcessorTests
         _quotation.Result.Should().Be(EQuotationResult.Unavailable);
         await _engine.DidNotReceive().RunQuotationAsync(
             Arg.Any<string?>(), Arg.Any<QuotationRequestInput>(), Arg.Any<CancellationToken>());
-        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+        // Lease (antes do provedor) + falha de pré-condição (depois): dois commits.
+        await _unitOfWork.Received(2).CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

@@ -104,18 +104,18 @@ public sealed class PlugV2CalculationEngine(
             var response = JsonSerializer.Deserialize<PlugV2GetPolicyHolderLimitsAndRatesResponse>(
                 responseContent, JsonOptions);
 
-            // RN-030: resposta nula ou com erro => indisponível.
-            if (response is null || response.HasError || response.Response?.Count == 0)
+            // RN-030: resposta nula/vazia ou com erro => indisponível (null Response também, não só lista vazia).
+            if (response is null || response.HasError || response.Response is null || response.Response.Count == 0)
             {
                 return null;
             }
 
             // Localizar resposta da Seguradora pelo InsuranceUniqueId (case-insensitive).
-            var insurerResponse = response.Response!.FirstOrDefault(r =>
+            var insurerResponse = response.Response.FirstOrDefault(r =>
                 r.Insurance?.InsuranceUniqueId?.Equals(insurerExternalId, StringComparison.OrdinalIgnoreCase) == true);
 
-            // RN-030: Seguradora não encontrada na resposta => indisponível.
-            if (insurerResponse is null || insurerResponse.LimitsAndRates?.Count == 0)
+            // RN-030: Seguradora não encontrada/ sem linhas na resposta => indisponível.
+            if (insurerResponse is null || insurerResponse.LimitsAndRates is null || insurerResponse.LimitsAndRates.Count == 0)
             {
                 return null;
             }
@@ -189,12 +189,16 @@ public sealed class PlugV2CalculationEngine(
 
             var envelope = JsonSerializer.Deserialize<PlugV2CotationResponse>(body, JsonOptions);
 
-            if (envelope?.Response is null || envelope.HasError)
+            // Sem payload utilizável (falha de transporte/gateway sem corpo) → falha de integração (RN-057).
+            if (envelope?.Response is null)
             {
                 throw new CalculationEngineException(FailureMessage("solicitar Cotação", body));
             }
 
-            return PlugV2QuotationAclMapper.Map(envelope.Response);
+            // ADR-064: a ACL é o ÚNICO ponto de classificação. Passamos o sinal de erro do envelope e seus
+            // motivos: quando HasError, a ACL classifica Indisponível-com-motivos (nunca seguível); caso
+            // contrário, classifica o payload normalmente. Nunca confia num status/prêmio de payload errado.
+            return PlugV2QuotationAclMapper.Map(envelope.Response, envelope.HasError, envelope.Errors);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

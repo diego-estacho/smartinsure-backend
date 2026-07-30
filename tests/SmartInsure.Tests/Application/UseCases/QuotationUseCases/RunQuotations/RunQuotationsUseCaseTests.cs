@@ -110,6 +110,51 @@ public class RunQuotationsUseCaseTests
     }
 
     [Fact]
+    public async Task Execute_DeveMarcarSelecionadaSemHabilitacaoAtivaComoIndisponivel_NoModoSpecific()
+    {
+        var brokerageId = Guid.CreateVersion7();
+        var chosenActive = Guid.CreateVersion7();
+        var chosenInactive = Guid.CreateVersion7(); // escolhida, porém sem Habilitação ativa
+        var group = GroupSpecific([chosenActive, chosenInactive]);
+
+        _groupRepository.GetByIdWithInsurersAsync(group.Id, Arg.Any<CancellationToken>()).Returns(group);
+        IReadOnlyList<BrokerageInsurerEnablement> enablements = [Enablement(brokerageId, chosenActive)];
+        _enablementRepository.ListActiveByBrokerageAsync(brokerageId, Arg.Any<CancellationToken>()).Returns(enablements);
+        SetupNoExistingQuotations(group.Id);
+
+        List<Quotation>? persisted = null;
+        _quotationRepository
+            .AddRangeAsync(Arg.Do<IEnumerable<Quotation>>(q => persisted = q.ToList()), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+
+        var response = await _useCase.ExecuteAsync(new RunQuotationsRequest(group.Id, brokerageId), CancellationToken.None);
+
+        // A escolhida ativa é cotada; a escolhida sem Habilitação NÃO some — vira Indisponível local (RN-056).
+        response.RequestedCount.Should().Be(1);
+        persisted.Should().HaveCount(2);
+        persisted!.Single(q => q.InsurerId == chosenActive).ProcessingStatus.Should().Be(EQuotationProcessingStatus.Requested);
+        var unavailable = persisted!.Single(q => q.InsurerId == chosenInactive);
+        unavailable.Result.Should().Be(EQuotationResult.Unavailable);
+        unavailable.Reasons.First().Source.Should().Be(EQuotationReasonSource.Local);
+        unavailable.Reasons.First().Text.Should().Contain("habilitação ativa");
+    }
+
+    [Fact]
+    public async Task Execute_DevePersistirCorretoraNoGrupo_ParaOReconciliador()
+    {
+        var brokerageId = Guid.CreateVersion7();
+        var group = GroupAll();
+        _groupRepository.GetByIdWithInsurersAsync(group.Id, Arg.Any<CancellationToken>()).Returns(group);
+        IReadOnlyList<BrokerageInsurerEnablement> enablements = [Enablement(brokerageId, Guid.CreateVersion7())];
+        _enablementRepository.ListActiveByBrokerageAsync(brokerageId, Arg.Any<CancellationToken>()).Returns(enablements);
+        SetupNoExistingQuotations(group.Id);
+
+        await _useCase.ExecuteAsync(new RunQuotationsRequest(group.Id, brokerageId), CancellationToken.None);
+
+        group.BrokerageId.Should().Be(brokerageId);
+    }
+
+    [Fact]
     public async Task Execute_DeveRecusar_QuandoSemHabilitacaoAtiva()
     {
         var brokerageId = Guid.CreateVersion7();

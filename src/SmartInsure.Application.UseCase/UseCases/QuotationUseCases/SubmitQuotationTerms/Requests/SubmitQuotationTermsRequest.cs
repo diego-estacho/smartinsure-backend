@@ -6,6 +6,7 @@ namespace SmartInsure.Application.UseCase.UseCases.QuotationUseCases.SubmitQuota
 /// da Habilitação (fonte dos parâmetros de conexão/motor — OPEN-03/RN-023). Preenchimento parcial é aceito.
 /// </summary>
 public sealed record SubmitQuotationTermsRequest(
+    Guid QuotationGroupId,
     Guid QuotationId,
     Guid BrokerageId,
     IReadOnlyList<QuotationTermInput> Terms,

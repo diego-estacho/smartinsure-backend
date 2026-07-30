@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.SubmitQuotationTerms;
 using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.SubmitQuotationTerms.Requests;
+using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
@@ -22,6 +23,7 @@ public class SubmitQuotationTermsUseCaseTests
     private readonly IPersonRepository _personRepository = Substitute.For<IPersonRepository>();
     private readonly IBrokerageInsurerEnablementRepository _enablementRepository =
         Substitute.For<IBrokerageInsurerEnablementRepository>();
+    private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly ICalculationEngine _engine = Substitute.For<ICalculationEngine>();
 
     private readonly Guid _brokerageId = Guid.CreateVersion7();
@@ -34,7 +36,7 @@ public class SubmitQuotationTermsUseCaseTests
         services.AddKeyedSingleton<ICalculationEngine>(ECalculationEngine.PlugV2, (_, _) => _engine);
 
         return new SubmitQuotationTermsUseCase(
-            _quotationRepository, _personRepository, _enablementRepository, services.BuildServiceProvider());
+            _quotationRepository, _personRepository, _enablementRepository, _unitOfWork, services.BuildServiceProvider());
     }
 
     private Quotation ObtainedQuotation(string? proposalExternalId)
@@ -59,6 +61,7 @@ public class SubmitQuotationTermsUseCaseTests
 
     private SubmitQuotationTermsRequest Request(Quotation quotation, string clauseId = "10")
         => new(
+            quotation.QuotationGroupId,
             quotation.Id,
             _brokerageId,
             [new QuotationTermInput("objeto", "Fornecimento de bens")],
@@ -81,6 +84,46 @@ public class SubmitQuotationTermsUseCaseTests
             Arg.Any<string?>(), Arg.Any<SubmitProposalTermsInput>(), Arg.Any<CancellationToken>());
         await _engine.Received(1).GetProposalContractDraftAsync(
             Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Execute_DeveRecusar_QuandoCotacaoNaoPertenceAoGrupoDaRota()
+    {
+        var quotation = ObtainedQuotation("3fa85f64-5717-4562-b3fc-2c963f66afa6");
+        SetupGraph(quotation);
+
+        // Grupo da rota diferente do Grupo da Cotação: acesso cruzado é recusado (não vaza para o provedor).
+        var request = new SubmitQuotationTermsRequest(
+            Guid.CreateVersion7(),
+            quotation.Id,
+            _brokerageId,
+            [new QuotationTermInput("objeto", "x")],
+            []);
+
+        var act = async () => await BuildUseCase().ExecuteAsync(request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
+        await _engine.DidNotReceive().SubmitProposalTermsAsync(
+            Arg.Any<string?>(), Arg.Any<SubmitProposalTermsInput>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Execute_DevePersistirMinutaPreenchida_QuandoEnviaTermos()
+    {
+        var quotation = ObtainedQuotation("3fa85f64-5717-4562-b3fc-2c963f66afa6");
+        SetupGraph(quotation);
+        _engine.GetProposalContractDraftAsync(
+                Arg.Any<string?>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new ProposalContractDraftResult(
+                "https://x/draft.pdf", "draft-1", new DateTime(2026, 7, 28, 13, 0, 0, DateTimeKind.Utc)));
+
+        await BuildUseCase().ExecuteAsync(Request(quotation), CancellationToken.None);
+
+        // RN-062: a minuta preenchida é capturada na Cotação e comitada (não some num refresh).
+        quotation.MinutaTagsJson.Should().NotBeNull();
+        quotation.MinutaClausesJson.Should().NotBeNull();
+        _quotationRepository.Received().Update(quotation);
+        await _unitOfWork.Received().CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

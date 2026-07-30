@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Entities;
+using SmartInsure.Core.Enumerators;
 using SmartInsure.Infra.Data.Context;
 
 namespace SmartInsure.Infra.Data.Repositories;
@@ -41,4 +43,29 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
 
     public async Task AddRangeAsync(IEnumerable<Quotation> quotations, CancellationToken cancellationToken)
         => await dbContext.Quotations.AddRangeAsync(quotations, cancellationToken);
+
+    /// <summary>
+    /// ADR-050: Cotações ainda em Requested cujo lease expirou — as que o restart deixou órfãs (a fila
+    /// in-process é volátil). O lease é o instante de início do processamento; se nulo (nunca foi obtida),
+    /// cai na idade da Cotação (CreatedAt). Junta com o Grupo para trazer a Corretora e montar o work item.
+    /// Só as com Corretora conhecida (Grupos cotados após a persistência do BrokerageId).
+    /// </summary>
+    public async Task<IReadOnlyList<QuotationRequestWorkItem>> ListStaleRequestedWorkItemsAsync(
+        DateTime staleBeforeUtc, CancellationToken cancellationToken)
+        => await dbContext.Quotations
+            .AsNoTracking()
+            .Where(quotation => quotation.ProcessingStatus == EQuotationProcessingStatus.Requested
+                                && (quotation.ProcessingStartedAt ?? quotation.CreatedAt) < staleBeforeUtc)
+            .Join(
+                dbContext.QuotationGroups.AsNoTracking(),
+                quotation => quotation.QuotationGroupId,
+                group => group.Id,
+                (quotation, group) => new { quotation, group.BrokerageId })
+            .Where(row => row.BrokerageId != null)
+            .Select(row => new QuotationRequestWorkItem(
+                row.quotation.Id,
+                row.quotation.QuotationGroupId,
+                row.quotation.InsurerId,
+                row.BrokerageId!.Value))
+            .ToListAsync(cancellationToken);
 }

@@ -56,6 +56,14 @@ public sealed class QuotationMapping : IEntityTypeConfiguration<Quotation>
         builder.Property(quotation => quotation.RequiresCcg).IsRequired();
         builder.Property(quotation => quotation.CcgSigned).IsRequired();
 
+        // Lease do fan-out (ADR-050): instante em que o consumidor começou a processar; usado pelo reconciliador.
+        builder.Property(quotation => quotation.ProcessingStartedAt);
+
+        // Índice filtrado do reconciliador (só as em voo): varredura barata a cada tick, sem tocar o histórico.
+        builder.HasIndex(quotation => new { quotation.ProcessingStartedAt, quotation.CreatedAt })
+            .HasDatabaseName("IX_Quotations_Requested")
+            .HasFilter("[ProcessingStatus] = 'Requested'");
+
         // Coleção filha de motivos — acesso por field (backing list _reasons). A FK nasce Restrict pela
         // convenção global (ADR-034), que sobrescreve qualquer OnDelete daqui; por isso a remoção em
         // cascata do agregado (recálculo RN-060) é feita explicitamente no QuotationRepository.Remove

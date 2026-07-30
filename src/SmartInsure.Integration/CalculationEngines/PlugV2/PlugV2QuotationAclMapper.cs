@@ -12,15 +12,26 @@ namespace SmartInsure.Integration.CalculationEngines.PlugV2;
 /// </summary>
 public static class PlugV2QuotationAclMapper
 {
-    public static QuotationResult Map(PlugV2CotationData response)
+    public static QuotationResult Map(
+        PlugV2CotationData response, bool hasError = false, IReadOnlyList<string>? envelopeErrors = null)
     {
-        var status = (EPlugApiStatus)(response.ResponseStatus?.Status ?? (int)EPlugApiStatus.Unknow);
+        var ccg = response.PolicyHolderCcg;
 
+        // Motivos do payload (Erros) mais os erros do envelope — preserva a mensagem específica do gateway.
         var providerReasons = (response.Erros ?? [])
+            .Concat(envelopeErrors ?? [])
             .Where(reason => !string.IsNullOrWhiteSpace(reason))
+            .Distinct()
             .ToList();
 
-        var ccg = response.PolicyHolderCcg;
+        // Gateway sinalizou erro (HasError): jamais seguível. Não confia no status nem no prêmio de um payload
+        // marcado como erro — classifica Indisponível com os motivos do provedor (e captura o CCG). ADR-064.
+        if (hasError)
+        {
+            return Unavailable(providerReasons, "Falha sinalizada pela Seguradora.", ccg);
+        }
+
+        var status = (EPlugApiStatus)(response.ResponseStatus?.Status ?? (int)EPlugApiStatus.Unknow);
 
         return status switch
         {

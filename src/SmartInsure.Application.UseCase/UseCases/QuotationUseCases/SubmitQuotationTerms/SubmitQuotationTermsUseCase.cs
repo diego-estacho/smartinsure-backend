@@ -1,7 +1,9 @@
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.SubmitQuotationTerms.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.SubmitQuotationTerms.Requests;
 using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.SubmitQuotationTerms.Responses;
+using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Enumerators;
@@ -20,13 +22,23 @@ public sealed class SubmitQuotationTermsUseCase(
     IQuotationRepository quotationRepository,
     IPersonRepository personRepository,
     IBrokerageInsurerEnablementRepository enablementRepository,
+    IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider) : ISubmitQuotationTermsUseCase
 {
+    // camelCase (Web) para a minuta capturada casar com o contrato/leitura do front (RN-062).
+    private static readonly JsonSerializerOptions MinutaJsonOptions = new(JsonSerializerDefaults.Web);
+
     public async Task<SubmitQuotationTermsResponse> ExecuteAsync(
         SubmitQuotationTermsRequest request, CancellationToken cancellationToken)
     {
         var quotation = await quotationRepository.GetByIdAsync(request.QuotationId, cancellationToken)
             ?? throw new NotFoundException("Cotação não encontrada.");
+
+        // RN-062: a Cotação da rota tem de pertencer ao Grupo da rota (evita submeter minuta de outro Grupo).
+        if (quotation.QuotationGroupId != request.QuotationGroupId)
+        {
+            throw new BusinessRuleException("A Cotação não pertence a este Grupo de Cotação.");
+        }
 
         // RN-063: só há termos a enviar quando existe proposta no provedor (Cotação obtida com id externo).
         if (string.IsNullOrWhiteSpace(quotation.ProposalExternalId))
@@ -63,6 +75,14 @@ public sealed class SubmitQuotationTermsUseCase(
                     clause.Tags.Select(tag => new ProposalTermInput(tag.Name, tag.Value)).ToList()))
                 .ToList(),
         };
+
+        // RN-062: captura a minuta preenchida na Cotação selecionada antes de acionar o provedor — o
+        // preenchimento fica persistido mesmo quando a geração da minuta falha (CA-07) e sobrevive a um refresh.
+        quotation.SetMinuta(
+            JsonSerializer.Serialize(request.Terms, MinutaJsonOptions),
+            JsonSerializer.Serialize(request.ParticularClauses, MinutaJsonOptions));
+        quotationRepository.Update(quotation);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         await engine.SubmitProposalTermsAsync(enablement.ConnectionParameters, submitInput, cancellationToken);
 

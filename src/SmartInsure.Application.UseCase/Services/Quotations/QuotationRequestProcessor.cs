@@ -33,6 +33,12 @@ public sealed class QuotationRequestProcessor(
             return;
         }
 
+        // ADR-050: carimba o lease e persiste ANTES de acionar o provedor — enquanto esta solicitação está
+        // em voo (dentro do lease), o reconciliador não a reenfileira, evitando duplicar a proposta.
+        quotation.BeginProcessing(DateTime.UtcNow);
+        quotationRepository.Update(quotation);
+        await unitOfWork.CommitAsync(cancellationToken);
+
         try
         {
             var resolved = await BuildRequestAsync(workItem, cancellationToken);

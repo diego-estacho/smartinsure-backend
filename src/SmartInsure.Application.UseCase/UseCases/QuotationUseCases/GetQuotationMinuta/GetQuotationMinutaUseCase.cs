@@ -25,6 +25,12 @@ public sealed class GetQuotationMinutaUseCase(
         var quotation = await quotationRepository.GetByIdAsync(request.QuotationId, cancellationToken)
             ?? throw new NotFoundException("Cotação não encontrada.");
 
+        // RN-062: a Cotação da rota tem de pertencer ao Grupo da rota (evita ler minuta de outro Grupo).
+        if (quotation.QuotationGroupId != request.QuotationGroupId)
+        {
+            throw new BusinessRuleException("A Cotação não pertence a este Grupo de Cotação.");
+        }
+
         var group = await quotationGroupRepository.GetByIdAsync(quotation.QuotationGroupId, cancellationToken)
             ?? throw new NotFoundException("Grupo de Cotação não encontrado.");
 
@@ -34,7 +40,7 @@ public sealed class GetQuotationMinutaUseCase(
         // Sem catálogo importado para a Seguradora/Modalidade: minuta vazia (não exibe blocos).
         if (imported is null)
         {
-            return new QuotationMinutaResponse(null, []);
+            return new QuotationMinutaResponse(null, [], quotation.MinutaTagsJson, quotation.MinutaClausesJson);
         }
 
         var tag = await tagRepository.GetByImportedModalityAsync(imported.Id, cancellationToken);
@@ -48,6 +54,7 @@ public sealed class GetQuotationMinutaUseCase(
 
         var tagJson = tag?.Status == EImportedModalityTagStatus.Active ? tag.JsonTag : null;
 
-        return new QuotationMinutaResponse(tagJson, clauseResponses);
+        return new QuotationMinutaResponse(
+            tagJson, clauseResponses, quotation.MinutaTagsJson, quotation.MinutaClausesJson);
     }
 }

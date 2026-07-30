@@ -60,6 +60,13 @@ public sealed class Quotation : EntityBase
     /// <summary>Instante em que a Seguradora respondeu (ou a falha foi registrada) — RN-057.</summary>
     public DateTime? ObtainedAt { get; private set; }
 
+    /// <summary>
+    /// Instante em que o consumidor começou a processar esta solicitação (lease do fan-out, ADR-050):
+    /// carimbado antes de acionar o provedor, para o reconciliador distinguir uma Cotação em voo de uma
+    /// órfã e não reenfileirar (duplicando a proposta) o que ainda está sendo obtido. Nulo enquanto na fila.
+    /// </summary>
+    public DateTime? ProcessingStartedAt { get; private set; }
+
     /// <summary>Motivos de indisponibilidade/recusa (RN-056/RN-058), do provedor ou locais.</summary>
     public IReadOnlyCollection<QuotationReason> Reasons => _reasons.AsReadOnly();
 
@@ -90,6 +97,12 @@ public sealed class Quotation : EntityBase
 
         return quotation;
     }
+
+    /// <summary>
+    /// RN-057/ADR-050: marca o início do processamento (lease) antes de acionar o provedor — o reconciliador
+    /// só reenfileira quando o lease expira, evitando duplicar a proposta de uma solicitação ainda em voo.
+    /// </summary>
+    public void BeginProcessing(DateTime startedAt) => ProcessingStartedAt = startedAt;
 
     /// <summary>
     /// RN-057/RN-058: a Seguradora respondeu — grava o resultado já classificado (vindo da ACL) com os

@@ -69,6 +69,18 @@ public class PlugV2QuotationAclMapperTests
     }
 
     [Fact]
+    public void Map_DeveClassificarComoUnavailableComMotivo_QuandoEnvelopeSinalizaHasError_MesmoComStatusSuccess()
+    {
+        // HasError no envelope: não confia no status/prêmio do payload — Indisponível com o motivo do gateway.
+        var result = PlugV2QuotationAclMapper.Map(
+            Response(1, premium: 300m), hasError: true, envelopeErrors: ["Erro no motor da Seguradora"]);
+
+        result.Result.Should().Be(EQuotationResult.Unavailable);
+        result.Premium.Should().BeNull();
+        result.Reasons.Should().Contain("Erro no motor da Seguradora");
+    }
+
+    [Fact]
     public void Map_DeveClassificarUnknowComoUnrecognized()
     {
         var result = PlugV2QuotationAclMapper.Map(Response(0));

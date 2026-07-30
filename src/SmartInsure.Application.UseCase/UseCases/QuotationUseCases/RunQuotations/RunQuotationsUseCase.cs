@@ -41,7 +41,7 @@ public sealed class RunQuotationsUseCase(
 
         var activeInsurerIds = activeEnablements.Select(enablement => enablement.InsurerId).Distinct().ToList();
 
-        var (targetInsurerIds, notSelectedInsurerIds) = ResolveScope(group, activeInsurerIds);
+        var (targetInsurerIds, unavailableInsurers) = ResolveScope(group, activeInsurerIds);
 
         // RN-060: substitui as Cotações anteriores do Grupo e descarta a escolha (re-solicitação).
         var existing = await quotationRepository.ListByGroupAsync(group.Id, cancellationToken);
@@ -51,6 +51,8 @@ public sealed class RunQuotationsUseCase(
         }
 
         group.ClearSelection();
+        // ADR-050: guarda a Corretora da solicitação para o reconciliador reconstruir o work item no restart.
+        group.AssignBrokerage(request.BrokerageId);
         quotationGroupRepository.Update(group);
 
         // RN-057: uma Cotação Requested por Seguradora-alvo; RN-056: não selecionadas viram Indisponível local.
@@ -64,10 +66,10 @@ public sealed class RunQuotationsUseCase(
             toEnqueue.Add(quotation);
         }
 
-        foreach (var insurerId in notSelectedInsurerIds)
+        foreach (var unavailable in unavailableInsurers)
         {
             quotations.Add(Quotation.UnavailableLocal(
-                group.Id, insurerId, "Seguradora não incluída na solicitação."));
+                group.Id, unavailable.InsurerId, unavailable.Reason));
         }
 
         // ADR-050: persiste o estado ANTES de enfileirar — o consumidor sobrescreve cada Cotação ao chegar.
@@ -84,7 +86,7 @@ public sealed class RunQuotationsUseCase(
         return new RunQuotationsResponse(group.Id, toEnqueue.Count);
     }
 
-    private static (List<Guid> Targets, List<Guid> NotSelected) ResolveScope(
+    private static (List<Guid> Targets, List<UnavailableInsurer> Unavailable) ResolveScope(
         QuotationGroup group, List<Guid> activeInsurerIds)
     {
         // RN-056: modo *todas* cota todas as habilitadas ativas.
@@ -101,9 +103,27 @@ public sealed class RunQuotationsUseCase(
             throw new BusinessRuleException("Nenhuma Seguradora foi selecionada para cotar.");
         }
 
-        var targets = activeInsurerIds.Where(selected.Contains).ToList();
-        var notSelected = activeInsurerIds.Where(id => !selected.Contains(id)).ToList();
+        var activeSet = activeInsurerIds.ToHashSet();
+        var selectedSet = selected.ToHashSet();
 
-        return (targets, notSelected);
+        var targets = activeInsurerIds.Where(selectedSet.Contains).ToList();
+
+        var unavailable = new List<UnavailableInsurer>();
+
+        // Habilitadas ativas fora da escolha: indisponíveis por não terem sido incluídas (RN-056).
+        unavailable.AddRange(activeInsurerIds
+            .Where(id => !selectedSet.Contains(id))
+            .Select(id => new UnavailableInsurer(id, "Seguradora não incluída na solicitação.")));
+
+        // Escolhidas sem Habilitação ativa: indisponíveis com motivo claro em vez de sumirem do leque (RN-056).
+        unavailable.AddRange(selected
+            .Where(id => !activeSet.Contains(id))
+            .Select(id => new UnavailableInsurer(
+                id, "Seguradora selecionada sem habilitação ativa para a corretora.")));
+
+        return (targets, unavailable);
     }
+
+    /// <summary>Seguradora que não vai ao provedor no modo Specific — nasce Indisponível local com motivo (RN-056).</summary>
+    private sealed record UnavailableInsurer(Guid InsurerId, string Reason);
 }

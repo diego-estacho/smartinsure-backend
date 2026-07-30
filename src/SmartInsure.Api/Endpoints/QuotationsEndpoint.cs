@@ -86,7 +86,7 @@ public sealed class QuotationsEndpoint : CarterModule
         IGetQuotationMinutaUseCase useCase,
         Guid groupId,
         Guid quotationId)
-        => await handler.TryHandleAsync(httpContext, useCase, new GetQuotationMinutaRequest(quotationId));
+        => await handler.TryHandleAsync(httpContext, useCase, new GetQuotationMinutaRequest(groupId, quotationId));
 
     // RN-063: envia os termos preenchidos (Tags + Cláusulas) e devolve a minuta ("Baixar minuta").
     private static async Task<IResult> SubmitMinutaAsync(
@@ -99,7 +99,7 @@ public sealed class QuotationsEndpoint : CarterModule
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
-            new SubmitQuotationTermsRequest(quotationId, body.BrokerageId, body.Terms, body.ParticularClauses));
+            new SubmitQuotationTermsRequest(groupId, quotationId, body.BrokerageId, body.Terms, body.ParticularClauses));
 }
 
 /// <summary>Corpo do POST de solicitação — a Corretora dona das Habilitações (fonte OPEN-03).</summary>
