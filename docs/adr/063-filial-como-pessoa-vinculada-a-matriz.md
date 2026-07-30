@@ -62,5 +62,10 @@ ser segurada, e as listagens por papel (RN-018, RN-025) não são afetadas porqu
 A auto-referência em `Persons` cria um ciclo na própria tabela; o FK é `NO ACTION` e a exclusão de Pessoa
 não existe na plataforma, então não há cascata a resolver.
 
-Fica em aberto (OPEN-17) o efeito da Filial fora do Grupo de Cotação: qual CNPJ vai à Seguradora ao cotar
-(etapa mockada, OPEN-07), Consulta de Crédito por Filial, Nomeação por estabelecimento e remoção/desvínculo.
+Decidido em 2026-07-28 (OPEN-17), e vale como orientação para quem desmockar as etapas de cotação e emissão:
+o CNPJ enviado à Seguradora ao cotar e o CNPJ da apólice emitida são os do **estabelecimento cotado** — a
+Filial marcada, ou a matriz quando não houver. Já o **Limite de Crédito e a taxa são sempre da matriz**, e a
+Consulta de Crédito não passa a aceitar Filial. As duas coisas são independentes: a Seguradora avaliar o
+risco pela matriz é funcionamento interno dela, não comportamento da plataforma.
+
+Fica em aberto (OPEN-17): Nomeação por estabelecimento e remoção/desvínculo de Filial.
