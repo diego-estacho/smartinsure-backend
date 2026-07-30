@@ -11,8 +11,8 @@ da busca (`PreSelectedBranchDocumentNumber`), que ninguém persiste e o front n�
 
 ## Migrations (`smartinsure-dbmigration`, forward-only com guards — ADRs 041–043)
 
-- [x] `V20260727234252__adicionar-matriz-em-persons.sql` — `Persons.HeadquartersPersonId UNIQUEIDENTIFIER NULL`, FK auto-referente para `dbo.Persons (Id)`, índice filtrado `IX_Persons_HeadquartersPersonId`. Sem backfill.
-- [x] `V20260728011830__adicionar-filial-em-quotation-groups.sql` — `QuotationGroups.BranchPersonId UNIQUEIDENTIFIER NULL`, FK para `dbo.Persons (Id)`, índice filtrado `IX_QuotationGroups_BranchPersonId`. Sem backfill: Rascunhos existentes seguem válidos com a matriz como estabelecimento.
+- [x] `V20260730125554__adicionar-matriz-em-persons.sql` — `Persons.HeadquartersPersonId UNIQUEIDENTIFIER NULL`, FK auto-referente para `dbo.Persons (Id)`, índice filtrado `IX_Persons_HeadquartersPersonId`. Sem backfill.
+- [x] `V20260730125555__adicionar-filial-em-quotation-groups.sql` — `QuotationGroups.BranchPersonId UNIQUEIDENTIFIER NULL`, FK para `dbo.Persons (Id)`, índice filtrado `IX_QuotationGroups_BranchPersonId`. Sem backfill: Rascunhos existentes seguem válidos com a matriz como estabelecimento.
 
 > Nas duas: `GO` entre o `ALTER TABLE ADD COLUMN` e o `CREATE INDEX` que referencia a coluna nova — o SQL Server resolve nomes no compile-time do batch e falha com Error 207 sem isso — e guard do índice qualificado por `object_id = OBJECT_ID(N'dbo.<Tabela>')`, porque nome de índice é único por tabela, não por banco.
 
