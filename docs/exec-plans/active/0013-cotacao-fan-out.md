@@ -46,7 +46,7 @@ Implementar a **etapa de cotações**: de um Grupo de Cotação em Rascunho, **c
 ## Evidências (2026-07-29)
 
 - **Backend:** `dotnet build SmartInsure.slnx` → 0 erros; `dotnet test` → **468 verdes** (Quotation RN-058/059, ACL PlugV2 11 status→`Unrecognized`/CCG RN-058, `RunQuotations` RN-056/057, `SelectQuotation`/recálculo RN-059/060, `GetQuotationGroup`, minuta RN-062/063); `python scripts/check-harness.py` → **harness ok**.
-- **Migration:** `V20260728120000__criar-tabelas-cotacoes.sql` (`Quotations`, `QuotationReasons`, `QuotationGroupInsurers`, `SelectedQuotationId` em `QuotationGroups`) aplicada no docker (mssql:1433), forward-only (ADR-041/42/43).
+- **Migration:** `V20260730070000__criar-tabelas-cotacoes.sql` (`Quotations`, `QuotationReasons`, `QuotationGroupInsurers`, `SelectedQuotationId` em `QuotationGroups`) aplicada no docker (mssql:1433), forward-only (ADR-041/42/43). Renumerada de `V20260728120000` na integração com develop (outOfOrder=false).
 - **Contrato/BFF:** `docs/generated/openapi.json` regenerado (rotas `.../quotations` POST/GET, `.../select`, `.../minuta` GET+submit, e `GET /quotation-groups/{id}`); `api.ts` regerado — **front typecheck 0**.
 - **Front:** typecheck 0, lint 0, `vitest` **230/230**, `nuxt build` OK.
 - **Teste local `/Cotation` (QA, CS GARANTIA):** AXA **Automática** (prêmio R$ 270, comissão 25%, limite R$ 20M, `ProposalUniqueId` real) + **motivos reais por seguradora** (não habilitada / tomador negado / grupo econômico) — de-para dos status validado ao vivo; minuta do catálogo importado (tag `TAG_EDITAL` + cláusulas CONSORCIO/INALIENABILIDADE/LEI, HTML + campos das tags); **"Baixar minuta" retornou PDF real**; erro do gateway **tratado no backend e exibido no front** (502 + "TAG obrigatória não informada").
