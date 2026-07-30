@@ -26,6 +26,17 @@ public sealed class PolicyHolderAppointmentRepository(SmartInsureDbContext conte
                 && appointment.Status == EPolicyHolderAppointmentStatus.Active,
             cancellationToken);
 
+    public async Task<bool> ExistsActiveForPolicyHolderAndBrokerageAsync(
+        Guid policyHolderId,
+        Guid brokerageId,
+        CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .AnyAsync(
+                appointment => appointment.PolicyHolderId == policyHolderId
+                    && appointment.BrokerageId == brokerageId
+                    && appointment.Status == EPolicyHolderAppointmentStatus.Active,
+                cancellationToken);
+
     public async Task<IReadOnlyList<PolicyHolderAppointmentDetailDto>> ListByPolicyHolderAsync(
         Guid policyHolderId,
         CancellationToken cancellationToken)

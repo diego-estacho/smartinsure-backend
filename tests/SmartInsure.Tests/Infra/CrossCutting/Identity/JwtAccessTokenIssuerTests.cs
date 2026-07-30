@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using SmartInsure.Core.Abstractions.Services;
+using SmartInsure.Core.Constants;
 using SmartInsure.Core.Entities;
 using SmartInsure.Infra.CrossCutting.Identity;
 using SmartInsure.Infra.CrossCutting.Options;
@@ -23,7 +25,7 @@ public class JwtAccessTokenIssuerTests
     {
         var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
 
-        var accessToken = _issuer.IssueFor(user);
+        var accessToken = _issuer.IssueFor(user, ActiveScope.None);
 
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken.Token);
 
@@ -33,5 +35,37 @@ public class JwtAccessTokenIssuerTests
         (jwt.ValidTo - jwt.ValidFrom).Should().Be(TimeSpan.FromHours(8));
         accessToken.ExpiresAtUtc.Should().BeCloseTo(
             DateTime.UtcNow.AddHours(8), TimeSpan.FromMinutes(1));
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-064")]
+    public void IssueFor_DeveEmitirSemClaimDeEscopo_QuandoNaoHaEscopoAtivo()
+    {
+        var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
+
+        var accessToken = _issuer.IssueFor(user, ActiveScope.None);
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken.Token);
+
+        jwt.Claims.Should().NotContain(claim => claim.Type == ScopeClaimNames.ActiveBrokerage);
+        jwt.Claims.Should().NotContain(claim => claim.Type == ScopeClaimNames.ActivePolicyHolder);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-064")]
+    public void IssueFor_DeveCarregarEscopoAtivoNasClaims_QuandoInformado()
+    {
+        var user = User.Create("Maria Silva", "maria@corretora.com.br", "casdoor-id-123");
+        var brokerageId = Guid.NewGuid();
+        var policyHolderId = Guid.NewGuid();
+
+        var accessToken = _issuer.IssueFor(user, new ActiveScope(brokerageId, policyHolderId));
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken.Token);
+
+        jwt.Claims.Should().ContainSingle(claim => claim.Type == ScopeClaimNames.ActiveBrokerage)
+            .Which.Value.Should().Be(brokerageId.ToString());
+        jwt.Claims.Should().ContainSingle(claim => claim.Type == ScopeClaimNames.ActivePolicyHolder)
+            .Which.Value.Should().Be(policyHolderId.ToString());
     }
 }

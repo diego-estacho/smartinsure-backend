@@ -1,8 +1,10 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using SmartInsure.Application.UseCase.Services.AdditionalCoverageImports;
+using SmartInsure.Application.UseCase.Services.Invitations;
 using SmartInsure.Application.UseCase.Services.ModalityImports;
 using SmartInsure.Application.UseCase.Services.PersonImports;
+using SmartInsure.Application.UseCase.Services.Scopes;
 
 namespace SmartInsure.Application.UseCase.IoC;
 
@@ -35,8 +37,17 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(assembly);
 
-        // Serviço compartilhado por use cases; fora da convenção I{Ação}UseCase → {Ação}UseCase.
+        // Serviços compartilhados por use cases; fora da convenção I{Ação}UseCase → {Ação}UseCase.
         services.AddScoped<IPersonBureauImporter, PersonBureauImporter>();
+        services.AddScoped<IInvitationMailer, InvitationMailer>();
+
+        // RN-064/ADR-065: resolução do Escopo ativo, compartilhada pelo login e pela troca de Escopo.
+        services.AddScoped<IActiveScopeResolver, ActiveScopeResolver>();
+
+        // RN-068/RN-069/RN-070: quem administra o Escopo ativo, e a criação de Usuário convidado
+        // compartilhada pelos fluxos de Corretor/Tomador Administrador.
+        services.AddScoped<IScopeAuthorization, ScopeAuthorization>();
+        services.AddScoped<IInvitedUserService, InvitedUserService>();
 
         // Serviço de importação de modalidades (RN-034), orquestrado pelo timer das Functions.
         services.AddScoped<IModalityImporter, ModalityImporter>();
