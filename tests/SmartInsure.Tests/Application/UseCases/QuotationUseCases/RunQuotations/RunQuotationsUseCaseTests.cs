@@ -29,13 +29,13 @@ public class RunQuotationsUseCaseTests
 
     private static QuotationGroup GroupAll()
         => QuotationGroup.Create(
-            Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
+            Guid.CreateVersion7(), branchPersonId: null, Guid.CreateVersion7(), Guid.CreateVersion7(),
             100_000m, new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
             EQuotationScopeMode.All, [], includesPenaltyCoverage: false, includesLaborCoverage: false);
 
     private static QuotationGroup GroupSpecific(IEnumerable<Guid> selectedInsurerIds)
         => QuotationGroup.Create(
-            Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
+            Guid.CreateVersion7(), branchPersonId: null, Guid.CreateVersion7(), Guid.CreateVersion7(),
             100_000m, new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
             EQuotationScopeMode.Specific, selectedInsurerIds, includesPenaltyCoverage: false, includesLaborCoverage: false);
 

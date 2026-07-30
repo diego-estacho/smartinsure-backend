@@ -31,8 +31,9 @@ public class BranchRegistrarTests
             .Returns(person);
 
     private void ImportReturns(string cnpj, Person? person)
-        => _personBureauImporter.ImportLegalPersonAsync(cnpj, null, Arg.Any<CancellationToken>())
-            .Returns(person is null ? null : new PersonBureauImport(person, true));
+        => _personBureauImporter
+            .ImportLegalPersonAsync(cnpj, EPersonRole.PolicyHolder, false, Arg.Any<CancellationToken>())
+            .Returns(person is null ? null : new PersonBureauImport(person, true, "2062", "Sociedade Empresária Limitada"));
 
     [Fact]
     [Trait("RuleId", "RN-101")]
@@ -72,7 +73,7 @@ public class BranchRegistrarTests
         result.Should().NotBeNull();
         result!.HeadquartersId.Should().Be(headquarters.Id);
         await _personBureauImporter.DidNotReceive().ImportLegalPersonAsync(
-            HeadquartersCnpj, Arg.Any<EPersonRole?>(), Arg.Any<CancellationToken>());
+            HeadquartersCnpj, Arg.Any<EPersonRole>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -88,7 +89,7 @@ public class BranchRegistrarTests
         await _personRepository.DidNotReceiveWithAnyArgs().AddAsync(default!, default);
         await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
         await _personBureauImporter.DidNotReceive().ImportLegalPersonAsync(
-            BranchCnpj, Arg.Any<EPersonRole?>(), Arg.Any<CancellationToken>());
+            BranchCnpj, Arg.Any<EPersonRole>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -129,7 +130,7 @@ public class BranchRegistrarTests
         result.BranchId.Should().Be(branch.Id);
         result.Notice.Should().BeNull();
         await _personBureauImporter.DidNotReceiveWithAnyArgs().ImportLegalPersonAsync(
-            default!, default, default);
+            default!, default, default, default);
         await _personRepository.DidNotReceiveWithAnyArgs().AddAsync(default!, default);
         await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
     }
@@ -151,7 +152,7 @@ public class BranchRegistrarTests
         result.Notice.Should().BeNull();
         branch.HeadquartersPersonId.Should().Be(headquarters.Id);
         await _personBureauImporter.DidNotReceiveWithAnyArgs().ImportLegalPersonAsync(
-            default!, default, default);
+            default!, default, default, default);
         await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
@@ -165,7 +166,7 @@ public class BranchRegistrarTests
         await _personRepository.DidNotReceiveWithAnyArgs()
             .GetTrackedByDocumentNumberAsync(default!, default);
         await _personBureauImporter.DidNotReceiveWithAnyArgs().ImportLegalPersonAsync(
-            default!, default, default);
+            default!, default, default, default);
     }
 
     [Fact]
@@ -183,6 +184,6 @@ public class BranchRegistrarTests
         await _personRepository.DidNotReceiveWithAnyArgs()
             .GetTrackedByDocumentNumberAsync(default!, default);
         await _personBureauImporter.DidNotReceiveWithAnyArgs().ImportLegalPersonAsync(
-            default!, default, default);
+            default!, default, default, default);
     }
 }
