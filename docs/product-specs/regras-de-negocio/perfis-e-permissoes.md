@@ -22,6 +22,33 @@
 
 **Casos limite.** Permissão presente no catálogo mas não marcada em nenhum Perfil: a funcionalidade correspondente fica indisponível para todos até ser marcada. Funcionalidade sem Permissão declarada: fora do controle de acesso por Perfil (não é gate desta jornada).
 
+### Catálogo declarado — v1 (2026-07-29)
+
+Derivado das funcionalidades que **já existem** na plataforma, a pedido do dono do produto. Funcionalidade
+ainda não construída (ex.: Apólices, Relatórios, Configurações) **não** declara Permissão — entra no
+catálogo quando nascer. Código no formato `dominio.acao`, em inglês (ADR-058), estável (é a chave natural).
+
+| Código | Autoriza | Escopo típico |
+|---|---|---|
+| `quotation-groups.view` / `.create` / `.edit` | consultar, abrir e editar Oferta/Grupo de Cotação | Corretora, Tomador |
+| `credit-inquiries.view` / `.create` | consultar e solicitar Consulta de Crédito | Corretora, Tomador |
+| `policy-holders.view` / `.create` / `.edit` | consultar, cadastrar e editar Tomador | Corretora |
+| `policy-holder-appointments.manage` | criar e encerrar Nomeação de Tomador | Corretora |
+| `brokerages.view` / `.create` / `.edit` / `.change-status` | consultar, cadastrar, editar e ativar/inativar Corretora | Sistema |
+| `insurer-enablements.manage` | manter Habilitação de Seguradora por Corretora | Sistema |
+| `insurers.view` | consultar o catálogo de Seguradoras | Sistema |
+| `modalities.view` / `.edit` | consultar e editar Modalidade | Sistema |
+| `modality-map.manage` | manter o Mapa de Modalidades | Sistema |
+| `additional-coverages.view` / `.edit` | consultar e editar Cobertura Adicional | Sistema |
+| `additional-coverage-map.manage` | manter o Mapa de Coberturas Adicionais | Sistema |
+| `imports.run` | disparar importação de Modalidades e Coberturas | Sistema |
+| `users.view` / `.create` / `.change-activation` | consultar, criar/convidar e inativar/reativar Usuário | Sistema, Corretora, Tomador |
+| `profiles.view` / `.manage` | consultar e administrar Perfis (criar, editar, remover) | Sistema, Corretora, Tomador |
+
+O catálogo é semeado por migration (Flyway, repositório dedicado) e nunca editado por tela (RN-063).
+A marcação inicial nos Perfis fixos é decisão do Administrador do Sistema (RN-073) — o seed cria as
+Permissões, não as distribui.
+
 ## RN-064 — Vínculos do Usuário com Corretoras e Tomadores e o Escopo ativo
 
 **Descrição.** Um Usuário pode estar vinculado a várias Corretoras e a vários Tomadores; em cada vínculo tem um Perfil próprio (RN-062). Quando vinculado a mais de uma Corretora, o Usuário escolhe a Corretora ativa; quando vinculado a mais de um Tomador, escolhe o Tomador ativo. As operações e as Permissões efetivas em cada momento são as do Perfil do Escopo ativo correspondente.
@@ -102,15 +129,21 @@
 
 **Casos limite.** Corretor cuja Corretora ativa não concede a Permissão: recusado, mesmo que outra Corretora do mesmo Usuário concedesse (o mesmo vale para o Tomador ativo). Nenhum Perfil disponível no Escopo do criador: criação recusada com indicação clara.
 
-## RN-072 — Visibilidade dos Perfis na criação de Usuário
+## RN-072 — Visibilidade dos Perfis na criação de Usuário e na gestão de Perfis
 
-**Descrição.** Na criação de um Usuário, os Perfis oferecidos são apenas os do Escopo daquele contexto: no contexto de Corretora, os Perfis fixos de Corretora mais os Perfis customizados vinculados à Corretora ativa; no contexto de Tomador, os Perfis fixos de Tomador mais os Perfis customizados vinculados àquele Tomador.
+> Ampliada em 2026-07-29 (decisão do dono do produto): antes tratava só da criação; passa a separar
+> **atribuir** de **administrar**, porque os Perfis fixos de administração não são administráveis por
+> quem não é Administrador do Sistema, mas continuam atribuíveis pela hierarquia (RN-068/069/070).
 
-**Pré-condições.** Fluxo de criação de Usuário em um Escopo determinado (Corretora ativa ou Tomador vinculado).
+**Descrição.** A lista de Perfis depende do que o solicitante vai fazer com ela.
+Ao **criar um Usuário**, os Perfis oferecidos são os do Escopo daquele contexto: no contexto de Corretora, os Perfis fixos de Corretora mais os Perfis customizados vinculados à Corretora ativa; no contexto de Tomador, os Perfis fixos de Tomador mais os customizados daquele Tomador — respeitada a hierarquia de quem pode atribuir o quê (o Corretor Administrador atribui Tomador Administrador e Corretor; o Tomador Administrador atribui Tomador e os customizados do seu Tomador).
+Na **gestão de Perfis** (a tela que lista Perfis para administrar), o Administrador do Sistema vê todos os Perfis; o Corretor Administrador e o Tomador Administrador **não veem** os Perfis fixos Administrador do Sistema, Corretor Administrador e Tomador Administrador — veem apenas os Perfis do próprio Escopo que administram. Usuário com Perfil Corretor ou Tomador não acessa a gestão de Perfis.
 
-**Critério de aceitação.** A lista de Perfis apresentada na criação contém exatamente os Perfis do Escopo em questão — nunca Perfis customizados de outra Corretora ou de outro Tomador. Perfis customizados de uma Corretora não aparecem para outra Corretora; os de um Tomador não aparecem para outro Tomador.
+**Pré-condições.** Fluxo de criação de Usuário em um Escopo determinado (Corretora ativa ou Tomador vinculado), ou acesso à gestão de Perfis por um solicitante autenticado.
 
-**Casos limite.** Corretora sem Perfis customizados: são oferecidos apenas os Perfis fixos aplicáveis ao Escopo. Perfil customizado removido (RN-074) deixa de aparecer imediatamente.
+**Critério de aceitação.** Na criação, a lista contém exatamente os Perfis do Escopo em questão — nunca Perfis customizados de outra Corretora ou de outro Tomador. Perfis customizados de uma Corretora não aparecem para outra Corretora; os de um Tomador não aparecem para outro Tomador. Na gestão, a listagem devolvida ao Corretor Administrador e ao Tomador Administrador nunca inclui os três Perfis fixos de administração, mesmo por consulta direta por identificador; para o Administrador do Sistema, inclui todos.
+
+**Casos limite.** Corretora sem Perfis customizados: são oferecidos apenas os Perfis fixos aplicáveis ao Escopo. Perfil customizado removido (RN-074) deixa de aparecer imediatamente. Perfil que o solicitante pode atribuir mas não administrar (ex.: Tomador Administrador, para o Corretor Administrador): aparece na criação de Usuário e não aparece na gestão de Perfis.
 
 ## RN-073 — Edição das Permissões de Perfil fixo pelo Administrador do Sistema
 

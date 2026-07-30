@@ -107,8 +107,8 @@ Contexto: levantado em 2026-07-23 (jornada Coberturas Adicionais, AB#0003). A im
 
 ## OPEN-17 — Nomes técnicos dos Perfis fixos (colisão com Papel da Pessoa)
 Dono: PO (gerente de projeto) + time (ADR-058, dono do vocabulário)
-Bloqueia: código de domínio dos Perfis fixos Corretor e Tomador da jornada Perfis e Permissões (RN-062..RN-076)
-Status: aberta
+Bloqueia: nada — resolvida
+Status: **decidida pelo dono do produto em 2026-07-29** — Perfil Corretor = `BrokerageUser`; Perfil Tomador = `PolicyHolderUser` (simetria com `BrokerageAdministrator`/`PolicyHolderAdministrator`, sem colidir com `EPersonRole.Broker`/`PolicyHolder`). Os nomes já ratificados por essa decisão são os cinco Perfis fixos: `SystemAdministrator`, `BrokerageAdministrator`, `PolicyHolderAdministrator`, `BrokerageUser`, `PolicyHolderUser`. Ratificação formal da PO segue pendente; se ela mudar um nome, é renomear seed + constante (o modelo referencia Perfil por id, não por nome).
 Contexto: os Perfis fixos "Corretor" e "Tomador" (papéis de acesso do Usuário) colidem em nome com o Papel da Pessoa Corretor (`Broker`) e Tomador (`PolicyHolder`), que já existem no glossário e são conceitos distintos (o papel da Pessoa não é o Perfil do Usuário). Precisa a PO/time decidir os nomes técnicos 1:1 desses dois Perfis fixos (ex.: `BrokerProfile`/`PolicyHolderProfile` ou outro) antes de qualquer código, sob a regra do ADR-058. Corretor Administrador e Tomador Administrador já têm proposta de nome técnico no glossário (`BrokerageAdministrator`/`PolicyHolderAdministrator`), também sujeita a ratificação.
 
 ## OPEN-18 — Remoção de Permissão essencial à própria administração
@@ -120,7 +120,7 @@ Contexto: a RN-073 permite ao Administrador do Sistema editar as Permissões dos
 ## OPEN-19 — Mecânica do Escopo ativo (Corretora/Tomador ativo) e escopo padrão no primeiro acesso
 Dono: arquitetura (ADR) + PO (comportamento no primeiro acesso)
 Bloqueia: a resolução do Escopo ativo em tempo de request na RN-064 (permissões efetivas por Corretora/Tomador ativo) e, por consequência, os query filters multi-tenant por Corretora ativa (ADR-035). Não bloqueia as tabelas/entidades de vínculo (Usuário↔Corretora/Tomador), que são o N:N do glossário e podem nascer antes.
-Status: aberta (direção proposta em 2026-07-23)
+Status: **mecânica decidida pelo dono do produto em 2026-07-29** — segue o ADR-065 (Escopo ativo como claim do acesso; a troca reemite o acesso validando o vínculo). Escopo padrão no primeiro acesso, também decidido: **vínculo único vira ativo automaticamente** (RN-064 já diz isso nos casos limite) e, com mais de um vínculo, a seleção é oferecida antes de operar no escopo. Continua pendente **apenas a ratificação formal da mecânica pela arquitetura** (dono do ADR-065): se ela recusar o claim, muda o transporte do Escopo ativo, não as regras que o consomem.
 Direção proposta (2026-07-23): a mecânica candidata é Escopo ativo carregado como claim do acesso (ADR-065, status proposto — aguardando ratificação do dono de arquitetura), coerente com o ADR-014; troca reemite o acesso validando o vínculo; sem tabela de sessão nova. Candidatos avaliados: (a) claim no JWT (escolhido — stateless, troca reemite o token); (b) sessão/estado no servidor; (c) header por request; (d) híbrido. Segue ABERTO: (a) ratificação da mecânica pela arquitetura (ADR-065); (b) dono PO/UX — qual o Escopo ativo padrão no primeiro acesso quando o Usuário tem mais de um vínculo (a única vira ativa automaticamente? seleção obrigatória antes de operar?). A fatia 1b (carregamento/troca da claim) fica pendente de (a) e (b); a fatia 1a (vínculos) não depende delas.
 
 ## OPEN-20 — Autoridade de inativação por escopo e Usuário multi-Corretora (RN-076)
