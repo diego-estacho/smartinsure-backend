@@ -37,7 +37,7 @@ public sealed class PersonMapping : IEntityTypeConfiguration<Person>
             .WithMany()
             .HasForeignKey(entity => entity.LegalNatureId);
 
-        // RN-052/ADR-063: Filial vinculada à matriz (self-FK), coluna e FK_Persons_Headquarters
+        // RN-101/ADR-101: Filial vinculada à matriz (self-FK), coluna e FK_Persons_Headquarters
         // criadas pela migration Flyway. Um Property escalar aqui não basta — sem HasOne o EF
         // não infere relação nenhuma de um Guid? "nu" sem navegação, então nada garante a ordem
         // de gravação entre matriz e Filial num mesmo SaveChanges; espelha QuotationGroupMapping

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using NSubstitute;
+using SmartInsure.Application.UseCase.Services.Scopes;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser.Requests;
 using SmartInsure.Core.Abstractions.Repositories;
@@ -21,10 +22,17 @@ public class AuthenticateUserUseCaseTests
     private readonly IUserRepository _repository = Substitute.For<IUserRepository>();
     private readonly IIdentityProvider _identityProvider = Substitute.For<IIdentityProvider>();
     private readonly IAccessTokenIssuer _tokenIssuer = Substitute.For<IAccessTokenIssuer>();
+    private readonly IActiveScopeResolver _activeScopeResolver = Substitute.For<IActiveScopeResolver>();
     private readonly AuthenticateUserUseCase _useCase;
 
     public AuthenticateUserUseCaseTests()
-        => _useCase = new AuthenticateUserUseCase(_repository, _identityProvider, _tokenIssuer);
+    {
+        // RN-064: sem vínculo o Escopo ativo nasce vazio — o padrão é resolvido pelo serviço.
+        _activeScopeResolver.ResolveDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(ActiveScope.None);
+        _useCase = new AuthenticateUserUseCase(
+            _repository, _identityProvider, _tokenIssuer, _activeScopeResolver);
+    }
 
     private User ActiveUser()
     {
@@ -40,7 +48,7 @@ public class AuthenticateUserUseCaseTests
         var user = ActiveUser();
         _identityProvider.ValidateCredentialsAsync(Email, Password, Arg.Any<CancellationToken>())
             .Returns(true);
-        _tokenIssuer.IssueFor(user).Returns(new AccessToken("token-plataforma", ExpiresAtUtc));
+        _tokenIssuer.IssueFor(user, Arg.Any<ActiveScope>()).Returns(new AccessToken("token-plataforma", ExpiresAtUtc));
 
         var response = await _useCase.ExecuteAsync(
             new AuthenticateUserRequest(Email, Password), CancellationToken.None);
@@ -55,7 +63,7 @@ public class AuthenticateUserUseCaseTests
         ActiveUser();
         _identityProvider.ValidateCredentialsAsync(Email, Password, Arg.Any<CancellationToken>())
             .Returns(true);
-        _tokenIssuer.IssueFor(Arg.Any<User>()).Returns(new AccessToken("token", ExpiresAtUtc));
+        _tokenIssuer.IssueFor(Arg.Any<User>(), Arg.Any<ActiveScope>()).Returns(new AccessToken("token", ExpiresAtUtc));
 
         await _useCase.ExecuteAsync(
             new AuthenticateUserRequest($"  {Email.ToUpperInvariant()}  ", Password),
@@ -90,7 +98,7 @@ public class AuthenticateUserUseCaseTests
 
         (await act.Should().ThrowAsync<UnauthorizedException>())
             .WithMessage(AuthenticateUserUseCase.InvalidCredentialsMessage);
-        _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>());
+        _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>(), Arg.Any<ActiveScope>());
     }
 
     [Fact]
@@ -105,7 +113,7 @@ public class AuthenticateUserUseCaseTests
             new AuthenticateUserRequest(Email, Password), CancellationToken.None);
 
         await act.Should().ThrowAsync<BusinessRuleException>();
-        _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>());
+        _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>(), Arg.Any<ActiveScope>());
     }
 
     [Fact]
@@ -121,7 +129,7 @@ public class AuthenticateUserUseCaseTests
 
         (await act.Should().ThrowAsync<UnauthorizedException>())
             .WithMessage(AuthenticateUserUseCase.InvalidCredentialsMessage);
-        _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>());
+        _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>(), Arg.Any<ActiveScope>());
     }
 
     [Fact]
@@ -136,6 +144,6 @@ public class AuthenticateUserUseCaseTests
             new AuthenticateUserRequest(Email, Password), CancellationToken.None);
 
         await act.Should().ThrowAsync<IdentityProviderUnavailableException>();
-        _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>());
+        _tokenIssuer.DidNotReceive().IssueFor(Arg.Any<User>(), Arg.Any<ActiveScope>());
     }
 }

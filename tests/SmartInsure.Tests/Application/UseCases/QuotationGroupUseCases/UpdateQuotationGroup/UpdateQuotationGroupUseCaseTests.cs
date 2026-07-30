@@ -39,11 +39,11 @@ public class UpdateQuotationGroupUseCaseTests
             1000m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
             "All", [], false, false);
 
-    /// <summary>RN-052: matriz sintética (CNPJ de ordem /0001) para os cenários de RN-053.</summary>
+    /// <summary>RN-101: matriz sintética (CNPJ de ordem /0001) para os cenários de RN-102.</summary>
     private static Person CreateHeadquarters(string documentNumber = "11222333000181", string name = "Matriz LTDA")
         => Person.Create(documentNumber, name, null, Guid.NewGuid());
 
-    /// <summary>RN-052: filial sintética já vinculada à matriz informada.</summary>
+    /// <summary>RN-101: filial sintética já vinculada à matriz informada.</summary>
     private static Person CreateBranchOf(Person headquarters, string documentNumber, string name = "Filial LTDA")
     {
         var branch = Person.Create(documentNumber, name, null, Guid.NewGuid());
@@ -126,7 +126,7 @@ public class UpdateQuotationGroupUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-053")]
+    [Trait("RuleId", "RN-102")]
     public async Task ExecuteAsync_ComFilialDoProprioTomador_DevePersistirOEstabelecimento()
     {
         var headquarters = CreateHeadquarters();
@@ -145,7 +145,7 @@ public class UpdateQuotationGroupUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-053")]
+    [Trait("RuleId", "RN-102")]
     public async Task ExecuteAsync_ComFilialDeOutraMatriz_DeveRecusar()
     {
         var headquarters = CreateHeadquarters();
@@ -165,7 +165,7 @@ public class UpdateQuotationGroupUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-053")]
+    [Trait("RuleId", "RN-102")]
     public async Task ExecuteAsync_ComFilialInexistente_DeveRecusar()
     {
         var group = ExistingDraft();
@@ -184,7 +184,7 @@ public class UpdateQuotationGroupUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-053")]
+    [Trait("RuleId", "RN-102")]
     public async Task ExecuteAsync_SemFilial_DeveManterEstabelecimentoNulo()
     {
         var group = ExistingDraft();
@@ -201,10 +201,10 @@ public class UpdateQuotationGroupUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-053")]
+    [Trait("RuleId", "RN-102")]
     public async Task ExecuteAsync_ComGrupoTinhaFilialEUpdateChegaSemBranchId_DeveLimparOEstabelecimento()
     {
-        // RN-053: trocar o Tomador limpa a Filial — sem branchId na atualização, o estabelecimento
+        // RN-102: trocar o Tomador limpa a Filial — sem branchId na atualização, o estabelecimento
         // que já existia no grupo (Filial de uma cotação anterior) some, mesmo sem revalidar contra o Tomador.
         var group = ExistingDraft(branchPersonId: Guid.CreateVersion7());
         _quotationGroupRepository.GetByIdWithInsurersAsync(group.Id, Arg.Any<CancellationToken>())

@@ -52,7 +52,7 @@ public sealed class UpdateQuotationGroupUseCase(
         _ = await modalityRepository.GetByIdAsync(request.ModalityId, cancellationToken)
             ?? throw new NotFoundException("Modalidade não encontrada.");
 
-        // RN-053: a Filial precisa pertencer à matriz que é o Tomador do grupo; ausente limpa o
+        // RN-102: a Filial precisa pertencer à matriz que é o Tomador do grupo; ausente limpa o
         // estabelecimento (trocar o Tomador limpa a Filial — sem revalidação, ela some).
         if (request.BranchId is not null)
         {

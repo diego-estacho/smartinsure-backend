@@ -14,12 +14,25 @@ Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de enti
 | **Cotação** | `Quotation` | O retorno de UMA seguradora para um Grupo de Cotação: prêmio, condições, prazo | N por Grupo de Cotação (uma por seguradora) | o pedido do corretor |
 | **Proposta** | `Proposal` | A cotação aceita pelo corretor, em processamento na seguradora até a emissão | 0..1 por Grupo de Cotação | qualquer coisa antes do aceite |
 | **Apólice** | `Policy` | O documento emitido pela seguradora | 0..1 por proposta | — |
+| **Contragarantia (CCG)** | `CounterGuarantee` | Garantia adicional que a Seguradora pode exigir para emitir; na Cotação vem como veredito (exige ou não) + dados informativos (limite máximo sem CCG, se já assinada), capturado como atributo da Cotação. A assinatura/contrato da CCG é da emissão (proposto em 2026-07-27 — aguardando ratificação da PO) | 0..1 por Cotação | uma esteira de análise; uma classificação de resultado |
 | **Seguradora** | `Insurer` | Quem precifica e emite. A OnPoint é um *hub* de seguradoras, não uma seguradora | — | — |
 | **Corretora / Corretor** | `Brokerage` / `Broker` | A empresa cliente da plataforma / o usuário dela | — | — |
+| **Dados de contato da Corretora** | `ContactEmail` / `ContactPhone` / `ResponsibleName` | E-mail, telefone e responsável informados como cadastro complementar da Corretora, no vínculo de papel Corretor; opcionais (ratificado por Diego Estácho no lugar da PO em 2026-07-25 — registrar confirmação da PO) | 0..1 cada por Corretora | dados da Pessoa (razão social, endereço principal, Natureza Jurídica) |
 | **Usuário** | `User` | Pessoa que acessa a plataforma, com identidade mantida no provedor de identidade (ratificado pela PO em 2026-07-15) | — | a Corretora (empresa) |
 | **Provedor de identidade** | `IdentityProvider` | Serviço externo que guarda credenciais e autentica os Usuários da plataforma (ratificado pela PO em 2026-07-15) | — | — |
 | **Birô** | `Bureau` | Serviço externo que fornece dados cadastrais públicos de pessoa ou empresa a partir do CPF/CNPJ (ratificado pela PO em 2026-07-15) | — | fonte interna de dados; a seguradora |
-| **Perfil** | `Profile` | Papel atribuído a um Usuário que autoriza operações restritas da plataforma; Usuário sem Perfil é usuário comum (proposto em 2026-07-16 — aguardando ratificação da PO) | 0..1 por Usuário nesta fase | cargo na Corretora |
+| **Perfil** | `Profile` | Conjunto nomeado de Permissões, com um Escopo (Sistema, uma Corretora ou um Tomador), que autoriza operações da plataforma a um Usuário; há Perfis fixos e Perfis customizados (proposto em 2026-07-16, cardinalidade revista em 2026-07-23 — aguardando ratificação da PO) | 1 por Usuário × Corretora e 1 por Usuário × Tomador (0..1 no Escopo Sistema) | cargo na Corretora; a Permissão isolada |
+| **Permissão** | `Permission` | Autorização atômica de uma operação/funcionalidade, declarada pela própria plataforma em catálogo fixo e marcada dentro de um Perfil (proposto em 2026-07-23 — aguardando ratificação da PO) | N por Perfil | o Perfil (que agrupa Permissões) |
+| **Escopo do Perfil** | `EProfileScope` | Domínio em que um Perfil vale: Sistema, uma Corretora específica ou um Tomador específico (proposto em 2026-07-23 — aguardando ratificação da PO) | 1 por Perfil | a Corretora ativa |
+| **Corretor Administrador** | `BrokerageAdministrator` | Perfil fixo de Escopo Corretora que administra Usuários e Perfis da Corretora (nome técnico decidido pelo dono do produto em 2026-07-29, [OPEN-17](open-decisions.md) — ratificação da PO pendente) | — | o Corretor (papel da Pessoa) |
+| **Tomador Administrador** | `PolicyHolderAdministrator` | Perfil fixo de Escopo Tomador que administra Usuários e Perfis daquele Tomador (nome técnico decidido pelo dono do produto em 2026-07-29, [OPEN-17](open-decisions.md) — ratificação da PO pendente) | — | o Tomador (papel da Pessoa) |
+| **Corretor** (Perfil) | `BrokerageUser` | Perfil fixo de Escopo Corretora do Usuário que opera a Corretora sem administrá-la; recebe as Permissões marcadas pelo Administrador do Sistema (nome técnico decidido pelo dono do produto em 2026-07-29 para não colidir com o Papel da Pessoa `Broker`, [OPEN-17](open-decisions.md)) | — | o Corretor (papel da Pessoa `Broker`); o Corretor Administrador |
+| **Tomador** (Perfil) | `PolicyHolderUser` | Perfil fixo de Escopo Tomador do Usuário que opera aquele Tomador sem administrá-lo; recebe as Permissões marcadas pelo Administrador do Sistema (nome técnico decidido pelo dono do produto em 2026-07-29 para não colidir com o Papel da Pessoa `PolicyHolder`, [OPEN-17](open-decisions.md)) | — | o Tomador (papel da Pessoa `PolicyHolder`); o Tomador Administrador |
+| **Convite** | `Invitation` | Envio, por e-mail, de um link de uso único e prazo de validade que leva o Usuário Pendente ao primeiro acesso, onde define a própria senha (proposto em 2026-07-23 — aguardando ratificação da PO) | N por Usuário enquanto Pendente | a senha inicial padrão |
+| **Vínculo de Usuário com Corretora** | `UserBrokerageMembership` | Relação entre um Usuário e uma Corretora, portadora do Perfil do Usuário naquela Corretora; um Usuário pode ter vários (proposto em 2026-07-23 — aguardando ratificação da PO) | N por Usuário | o Papel da Pessoa; a Habilitação de Seguradora |
+| **Corretora ativa** | `ActiveBrokerage` | A Corretora atualmente selecionada por um Usuário com vínculo em mais de uma; determina as Permissões efetivas e o Escopo das operações no momento (proposto em 2026-07-23 — aguardando ratificação da PO) | 1 por sessão | o vínculo (que é permanente) |
+| **Vínculo de Usuário com Tomador** | `UserPolicyHolderMembership` | Relação entre um Usuário e um Tomador, portadora do Perfil do Usuário naquele Tomador; um Usuário pode ter vários (proposto em 2026-07-23 — aguardando ratificação da PO) | N por Usuário | o Vínculo de Usuário com Corretora; o Papel da Pessoa |
+| **Tomador ativo** | `ActivePolicyHolder` | O Tomador atualmente selecionado por um Usuário com vínculo em mais de um; determina as Permissões efetivas e o Escopo das operações de contexto Tomador no momento (proposto em 2026-07-23 — aguardando ratificação da PO) | 1 por sessão | a Corretora ativa; o vínculo (permanente) |
 | **Administrador do Sistema** | `SystemAdministrator` | Perfil da equipe SmartInsure que autoriza operações internas da plataforma, como manter o catálogo de Seguradoras (proposto em 2026-07-16 — aguardando ratificação da PO) | — | usuário de Corretora |
 | **Pessoa** | `Person` | Pessoa física ou jurídica identificada pelo documento (CPF/CNPJ), cadastrada uma única vez na plataforma e reaproveitada pelos papéis que a referenciam (segurado, corretor, tomador); o tipo — física (`F`) ou jurídica (`J`) — deriva do documento (proposto em 2026-07-16 — aguardando ratificação da PO) | 1 por CPF/CNPJ | a Corretora e a Seguradora (têm cadastros próprios); o Usuário |
 | **Papel da Pessoa** | `PersonRole` | Vínculo acumulável entre a Pessoa e um papel (Segurado `Insured`, Corretor `Broker`, Tomador `PolicyHolder`), criado automaticamente quando a Pessoa é devolvida por documento ou importada naquele contexto (proposto em 2026-07-16 — aguardando ratificação da PO) | N por Pessoa (um por papel) | o Perfil do Usuário |
@@ -58,7 +71,8 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 | Status | Nome estável (API) | Significado | Transições permitidas |
 |---|---|---|---|
 | **Pendente** | `Pending` | Usuário criado que ainda não concluiu o primeiro acesso | Pendente → Ativo (RN-002) |
-| **Ativo** | `Active` | Usuário que concluiu o primeiro acesso com senha própria definida | — (inativação ainda não definida) |
+| **Ativo** | `Active` | Usuário que concluiu o primeiro acesso com senha própria definida | Ativo → Inativo (RN-076) |
+| **Inativo** | `Inactive` | Usuário desligado do acesso; permanece no cadastro, login recusado (proposto em 2026-07-23 — aguardando ratificação da PO) | Inativo → Ativo (RN-076) |
 
 ### Seguradora (proposto em 2026-07-16 — aguardando ratificação da PO)
 
@@ -87,6 +101,8 @@ A máquina de estados do Smart será enumerada nesta seção junto com a PO, ant
 |---|---|---|---|
 | **Ativa** | `Active` | Corretora habilitada no cadastro de Corretoras | Ativa → Inativa (RN-021) |
 | **Inativa** | `Inactive` | Corretora mantida no cadastro de Corretoras sem bloqueio automático em outros fluxos nesta fase | Inativa → Ativa (RN-021) |
+
+> **Situação apresentada (derivada — RN-053, 2026-07-25).** Além do status armazenado Ativa/Inativa acima, a plataforma apresenta a Corretora como **Incompleta** quando ela está Ativa mas falta nome fantasia ou e-mail de contato. É um valor **derivado no servidor** para exibição, contagem e filtro — não é status novo e não cria transição na máquina de estados. Nome estável na API: `Active` / `Incomplete` / `Inactive`. Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO).
 
 ### Modalidade e Modalidade Importada (proposto/revisto em 2026-07-22 — aguardando ratificação da PO)
 
@@ -121,3 +137,18 @@ Estado inicial do agregado montado no wizard de nova oferta. Nesta fase o backen
 | Status | Nome estável (API) | Significado | Transições permitidas |
 |---|---|---|---|
 | **Rascunho** | `Draft` | Grupo de Cotação criado/atualizado no wizard (tomador, segurado, escopo, modalidade, valor segurado, vigência, coberturas), ainda sem Cotações solicitadas às Seguradoras | Rascunho → (estados de cotação/emissão, a definir com a PO — OPEN-07) |
+
+### Cotação — resultado (proposto em 2026-07-27 — aguardando ratificação da PO)
+
+Classificação **estável** do resultado de uma Cotação, exposta por nome estável e traduzida a partir do retorno da Seguradora (RN-058). O conjunto de classificações é pequeno e não cresce; a esteira e os motivos são **dado** que acompanha a classificação — assim uma esteira ou um motivo novo da Seguradora não cria um status novo.
+
+| Resultado | Nome estável (API) | Significado | Seguível? |
+|---|---|---|---|
+| **Automático** | `Automatic` | Emissão automática disponível pela Seguradora | Sim (RN-059) |
+| **Análise** | `Analysis` | Depende de esteira da Seguradora (ver Esteira); a proposta segue no portal da Seguradora | Somente esteira de Subscrição, nesta fase (RN-059) |
+| **Indisponível/Recusado** | `Unavailable` | Seguradora não oferta, não pôde cotar ou recusou; acompanha a lista de motivos informada | Não |
+| **Não-reconhecido** | `Unrecognized` | Resultado que a plataforma não classificou; exibido sem prêmio e registrado para revisão | Não |
+
+> Um resultado desconhecido/novo da Seguradora recai **sempre** em Não-reconhecido — nunca é convertido em silêncio para Automático nem exibe prêmio (RN-058).
+
+**Esteira** da Cotação em Análise (exposta por nome estável): **Subscrição** (`Underwriting`), **Crédito** (`Credit`), **PEP** (`Pep`), **Resseguro** (`Reinsurance`), **Cadastro** (`Registration`). A lista cresce como dado conforme a Seguradora informa; nesta fase, apenas a esteira de **Subscrição** é seguível (RN-059).

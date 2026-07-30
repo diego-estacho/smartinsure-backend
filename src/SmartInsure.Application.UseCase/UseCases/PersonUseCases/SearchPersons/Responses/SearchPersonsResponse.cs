@@ -11,7 +11,7 @@ public sealed record SearchPersonsResponse(
 /// <summary>
 /// Pessoa no resultado: tipo pelo nome estável (Natural/Legal); classificação da
 /// Natureza Jurídica quando jurídica (RN-015); no contexto de tomador com CNPJ de
-/// filial, a filial pré-selecionada — cadastrada e vinculada à matriz (RN-016/RN-052).
+/// filial, a filial pré-selecionada — cadastrada e vinculada à matriz (RN-016/RN-101).
 /// </summary>
 public sealed record PersonSearchItemResponse(
     Guid Id,

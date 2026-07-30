@@ -1,0 +1,8 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.ProfileUseCases.UpdateFixedProfilePermissions.Requests;
+using SmartInsure.Application.UseCase.UseCases.ProfileUseCases.UpdateFixedProfilePermissions.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.ProfileUseCases.UpdateFixedProfilePermissions.Interfaces;
+
+public interface IUpdateFixedProfilePermissionsUseCase
+    : IUseCase<UpdateFixedProfilePermissionsRequest, UpdateFixedProfilePermissionsResponse>;

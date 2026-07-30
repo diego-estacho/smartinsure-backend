@@ -32,6 +32,12 @@ public class GetBrokerageUseCaseTests
                 "Sociedade Empresária Limitada",
                 true,
                 "Active",
+                "Active",
+                "contato@alfa.com.br",
+                null,
+                null,
+                new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                0,
                 new PersonMainAddressDto("01310100", "Avenida Paulista", "1000", null, "Bela Vista", "São Paulo", "SP")));
 
         var response = await _useCase.ExecuteAsync(new GetBrokerageRequest(id), CancellationToken.None);

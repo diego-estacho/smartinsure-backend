@@ -12,7 +12,7 @@ using Xunit;
 namespace SmartInsure.Tests.Application.UseCases.PolicyHolderUseCases.CreatePolicyHolderBranch;
 
 /// <summary>
-/// RN-052 — cria a Filial na ficha do Tomador: confirma Tomador com papel PolicyHolder,
+/// RN-101 — cria a Filial na ficha do Tomador: confirma Tomador com papel PolicyHolder,
 /// recusa raiz de CNPJ diferente antes de qualquer consulta ao Birô (OPEN-04) e delega
 /// o cadastro em cadeia ao IBranchRegistrar.
 /// </summary>
@@ -30,7 +30,7 @@ public sealed class CreatePolicyHolderBranchUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_DeveCadastrarFilialEVincularAoTomador()
     {
         var policyHolder = NewPolicyHolder();
@@ -55,7 +55,7 @@ public sealed class CreatePolicyHolderBranchUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_CnpjDeOutraRaiz_DeveSerRecusado()
     {
         var policyHolder = NewPolicyHolder();
@@ -76,7 +76,7 @@ public sealed class CreatePolicyHolderBranchUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_PessoaInexistente_DeveLancarNotFound()
     {
         var policyHolderId = Guid.NewGuid();
@@ -97,7 +97,7 @@ public sealed class CreatePolicyHolderBranchUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_PessoaSemPapelTomador_DeveLancarNotFound()
     {
         // Pessoa cadastrada, mas sem AssignRole(PolicyHolder) — não é Tomador.
@@ -119,7 +119,7 @@ public sealed class CreatePolicyHolderBranchUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_FilialNaoLocalizadaNoBiro_DeveDevolverAviso()
     {
         var policyHolder = NewPolicyHolder();

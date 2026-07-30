@@ -221,7 +221,7 @@ public class SearchPersonsUseCaseTests
             "Alfa", null, true, Arg.Any<CancellationToken>());
     }
 
-    // RN-052: a origem da matriz — já cadastrada ou importada do Birô nesta chamada — é
+    // RN-101: a origem da matriz — já cadastrada ou importada do Birô nesta chamada — é
     // decidida dentro de IBranchRegistrar (Task 4) e não é mais observável a partir deste
     // use case, que apenas delega ao registrar e reage ao BranchRegistration devolvido.
     // Por isso um único teste cobre as duas origens possíveis aqui (o mock do registrar é
@@ -247,7 +247,7 @@ public class SearchPersonsUseCaseTests
         response.Items.Should().ContainSingle(item => item.DocumentNumber == HeadquartersCnpj);
         response.Items[0].PreSelectedBranchDocumentNumber.Should().Be(BranchCnpj);
         response.Items[0].PreSelectedBranchId.Should().Be(branchId);
-        // RN-017: BranchRegistrar não atribui Papel (ADR-063) — só este AssignRoleByDocumentAsync
+        // RN-017: BranchRegistrar não atribui Papel (ADR-101) — só este AssignRoleByDocumentAsync
         // dá à matriz o papel de PolicyHolder neste fluxo.
         tracked.Roles.Should().ContainSingle(role => role.Role == EPersonRole.PolicyHolder);
         await _branchRegistrar.Received(1).RegisterAsync(BranchCnpj, Arg.Any<CancellationToken>());
@@ -303,7 +303,7 @@ public class SearchPersonsUseCaseTests
             Arg.Any<CancellationToken>());
     }
 
-    // RN-052: matriz não localizada no Birô é decidida dentro do IBranchRegistrar (Task 4),
+    // RN-101: matriz não localizada no Birô é decidida dentro do IBranchRegistrar (Task 4),
     // que devolve null nesse caso — este teste passou a configurar o registrar diretamente
     // em vez do IBureauProvider (que não é mais chamado por este use case nesse fluxo).
     [Fact]
@@ -343,7 +343,7 @@ public class SearchPersonsUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_FilialNaoLocalizadaNoBiro_DeveDevolverMatrizSemPreSelecaoEComAviso()
     {
         SearchReturns();
@@ -366,7 +366,7 @@ public class SearchPersonsUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_MatrizNaoLocalizadaNoBiro_DeveDevolverListaVazia()
     {
         SearchReturns();

@@ -1,3 +1,4 @@
+using SmartInsure.Application.UseCase.Services.Scopes;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser.Requests;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser.Responses;
@@ -17,7 +18,8 @@ namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser
 public sealed class AuthenticateUserUseCase(
     IUserRepository userRepository,
     IIdentityProvider identityProvider,
-    IAccessTokenIssuer accessTokenIssuer) : IAuthenticateUserUseCase
+    IAccessTokenIssuer accessTokenIssuer,
+    IActiveScopeResolver activeScopeResolver) : IAuthenticateUserUseCase
 {
     internal const string InvalidCredentialsMessage = "E-mail ou senha inválidos.";
 
@@ -36,16 +38,25 @@ public sealed class AuthenticateUserUseCase(
             throw new UnauthorizedException(InvalidCredentialsMessage);
         }
 
-        // RN-005: Pendente não se autentica — primeiro acesso é pelo fluxo de convite (OPEN-06).
-        // Credencial já validada: a recusa é regra de negócio (422), não falha de autenticação
-        // (ADR-012). A situação só é revelada a quem provou conhecer a senha.
+        // RN-005/RN-076: só o Usuário Ativo acessa. Credencial já validada: a recusa é regra de
+        // negócio (422), não falha de autenticação (ADR-012). A situação só é revelada a quem provou
+        // conhecer a senha.
+        if (user.Status == EUserStatus.Inactive)
+        {
+            throw new BusinessRuleException(
+                "Usuário inativo. Procure um administrador para reativar o acesso.");
+        }
+
         if (user.Status != EUserStatus.Active)
         {
             throw new BusinessRuleException(
                 "Usuário pendente do primeiro acesso. Conclua o primeiro acesso para entrar na plataforma.");
         }
 
-        var accessToken = accessTokenIssuer.IssueFor(user);
+        // RN-064/ADR-065: o acesso já sai com o Escopo ativo padrão — vínculo único vira ativo;
+        // com mais de um, o Usuário escolhe depois (a claim nasce ausente).
+        var activeScope = await activeScopeResolver.ResolveDefaultAsync(user.Id, cancellationToken);
+        var accessToken = accessTokenIssuer.IssueFor(user, activeScope);
 
         return new AuthenticateUserResponse(accessToken.Token, accessToken.ExpiresAtUtc);
     }

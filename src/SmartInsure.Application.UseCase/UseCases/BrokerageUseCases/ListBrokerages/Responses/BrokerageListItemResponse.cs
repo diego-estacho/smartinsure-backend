@@ -6,4 +6,9 @@ public sealed record BrokerageListItemResponse(
     string Name,
     string? SocialName,
     bool? IsPrivateSector,
-    string Status);
+    string Status,
+    string Situation,
+    DateTime RegisteredAt,
+    int EnabledInsurerCount,
+    IReadOnlyList<string> EnabledInsurerNames,
+    IReadOnlyList<string> CalculationEngines);

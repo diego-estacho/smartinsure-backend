@@ -30,6 +30,11 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IProfileRepository, ProfileRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IUserBrokerageMembershipRepository, UserBrokerageMembershipRepository>();
+        services.AddScoped<IUserPolicyHolderMembershipRepository, UserPolicyHolderMembershipRepository>();
+        services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<IInsurerRepository, InsurerRepository>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<ILegalNatureRepository, LegalNatureRepository>();
@@ -44,6 +49,7 @@ public static class DependencyInjection
         services.AddScoped<IImportedAdditionalCoverageRepository, ImportedAdditionalCoverageRepository>();
         services.AddScoped<ICreditInquiryRepository, CreditInquiryRepository>();
         services.AddScoped<IQuotationGroupRepository, QuotationGroupRepository>();
+        services.AddScoped<IQuotationRepository, QuotationRepository>();
 
         // Mongo é opcional por host: a API valida na inicialização (MongoOptions [Required] +
         // ValidateOnStart), mas o job de importação (SmartInsure.Functions) não usa Mongo — passa

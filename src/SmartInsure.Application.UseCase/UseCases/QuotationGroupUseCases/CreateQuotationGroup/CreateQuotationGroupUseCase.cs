@@ -44,7 +44,7 @@ public sealed class CreateQuotationGroupUseCase(
         _ = await modalityRepository.GetByIdAsync(request.ModalityId, cancellationToken)
             ?? throw new NotFoundException("Modalidade não encontrada.");
 
-        // RN-053: a Filial precisa pertencer à matriz que é o Tomador do grupo; ausente significa a matriz.
+        // RN-102: a Filial precisa pertencer à matriz que é o Tomador do grupo; ausente significa a matriz.
         if (request.BranchId is not null)
         {
             var branch = await personRepository.GetTrackedByIdAsync(request.BranchId.Value, cancellationToken)

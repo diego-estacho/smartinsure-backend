@@ -158,7 +158,7 @@ public class PersonTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public void LinkToHeadquarters_DeveVincularFilialAMatrizDaMesmaRaiz()
     {
         var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
@@ -171,7 +171,7 @@ public class PersonTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public void LinkToHeadquarters_DeveRecusarMatrizDeOutraRaiz()
     {
         var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
@@ -183,7 +183,7 @@ public class PersonTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public void LinkToHeadquarters_DeveRecusarMatrizComoFilialDeSiMesma()
     {
         var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
@@ -195,7 +195,7 @@ public class PersonTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public void LinkToHeadquarters_DeveSerIdempotente()
     {
         var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
@@ -208,7 +208,7 @@ public class PersonTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public void LinkToHeadquarters_DeveRecusarPessoaFisica_QuandoTentaVincularAMatriz()
     {
         var headquarters = Person.Create("11222333000181", "Matriz LTDA", null, Guid.NewGuid());
@@ -224,7 +224,7 @@ public class PersonTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public void LinkToHeadquarters_DeveRecusarArgumentoQueNaoEMatriz()
     {
         var branch = Person.Create("11222333000262", "Filial LTDA", null, Guid.NewGuid());
@@ -238,7 +238,7 @@ public class PersonTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public void LinkToHeadquarters_DeveRecusarRevinculoAMatrizDiferente()
     {
         var firstHeadquarters = Person.Create("11222333000181", "Matriz A LTDA", null, Guid.NewGuid());

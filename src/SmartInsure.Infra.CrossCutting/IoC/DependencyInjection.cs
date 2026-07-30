@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SmartInsure.Core.Abstractions.Services;
+using SmartInsure.Infra.CrossCutting.Export;
 using SmartInsure.Infra.CrossCutting.Identity;
 using SmartInsure.Infra.CrossCutting.Options;
 
@@ -15,11 +16,20 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        // RN-035: URL base e validade do link de Convite.
+        services.AddOptions<InvitationOptions>()
+            .BindConfiguration(InvitationOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         // RN-005: emissão do acesso autenticado com a mesma chave simétrica da validação (ADR-015).
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
 
         // RN-006: denylist de acessos encerrados sobre o cache distribuído (ADR-040).
         services.AddSingleton<IAccessTokenRevocationStore, CacheAccessTokenRevocationStore>();
+
+        // Exportação genérica para .xlsx (v1 síncrona) — sem estado, seguro como singleton.
+        services.AddSingleton<IExcelExporter, ClosedXmlExporter>();
 
         return services;
     }

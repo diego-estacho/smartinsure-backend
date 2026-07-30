@@ -4,8 +4,8 @@ using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicy
 
 namespace SmartInsure.Tests.Application.UseCases.PolicyHolderUseCases.CreatePolicyHolderBranch;
 
-/// <summary>RN-052 — validação de forma do cadastro de Filial na ficha do Tomador.</summary>
-[Trait("RuleId", "RN-052")]
+/// <summary>RN-101 — validação de forma do cadastro de Filial na ficha do Tomador.</summary>
+[Trait("RuleId", "RN-101")]
 public class CreatePolicyHolderBranchValidatorTests
 {
     private readonly CreatePolicyHolderBranchValidator _validator = new();

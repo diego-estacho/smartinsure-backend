@@ -1,7 +1,7 @@
 namespace SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Requests;
 
 /// <summary>Atualização do Grupo de Cotação em Rascunho — mesmo id (RN-051). O id vem da rota.</summary>
-/// <param name="BranchId">RN-053: estabelecimento cotado — Filial do Tomador; ausente limpa (volta a ser a matriz).</param>
+/// <param name="BranchId">RN-102: estabelecimento cotado — Filial do Tomador; ausente limpa (volta a ser a matriz).</param>
 public sealed record UpdateQuotationGroupRequest(
     Guid Id,
     Guid PolicyHolderId,

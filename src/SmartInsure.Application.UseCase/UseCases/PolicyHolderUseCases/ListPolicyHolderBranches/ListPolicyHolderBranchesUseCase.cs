@@ -7,7 +7,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHolderBranches;
 
-/// <summary>RN-052/RN-025 — lista as Filiais cadastradas e vinculadas ao Tomador (matriz).</summary>
+/// <summary>RN-101/RN-025 — lista as Filiais cadastradas e vinculadas ao Tomador (matriz).</summary>
 public sealed class ListPolicyHolderBranchesUseCase(IPersonRepository personRepository)
     : IListPolicyHolderBranchesUseCase
 {

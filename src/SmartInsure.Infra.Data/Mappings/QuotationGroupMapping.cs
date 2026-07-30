@@ -22,7 +22,7 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
             .WithMany()
             .HasForeignKey(group => group.PolicyHolderId);
 
-        // RN-053/ADR-063: estabelecimento cotado — Filial opcional; sem navegação (o design não pede).
+        // RN-102/ADR-101: estabelecimento cotado — Filial opcional; sem navegação (o design não pede).
         builder.HasOne<Person>()
             .WithMany()
             .HasForeignKey(group => group.BranchPersonId)
@@ -53,6 +53,19 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
         builder.Property(group => group.Status)
             .HasMaxLength(20)
             .IsRequired();
+
+        // RN-059: a Cotação escolhida do Grupo — FK opcional, Restrict pela convenção global (ADR-034).
+        builder.HasOne<Quotation>()
+            .WithMany()
+            .HasForeignKey(group => group.SelectedQuotationId)
+            .IsRequired(false);
+
+        // RN-057/ADR-050: a Corretora da última solicitação — FK opcional a Pessoa (Restrict, ADR-034);
+        // usada pelo reconciliador para reconstruir o work item do fan-out após restart.
+        builder.HasOne<Person>()
+            .WithMany()
+            .HasForeignKey(group => group.BrokerageId)
+            .IsRequired(false);
 
         // Histórico consultável por tomador e por segurado.
         builder.HasIndex(group => group.PolicyHolderId);

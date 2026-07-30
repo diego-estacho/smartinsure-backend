@@ -23,6 +23,14 @@ public sealed class ImportedModalityRepository(SmartInsureDbContext context)
                 && modality.Status == EImportedModalityStatus.Active)
             .ToListAsync(cancellationToken);
 
+    public async Task<ImportedModality?> GetActiveByInsurerAndModalityAsync(
+        Guid insurerId, Guid modalityId, CancellationToken cancellationToken)
+        => await Set.AsNoTracking().FirstOrDefaultAsync(
+            modality => modality.InsurerId == insurerId
+                && modality.ModalityId == modalityId
+                && modality.Status == EImportedModalityStatus.Active,
+            cancellationToken);
+
     public async Task<IReadOnlyList<ModalityInsurerLinkDto>> ListActiveLinksAsync(CancellationToken cancellationToken)
         => await (
             from imported in Set.AsNoTracking()

@@ -437,10 +437,55 @@
             }
           },
           {
-            "name": "status",
+            "name": "q",
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "situation",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "insurerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "calculationEngine",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "registeredFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "registeredTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],
@@ -450,7 +495,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfBrokerageListItemResponse"
+                  "$ref": "#/components/schemas/ListBrokeragesResponse"
                 }
               }
             }
@@ -485,6 +530,100 @@
         }
       }
     },
+    "/api/v1/brokerages/preview": {
+      "get": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "cnpj",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrokeragePreviewResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/brokerages/export": {
+      "get": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "situation",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "insurerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "calculationEngine",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "registeredFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "registeredTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v1/brokerages/{id}": {
       "get": {
         "tags": [
@@ -508,6 +647,74 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GetBrokerageResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBrokerageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBrokerageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/brokerages/{id}/history": {
+      "get": {
+        "tags": [
+          "BrokeragesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBrokerageHistoryResponse"
                 }
               }
             }
@@ -1129,6 +1336,54 @@
         }
       }
     },
+    "/api/v1/me": {
+      "get": {
+        "tags": [
+          "MeEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCurrentUserContextResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/active-scope": {
+      "post": {
+        "tags": [
+          "MeEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwitchActiveScopeBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SwitchActiveScopeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/modalities": {
       "post": {
         "tags": [
@@ -1347,6 +1602,28 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ModalityMapResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/permissions": {
+      "get": {
+        "tags": [
+          "PermissionsEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionResponse"
+                  }
                 }
               }
             }
@@ -1675,10 +1952,118 @@
         }
       }
     },
-    "/api/v1/policy-holders/{id}/branches": {
+    "/api/v1/profiles": {
       "get": {
         "tags": [
-          "PolicyHoldersEndpoint"
+          "ProfilesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseOfProfileListItemResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ProfilesEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScopedProfileBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateScopedProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profiles/assignable": {
+      "get": {
+        "tags": [
+          "ProfilesEndpoint"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssignableProfileResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profiles/{id}": {
+      "get": {
+        "tags": [
+          "ProfilesEndpoint"
         ],
         "parameters": [
           {
@@ -1697,16 +2082,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ListPolicyHolderBranchesResponse"
+                  "$ref": "#/components/schemas/GetProfileResponse"
                 }
               }
             }
           }
         }
       },
-      "post": {
+      "put": {
         "tags": [
-          "PolicyHoldersEndpoint"
+          "ProfilesEndpoint"
         ],
         "parameters": [
           {
@@ -1723,29 +2108,80 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreatePolicyHolderBranchBody"
+                "$ref": "#/components/schemas/ScopedProfileBody"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreatePolicyHolderBranchResponse"
-                }
-              }
-            }
-          },
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CreatePolicyHolderBranchResponse"
+                  "$ref": "#/components/schemas/UpdateScopedProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ProfilesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/profiles/{id}/permissions": {
+      "put": {
+        "tags": [
+          "ProfilesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FixedProfilePermissionsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateFixedProfilePermissionsResponse"
                 }
               }
             }
@@ -1820,6 +2256,229 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "QuotationGroupsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetQuotationGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/quotations": {
+      "post": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunQuotationsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunQuotationsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListQuotationsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/quotations/{quotationId}/select": {
+      "post": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quotationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectQuotationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/quotations/{quotationId}/minuta": {
+      "get": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quotationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotationMinutaResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/quotations/{quotationId}/minuta/submit": {
+      "post": {
+        "tags": [
+          "QuotationsEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quotationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitQuotationMinutaBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitQuotationTermsResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/users": {
@@ -1849,12 +2508,50 @@
             }
           }
         }
-      }
-    },
-    "/api/v1/users/activation": {
-      "post": {
+      },
+      "get": {
         "tags": [
           "UsersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -1862,7 +2559,96 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ActivateUserResponse"
+                  "$ref": "#/components/schemas/PagedResponseOfUserListItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/invitations/accept": {
+      "post": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptInvitationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/invitations/resend": {
+      "post": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResendInvitationResponse"
                 }
               }
             }
@@ -1909,27 +2695,226 @@
           }
         }
       }
+    },
+    "/api/v1/users/brokerage-administrators": {
+      "post": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteBrokerageAdministratorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteBrokerageAdministratorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/policy-holder-administrators": {
+      "post": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitePolicyHolderAdministratorBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitePolicyHolderAdministratorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/brokerage-users": {
+      "post": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteBrokerageUserBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteBrokerageUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/policy-holder-users": {
+      "post": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitePolicyHolderUserBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitePolicyHolderUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/inactivate": {
+      "post": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeUserActivationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/reactivate": {
+      "post": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeUserActivationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "ActivateAdditionalCoverageResponse": {
+      "AcceptInvitationRequest": {
         "required": [
-          "id",
+          "token",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "AcceptInvitationResponse": {
+        "required": [
+          "userId",
+          "name",
+          "email",
           "status"
         ],
         "type": "object",
         "properties": {
-          "id": {
+          "userId": {
             "type": "string",
             "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
           },
           "status": {
             "type": "string"
           }
         }
       },
-      "ActivateUserResponse": {
+      "ActivateAdditionalCoverageResponse": {
         "required": [
           "id",
           "status"
@@ -2074,6 +3059,46 @@
           }
         }
       },
+      "AssignableProfileResponse": {
+        "required": [
+          "id",
+          "name",
+          "scope",
+          "isFixed",
+          "brokerageId",
+          "policyHolderId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "isFixed": {
+            "type": "boolean"
+          },
+          "brokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "AuthenticateUserRequest": {
         "required": [
           "email",
@@ -2161,6 +3186,33 @@
           }
         }
       },
+      "BrokerageHistoryEventResponse": {
+        "required": [
+          "type",
+          "subject",
+          "occurredAt",
+          "author"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "author": {
+            "type": "string"
+          }
+        }
+      },
       "BrokerageInsurerEnablementListItemResponse": {
         "required": [
           "id",
@@ -2213,7 +3265,12 @@
           "name",
           "socialName",
           "isPrivateSector",
-          "status"
+          "status",
+          "situation",
+          "registeredAt",
+          "enabledInsurerCount",
+          "enabledInsurerNames",
+          "calculationEngines"
         ],
         "type": "object",
         "properties": {
@@ -2241,6 +3298,198 @@
           },
           "status": {
             "type": "string"
+          },
+          "situation": {
+            "type": "string"
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabledInsurerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "enabledInsurerNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "calculationEngines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BrokeragePreviewAddressResponse": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "BrokeragePreviewResponse": {
+        "required": [
+          "documentNumber",
+          "name",
+          "socialName",
+          "legalNatureCode",
+          "legalNatureName",
+          "isPrivateSector",
+          "alreadyRegistered",
+          "existingBrokerageId",
+          "mainAddress"
+        ],
+        "type": "object",
+        "properties": {
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "legalNatureName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "alreadyRegistered": {
+            "type": "boolean"
+          },
+          "existingBrokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "mainAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BrokeragePreviewAddressResponse"
+              }
+            ]
+          }
+        }
+      },
+      "BrokerageSituationCountsResponse": {
+        "required": [
+          "all",
+          "active",
+          "incomplete",
+          "inactive"
+        ],
+        "type": "object",
+        "properties": {
+          "all": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "active": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "incomplete": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "inactive": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           }
         }
       },
@@ -2390,6 +3639,22 @@
           }
         }
       },
+      "ChangeUserActivationResponse": {
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "CreateAdditionalCoverageResponse": {
         "required": [
           "id",
@@ -2476,13 +3741,37 @@
         }
       },
       "CreateBrokerageRequest": {
-        "required": [
-          "cnpj"
-        ],
         "type": "object",
         "properties": {
           "cnpj": {
             "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "activateOnSave": {
+            "type": "boolean"
           }
         }
       },
@@ -2496,6 +3785,12 @@
           "legalNatureName",
           "isPrivateSector",
           "status",
+          "situation",
+          "contactEmail",
+          "contactPhone",
+          "responsibleName",
+          "registeredAt",
+          "enabledInsurerCount",
           "mainAddress"
         ],
         "type": "object",
@@ -2536,6 +3831,39 @@
           },
           "status": {
             "type": "string"
+          },
+          "situation": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabledInsurerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           },
           "mainAddress": {
             "oneOf": [
@@ -2743,44 +4071,6 @@
           }
         }
       },
-      "CreatePolicyHolderBranchBody": {
-        "required": [
-          "documentNumber"
-        ],
-        "type": "object",
-        "properties": {
-          "documentNumber": {
-            "type": "string"
-          }
-        }
-      },
-      "CreatePolicyHolderBranchResponse": {
-        "required": [
-          "headquartersId",
-          "branchId",
-          "notice"
-        ],
-        "type": "object",
-        "properties": {
-          "headquartersId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "branchId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
-          },
-          "notice": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      },
       "CreatePolicyHolderRequest": {
         "required": [
           "cnpj"
@@ -2854,7 +4144,6 @@
       "CreateQuotationGroupRequest": {
         "required": [
           "policyHolderId",
-          "branchId",
           "insuredId",
           "modalityId",
           "insuredAmount",
@@ -2869,13 +4158,6 @@
         "properties": {
           "policyHolderId": {
             "type": "string",
-            "format": "uuid"
-          },
-          "branchId": {
-            "type": [
-              "null",
-              "string"
-            ],
             "format": "uuid"
           },
           "insuredId": {
@@ -2987,6 +4269,51 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "CreateScopedProfileResponse": {
+        "required": [
+          "id",
+          "name",
+          "scope",
+          "brokerageId",
+          "policyHolderId",
+          "permissionCount"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "brokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "permissionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -3238,6 +4565,37 @@
           }
         }
       },
+      "FixedProfilePermissionsBody": {
+        "required": [
+          "permissionCodes"
+        ],
+        "type": "object",
+        "properties": {
+          "permissionCodes": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GetBrokerageHistoryResponse": {
+        "required": [
+          "events"
+        ],
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrokerageHistoryEventResponse"
+            }
+          }
+        }
+      },
       "GetBrokerageInsurerEnablementResponse": {
         "required": [
           "id",
@@ -3293,6 +4651,12 @@
           "legalNatureName",
           "isPrivateSector",
           "status",
+          "situation",
+          "contactEmail",
+          "contactPhone",
+          "responsibleName",
+          "registeredAt",
+          "enabledInsurerCount",
           "mainAddress"
         ],
         "type": "object",
@@ -3333,6 +4697,39 @@
           },
           "status": {
             "type": "string"
+          },
+          "situation": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabledInsurerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           },
           "mainAddress": {
             "oneOf": [
@@ -3381,6 +4778,67 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CreditInquiryResultResponse"
+            }
+          }
+        }
+      },
+      "GetCurrentUserContextResponse": {
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status",
+          "systemProfileName",
+          "activeBrokerageId",
+          "activePolicyHolderId",
+          "brokerages",
+          "policyHolders"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "systemProfileName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "activeBrokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "activePolicyHolderId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "brokerages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserScopeResponse"
+            }
+          },
+          "policyHolders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserScopeResponse"
             }
           }
         }
@@ -3467,8 +4925,7 @@
           "legalNatureDescription",
           "isPrivateSector",
           "addresses",
-          "appointments",
-          "branches"
+          "appointments"
         ],
         "type": "object",
         "properties": {
@@ -3517,11 +4974,200 @@
             "items": {
               "$ref": "#/components/schemas/PolicyHolderAppointmentResponse"
             }
+          }
+        }
+      },
+      "GetProfileResponse": {
+        "required": [
+          "id",
+          "name",
+          "scope",
+          "isFixed",
+          "brokerageId",
+          "policyHolderId",
+          "permissions"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
           },
-          "branches": {
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "isFixed": {
+            "type": "boolean"
+          },
+          "brokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "permissions": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/PolicyHolderBranchResponse"
+              "$ref": "#/components/schemas/ProfilePermissionResponse"
+            }
+          }
+        }
+      },
+      "GetQuotationGroupResponse": {
+        "required": [
+          "id",
+          "policyHolderId",
+          "insuredId",
+          "modalityId",
+          "modalityName",
+          "insuredAmount",
+          "coverageStartDate",
+          "coverageEndDate",
+          "scopeMode",
+          "insurerIds",
+          "includesPenaltyCoverage",
+          "includesLaborCoverage",
+          "status",
+          "selectedQuotationId",
+          "policyHolder",
+          "insured"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insuredId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityName": {
+            "type": "string"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "scopeMode": {
+            "type": "string"
+          },
+          "insurerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "includesPenaltyCoverage": {
+            "type": "boolean"
+          },
+          "includesLaborCoverage": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          },
+          "selectedQuotationId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "policyHolder": {
+            "$ref": "#/components/schemas/QuotationGroupPersonResponse"
+          },
+          "insured": {
+            "$ref": "#/components/schemas/QuotationGroupPersonResponse"
+          }
+        }
+      },
+      "GetUserResponse": {
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status",
+          "profileId",
+          "profileName",
+          "createdAt",
+          "brokerageMemberships",
+          "policyHolderMemberships"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "profileId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "profileName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "brokerageMemberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserMembershipResponse"
+            }
+          },
+          "policyHolderMemberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserMembershipResponse"
             }
           }
         }
@@ -3724,6 +5370,218 @@
           }
         }
       },
+      "InviteBrokerageAdministratorRequest": {
+        "required": [
+          "name",
+          "email",
+          "brokerageIds"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "brokerageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "InviteBrokerageAdministratorResponse": {
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "InviteBrokerageUserBody": {
+        "required": [
+          "name",
+          "email",
+          "profileId"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "profileId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "InviteBrokerageUserResponse": {
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status",
+          "brokerageId",
+          "profileId",
+          "profileName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileName": {
+            "type": "string"
+          }
+        }
+      },
+      "InvitePolicyHolderAdministratorBody": {
+        "required": [
+          "name",
+          "email",
+          "policyHolderId"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "InvitePolicyHolderAdministratorResponse": {
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status",
+          "policyHolderId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "InvitePolicyHolderUserBody": {
+        "required": [
+          "name",
+          "email",
+          "profileId"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "profileId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "InvitePolicyHolderUserResponse": {
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status",
+          "policyHolderId",
+          "profileId",
+          "profileName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "policyHolderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileName": {
+            "type": "string"
+          }
+        }
+      },
       "LinkedCoverageItem": {
         "required": [
           "importedCoverageId",
@@ -3777,16 +5635,82 @@
           }
         }
       },
-      "ListPolicyHolderBranchesResponse": {
+      "ListBrokeragesResponse": {
         "required": [
-          "branches"
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "counts"
         ],
         "type": "object",
         "properties": {
-          "branches": {
+          "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/PolicyHolderBranchResponse"
+              "$ref": "#/components/schemas/BrokerageListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/BrokerageSituationCountsResponse"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "ListQuotationsResponse": {
+        "required": [
+          "quotationGroupId",
+          "selectedQuotationId",
+          "quotations"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "selectedQuotationId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "quotations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationListItemResponse"
             }
           }
         }
@@ -3963,55 +5887,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BrokerageInsurerEnablementListItemResponse"
-            }
-          },
-          "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          },
-          "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          }
-        }
-      },
-      "PagedResponseOfBrokerageListItemResponse": {
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "totalCount"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BrokerageListItemResponse"
             }
           },
           "page": {
@@ -4244,6 +6119,104 @@
           }
         }
       },
+      "PagedResponseOfProfileListItemResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfileListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "PagedResponseOfUserListItemResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "totalPages": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
       "PendingCoverageItem": {
         "required": [
           "id",
@@ -4310,6 +6283,33 @@
           },
           "groupName": {
             "type": "string"
+          }
+        }
+      },
+      "PermissionResponse": {
+        "required": [
+          "id",
+          "code",
+          "description",
+          "isSystem"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isSystem": {
+            "type": "boolean"
           }
         }
       },
@@ -4428,13 +6428,6 @@
               "null",
               "string"
             ]
-          },
-          "preSelectedBranchId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
           }
         }
       },
@@ -4558,33 +6551,6 @@
           }
         }
       },
-      "PolicyHolderBranchResponse": {
-        "required": [
-          "id",
-          "documentNumber",
-          "name",
-          "socialName"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "documentNumber": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "socialName": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      },
       "PolicyHolderListItemResponse": {
         "required": [
           "id",
@@ -4616,6 +6582,396 @@
               "null",
               "boolean"
             ]
+          }
+        }
+      },
+      "ProfileListItemResponse": {
+        "required": [
+          "id",
+          "name",
+          "scope",
+          "isFixed",
+          "brokerageId",
+          "policyHolderId",
+          "permissionCount"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "isFixed": {
+            "type": "boolean"
+          },
+          "brokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "permissionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ProfilePermissionResponse": {
+        "required": [
+          "id",
+          "code",
+          "description",
+          "isSystem"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isSystem": {
+            "type": "boolean"
+          }
+        }
+      },
+      "QuotationClauseInput": {
+        "required": [
+          "particularClauseExternalId",
+          "tags"
+        ],
+        "type": "object",
+        "properties": {
+          "particularClauseExternalId": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationTermInput"
+            }
+          }
+        }
+      },
+      "QuotationGroupPersonAddressResponse": {
+        "required": [
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuotationGroupPersonResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName",
+          "mainAddress"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "mainAddress": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/QuotationGroupPersonAddressResponse"
+              }
+            ]
+          }
+        }
+      },
+      "QuotationListItemResponse": {
+        "required": [
+          "quotationId",
+          "insurerId",
+          "insurerName",
+          "insurerLogoUrl",
+          "processingStatus",
+          "result",
+          "analysisTrack",
+          "isFollowable",
+          "premium",
+          "commissionPercentage",
+          "commissionValue",
+          "tax",
+          "availableLimit",
+          "requiresCcg",
+          "ccgMaxLimitWithoutNeed",
+          "ccgSigned",
+          "reasons"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "insurerLogoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "processingStatus": {
+            "type": "string"
+          },
+          "result": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "analysisTrack": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isFollowable": {
+            "type": "boolean"
+          },
+          "premium": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionPercentage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionValue": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "tax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "availableLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "requiresCcg": {
+            "type": "boolean"
+          },
+          "ccgMaxLimitWithoutNeed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "ccgSigned": {
+            "type": "boolean"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "QuotationMinutaClauseResponse": {
+        "required": [
+          "externalId",
+          "name",
+          "clauseText",
+          "jsonTag"
+        ],
+        "type": "object",
+        "properties": {
+          "externalId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "clauseText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "jsonTag": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuotationMinutaResponse": {
+        "required": [
+          "tagJson",
+          "clauses"
+        ],
+        "type": "object",
+        "properties": {
+          "tagJson": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "clauses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationMinutaClauseResponse"
+            }
+          },
+          "filledTagsJson": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "filledClausesJson": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuotationTermInput": {
+        "required": [
+          "name",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
           }
         }
       },
@@ -4652,6 +7008,22 @@
           }
         }
       },
+      "ResendInvitationResponse": {
+        "required": [
+          "userId",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
       "RestoreImportedAdditionalCoverageResponse": {
         "required": [
           "importedCoverageId",
@@ -4684,6 +7056,60 @@
           }
         }
       },
+      "RunQuotationsBody": {
+        "required": [
+          "brokerageId"
+        ],
+        "type": "object",
+        "properties": {
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "RunQuotationsResponse": {
+        "required": [
+          "quotationGroupId",
+          "requestedCount"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestedCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ScopedProfileBody": {
+        "required": [
+          "name",
+          "permissionCodes"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "permissionCodes": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "SearchPersonsResponse": {
         "required": [
           "items"
@@ -4701,6 +7127,23 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "SelectQuotationResponse": {
+        "required": [
+          "quotationGroupId",
+          "selectedQuotationId"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "selectedQuotationId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -4737,6 +7180,116 @@
           }
         }
       },
+      "SubmitQuotationMinutaBody": {
+        "required": [
+          "brokerageId",
+          "terms",
+          "particularClauses"
+        ],
+        "type": "object",
+        "properties": {
+          "brokerageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationTermInput"
+            }
+          },
+          "particularClauses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationClauseInput"
+            }
+          }
+        }
+      },
+      "SubmitQuotationTermsResponse": {
+        "required": [
+          "draftUrl",
+          "draftExternalId",
+          "draftCreatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "draftUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "draftExternalId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "draftCreatedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "SwitchActiveScopeBody": {
+        "required": [
+          "brokerageId",
+          "policyHolderId"
+        ],
+        "type": "object",
+        "properties": {
+          "brokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "policyHolderId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "SwitchActiveScopeResponse": {
+        "required": [
+          "accessToken",
+          "expiresAtUtc",
+          "activeBrokerageId",
+          "activePolicyHolderId"
+        ],
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "activeBrokerageId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "activePolicyHolderId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "UnlinkImportedAdditionalCoverageResponse": {
         "required": [
           "importedCoverageId"
@@ -4766,6 +7319,41 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "UpdateBrokerageBody": {
+        "required": [
+          "socialName",
+          "contactEmail",
+          "contactPhone",
+          "responsibleName"
+        ],
+        "type": "object",
+        "properties": {
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactEmail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contactPhone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsibleName": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -4821,6 +7409,35 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "UpdateFixedProfilePermissionsResponse": {
+        "required": [
+          "id",
+          "name",
+          "scope",
+          "permissionCount"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "permissionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -5008,7 +7625,6 @@
       "UpdateQuotationGroupBody": {
         "required": [
           "policyHolderId",
-          "branchId",
           "insuredId",
           "modalityId",
           "insuredAmount",
@@ -5023,13 +7639,6 @@
         "properties": {
           "policyHolderId": {
             "type": "string",
-            "format": "uuid"
-          },
-          "branchId": {
-            "type": [
-              "null",
-              "string"
-            ],
             "format": "uuid"
           },
           "insuredId": {
@@ -5143,6 +7752,133 @@
             "type": "string"
           }
         }
+      },
+      "UpdateScopedProfileResponse": {
+        "required": [
+          "id",
+          "name",
+          "scope",
+          "permissionCount"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "permissionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "UserListItemResponse": {
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status",
+          "profileName",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "profileName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserMembershipResponse": {
+        "required": [
+          "id",
+          "scopeId",
+          "scopeDocumentNumber",
+          "scopeName",
+          "profileId",
+          "profileName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "scopeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "scopeDocumentNumber": {
+            "type": "string"
+          },
+          "scopeName": {
+            "type": "string"
+          },
+          "profileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileName": {
+            "type": "string"
+          }
+        }
+      },
+      "UserScopeResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "profileName",
+          "isActive"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "profileName": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
       }
     }
   },
@@ -5178,6 +7914,9 @@
       "name": "InsurersEndpoint"
     },
     {
+      "name": "MeEndpoint"
+    },
+    {
       "name": "ModalitiesEndpoint"
     },
     {
@@ -5187,13 +7926,22 @@
       "name": "ModalityMapEndpoint"
     },
     {
+      "name": "PermissionsEndpoint"
+    },
+    {
       "name": "PersonsEndpoint"
     },
     {
       "name": "PolicyHoldersEndpoint"
     },
     {
+      "name": "ProfilesEndpoint"
+    },
+    {
       "name": "QuotationGroupsEndpoint"
+    },
+    {
+      "name": "QuotationsEndpoint"
     },
     {
       "name": "UsersEndpoint"

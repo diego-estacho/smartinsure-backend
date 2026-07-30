@@ -9,7 +9,7 @@ using Xunit;
 namespace SmartInsure.Tests.Application.UseCases.PolicyHolderUseCases.GetPolicyHolder;
 
 /// <summary>
-/// RN-025 — a ficha do Tomador carrega as Filiais vinculadas à matriz (RN-052).
+/// RN-025 — a ficha do Tomador carrega as Filiais vinculadas à matriz (RN-101).
 /// Cobre apenas a composição de <c>branches[]</c> na resposta; o restante do detalhe do
 /// Tomador não é retro-coberto aqui.
 /// </summary>

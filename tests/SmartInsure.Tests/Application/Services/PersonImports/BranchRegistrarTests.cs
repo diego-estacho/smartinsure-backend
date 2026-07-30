@@ -9,7 +9,7 @@ using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Application.Services.PersonImports;
 
-/// <summary>RN-052 — cadastro em cadeia da Filial: resolve a matriz, importa quando ausente e vincula.</summary>
+/// <summary>RN-101 — cadastro em cadeia da Filial: resolve a matriz, importa quando ausente e vincula.</summary>
 public class BranchRegistrarTests
 {
     private const string HeadquartersCnpj = "11444777000161";
@@ -35,7 +35,7 @@ public class BranchRegistrarTests
             .Returns(person is null ? null : new PersonBureauImport(person, true));
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task RegisterAsync_MatrizEFilialAusentes_DeveImportarAsDuasEVincular()
     {
         var headquarters = NewPerson(HeadquartersCnpj);
@@ -58,7 +58,7 @@ public class BranchRegistrarTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task RegisterAsync_MatrizExistente_NaoDeveConsultarBiroParaAMatriz()
     {
         var headquarters = NewPerson(HeadquartersCnpj);
@@ -76,7 +76,7 @@ public class BranchRegistrarTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task RegisterAsync_BiroSemMatriz_NaoDeveGravarNada()
     {
         TrackedReturns(HeadquartersCnpj, null);
@@ -92,7 +92,7 @@ public class BranchRegistrarTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task RegisterAsync_BiroSemFilial_DevePreservarMatrizEAvisar()
     {
         var headquarters = NewPerson(HeadquartersCnpj);
@@ -113,7 +113,7 @@ public class BranchRegistrarTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task RegisterAsync_FilialJaVinculada_NaoDeveConsultarBiro()
     {
         var headquarters = NewPerson(HeadquartersCnpj);
@@ -135,7 +135,7 @@ public class BranchRegistrarTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task RegisterAsync_PessoaExistenteSemVinculo_DeveApenasVincular()
     {
         var headquarters = NewPerson(HeadquartersCnpj);
@@ -156,7 +156,7 @@ public class BranchRegistrarTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task RegisterAsync_CnpjDeMatriz_DeveSerRecusado()
     {
         var action = () => _registrar.RegisterAsync(HeadquartersCnpj, CancellationToken.None);
@@ -169,7 +169,7 @@ public class BranchRegistrarTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task RegisterAsync_CnpjInvalido_DeveSerRecusadoAntesDeQualquerConsulta()
     {
         // Mesma raiz de BranchCnpj, dígito verificador incorreto (typo no último dígito) — o

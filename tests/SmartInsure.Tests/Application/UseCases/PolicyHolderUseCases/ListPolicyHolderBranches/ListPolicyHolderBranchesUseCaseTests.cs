@@ -12,7 +12,7 @@ using Xunit;
 namespace SmartInsure.Tests.Application.UseCases.PolicyHolderUseCases.ListPolicyHolderBranches;
 
 /// <summary>
-/// RN-052 — lista as Filiais cadastradas e vinculadas ao Tomador (matriz), confirmando
+/// RN-101 — lista as Filiais cadastradas e vinculadas ao Tomador (matriz), confirmando
 /// antes que a Pessoa existe com papel PolicyHolder.
 /// </summary>
 public sealed class ListPolicyHolderBranchesUseCaseTests
@@ -28,7 +28,7 @@ public sealed class ListPolicyHolderBranchesUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_DeveListarFiliaisDaMatriz()
     {
         var policyHolder = NewPolicyHolder();
@@ -53,7 +53,7 @@ public sealed class ListPolicyHolderBranchesUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_PessoaInexistente_DeveLancarNotFound()
     {
         var policyHolderId = Guid.NewGuid();
@@ -72,7 +72,7 @@ public sealed class ListPolicyHolderBranchesUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-052")]
+    [Trait("RuleId", "RN-101")]
     public async Task ExecuteAsync_PessoaSemPapelTomador_DeveLancarNotFound()
     {
         // Pessoa cadastrada, mas sem AssignRole(PolicyHolder) — não é Tomador.

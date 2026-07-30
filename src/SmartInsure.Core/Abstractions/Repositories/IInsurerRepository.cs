@@ -18,4 +18,8 @@ public interface IInsurerRepository : IRepository<Insurer>
     /// <summary>RN-031: batch load de nomes corporativos para evitar N+1 em listagens.</summary>
     Task<IReadOnlyDictionary<Guid, string>> GetCorporateNamesByIdsAsync(
         IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
+
+    /// <summary>Batch load de logos (LogoUrl) para listagens — só as Seguradoras que têm logo.</summary>
+    Task<IReadOnlyDictionary<Guid, string>> GetLogoUrlsByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
 }

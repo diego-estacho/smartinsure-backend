@@ -4,7 +4,7 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-053 — estabelecimento cotado (matriz ou Filial) do Grupo de Cotação.</summary>
+/// <summary>RN-102 — estabelecimento cotado (matriz ou Filial) do Grupo de Cotação.</summary>
 public class QuotationGroupTests
 {
     private static QuotationGroup NewGroup(Guid? branchPersonId)
@@ -22,7 +22,7 @@ public class QuotationGroupTests
             false);
 
     [Fact]
-    [Trait("RuleId", "RN-053")]
+    [Trait("RuleId", "RN-102")]
     public void Create_SemFilial_DeveNascerComEstabelecimentoNulo()
     {
         var group = NewGroup(branchPersonId: null);
@@ -31,7 +31,7 @@ public class QuotationGroupTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-053")]
+    [Trait("RuleId", "RN-102")]
     public void Create_ComFilial_DeveNascerComEstabelecimentoInformado()
     {
         var branchId = Guid.NewGuid();
@@ -42,7 +42,7 @@ public class QuotationGroupTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-053")]
+    [Trait("RuleId", "RN-102")]
     public void UpdateDraft_DeveLimparOEstabelecimentoQuandoNaoInformado()
     {
         var branchId = Guid.NewGuid();
@@ -65,7 +65,7 @@ public class QuotationGroupTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-053")]
+    [Trait("RuleId", "RN-102")]
     public void UpdateDraft_DeveAtualizarOEstabelecimentoQuandoInformado()
     {
         var group = NewGroup(branchPersonId: null);

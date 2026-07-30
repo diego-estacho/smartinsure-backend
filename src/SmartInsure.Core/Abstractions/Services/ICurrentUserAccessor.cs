@@ -13,4 +13,13 @@ public interface ICurrentUserAccessor
 
     /// <summary>Expiração do acesso autenticado corrente (claim exp), em UTC — RN-006.</summary>
     DateTime? SessionExpiresAtUtc { get; }
+
+    /// <summary>
+    /// Corretora ativa do acesso corrente (RN-064, ADR-065). Nula quando o Usuário não tem
+    /// Corretora em uso — operações de Escopo Corretora não são permitidas nesse estado.
+    /// </summary>
+    Guid? ActiveBrokerageId { get; }
+
+    /// <summary>Tomador ativo do acesso corrente (RN-064, ADR-065); nulo quando não há.</summary>
+    Guid? ActivePolicyHolderId { get; }
 }

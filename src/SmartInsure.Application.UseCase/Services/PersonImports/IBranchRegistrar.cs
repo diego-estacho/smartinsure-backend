@@ -1,13 +1,13 @@
 namespace SmartInsure.Application.UseCase.Services.PersonImports;
 
 /// <summary>
-/// RN-052: resultado do cadastro em cadeia da Filial. <c>BranchId</c> nulo com <c>Notice</c>
+/// RN-101: resultado do cadastro em cadeia da Filial. <c>BranchId</c> nulo com <c>Notice</c>
 /// preenchido significa que a matriz foi gravada mas a Filial não foi localizada no Birô.
 /// </summary>
 public sealed record BranchRegistration(Guid HeadquartersId, Guid? BranchId, string? Notice);
 
 /// <summary>
-/// RN-052: dado o CNPJ de uma Filial, resolve a matriz pela raiz do CNPJ, importa do Birô
+/// RN-101: dado o CNPJ de uma Filial, resolve a matriz pela raiz do CNPJ, importa do Birô
 /// a matriz e a Filial quando ausentes, e vincula a Filial à matriz.
 /// </summary>
 public interface IBranchRegistrar

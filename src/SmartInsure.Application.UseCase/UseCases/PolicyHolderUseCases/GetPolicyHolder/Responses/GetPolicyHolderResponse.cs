@@ -35,7 +35,7 @@ public sealed record PolicyHolderAppointmentResponse(
     DateTime StartedAt,
     DateTime? EndedAt);
 
-/// <summary>RN-052: Filial do Tomador — Pessoa jurídica vinculada à matriz, sem Papel próprio.</summary>
+/// <summary>RN-101: Filial do Tomador — Pessoa jurídica vinculada à matriz, sem Papel próprio.</summary>
 public sealed record PolicyHolderBranchResponse(
     Guid Id,
     string DocumentNumber,

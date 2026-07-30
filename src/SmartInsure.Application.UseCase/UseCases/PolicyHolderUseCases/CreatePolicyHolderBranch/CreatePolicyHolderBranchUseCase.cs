@@ -10,10 +10,10 @@ using SmartInsure.Infra.CrossCutting.Validators;
 namespace SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderBranch;
 
 /// <summary>
-/// RN-052/RN-025 — cadastra a Filial a partir da ficha do Tomador. Confirma que a Pessoa existe
+/// RN-101/RN-025 — cadastra a Filial a partir da ficha do Tomador. Confirma que a Pessoa existe
 /// com papel PolicyHolder e que o CNPJ informado pertence à mesma raiz de 8 dígitos do Tomador
 /// antes de qualquer consulta ao Birô (OPEN-04: a consulta tem custo por chamada) — só então
-/// delega o cadastro em cadeia ao IBranchRegistrar. ADR-063: a Filial não recebe Papel da Pessoa.
+/// delega o cadastro em cadeia ao IBranchRegistrar. ADR-101: a Filial não recebe Papel da Pessoa.
 /// </summary>
 public sealed class CreatePolicyHolderBranchUseCase(
     IPersonRepository personRepository,

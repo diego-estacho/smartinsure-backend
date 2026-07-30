@@ -19,6 +19,16 @@ public interface IPolicyHolderAppointmentRepository : IRepository<PolicyHolderAp
         Guid insurerId,
         CancellationToken cancellationToken);
 
+    /// <summary>
+    /// RN-068: existe Nomeação Vigente do Tomador em que esta Corretora é a nomeada, em
+    /// qualquer Seguradora? É a pré-condição para o Corretor Administrador criar um
+    /// Tomador Administrador daquele Tomador.
+    /// </summary>
+    Task<bool> ExistsActiveForPolicyHolderAndBrokerageAsync(
+        Guid policyHolderId,
+        Guid brokerageId,
+        CancellationToken cancellationToken);
+
     /// <summary>RN-025: lista todas as Nomeações (Vigentes e Encerradas) do Tomador.</summary>
     Task<IReadOnlyList<PolicyHolderAppointmentDetailDto>> ListByPolicyHolderAsync(
         Guid policyHolderId,

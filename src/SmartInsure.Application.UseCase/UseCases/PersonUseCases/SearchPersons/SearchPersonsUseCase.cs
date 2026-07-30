@@ -15,7 +15,7 @@ namespace SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons;
 /// RN-013: busca por trecho de nome (nome/nome social) ou documento; pessoa já
 /// cadastrada vem da base, sem Birô e sem atualização. RN-014: CNPJ não cadastrado é
 /// importado do Birô uma única vez. RN-016: no contexto de tomador só matriz; CNPJ de
-/// filial resolve a matriz com a filial pré-selecionada. RN-052: essa resolução delega a
+/// filial resolve a matriz com a filial pré-selecionada. RN-101: essa resolução delega a
 /// IBranchRegistrar — cadastro de matriz/Filial pelo Birô e vínculo entre elas passam a
 /// ser responsabilidade do registrar; este use case só reage ao BranchRegistration
 /// devolvido.
@@ -85,7 +85,7 @@ public sealed class SearchPersonsUseCase(
         EPersonRole role,
         CancellationToken cancellationToken)
     {
-        // RN-052: cadastra matriz e Filial pelo Birô e vincula; a Filial deixa de ser
+        // RN-101: cadastra matriz e Filial pelo Birô e vincula; a Filial deixa de ser
         // indicação transitória (RN-016 revisada) e passa a existir como dado.
         var registration = await branchRegistrar.RegisterAsync(branchCnpj, cancellationToken);
 
@@ -96,7 +96,7 @@ public sealed class SearchPersonsUseCase(
 
         var headquartersCnpj = CnpjValidator.HeadquartersOf(branchCnpj);
 
-        // RN-017: BranchRegistrar nunca atribui Papel (ADR-063) — permanece com o caller.
+        // RN-017: BranchRegistrar nunca atribui Papel (ADR-101) — permanece com o caller.
         await AssignRoleByDocumentAsync(headquartersCnpj, role, cancellationToken);
 
         var headquarters = await personRepository.GetByDocumentNumberAsync(
@@ -146,7 +146,7 @@ public sealed class SearchPersonsUseCase(
         CancellationToken cancellationToken)
     {
         var imported = await personBureauImporter.ImportLegalPersonAsync(
-            cnpj, role, cancellationToken);
+            cnpj, role, assignRole: true, cancellationToken);
         if (imported is null)
         {
             return null;

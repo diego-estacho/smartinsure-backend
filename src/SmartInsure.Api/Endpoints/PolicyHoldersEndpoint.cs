@@ -208,8 +208,8 @@ public sealed class PolicyHoldersEndpoint : CarterModule
             useCase,
             new CreatePolicyHolderBranchRequest(id, body.DocumentNumber),
             validator,
-            // RN-052: BranchId nulo é aviso (Filial não localizada no Birô), não erro — a
-            // matriz permanece gravada e utilizável (ADR-063). 201 só quando algo nasceu.
+            // RN-101: BranchId nulo é aviso (Filial não localizada no Birô), não erro — a
+            // matriz permanece gravada e utilizável (ADR-101). 201 só quando algo nasceu.
             response => response.BranchId is null
                 ? Results.Ok(response)
                 : Results.Created($"/api/v1/policy-holders/{id}/branches/{response.BranchId}", response));
