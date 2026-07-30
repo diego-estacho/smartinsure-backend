@@ -2,7 +2,7 @@
 
 Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `RN-NNN` numa **sequência única do catálogo** (não reinicia por jornada), estável e nunca reaproveitado. Linguagem de negócio, termos do [glossário](../glossario.md), sem path de código no corpo.
 
-> Escopo desta entrega (etapa de cotações — Passo 4): solicitar as Cotações às Seguradoras a partir de um Grupo de Cotação, obtê-las e apresentá-las ao corretor num leque, permitir **selecionar** uma para seguir, e preencher/enviar a **minuta** (Tags + Cláusulas particulares) da Cotação selecionada. Ficam **fora desta fase** (demanda própria): a **emissão** (etapa de emissão), o **followup** da análise de subscrição e a Página de Detalhes da Cotação, o **cancelamento** das Cotações (irmãs na emissão, saída da cotação, expiração por tempo), e quem pode solicitar cotação por Perfil ([OPEN-03](../open-decisions.md)). Refinada em 2026-07-27 e **ratificada em 2026-07-28** por Diego Estácho no lugar da PO ([OPEN-07](../open-decisions.md)); segue aberta a re-avaliação do veredito por cláusula particular ([OPEN-17](../open-decisions.md)).
+> Escopo desta entrega (etapa de cotações — Passo 4): solicitar as Cotações às Seguradoras a partir de um Grupo de Cotação, obtê-las e apresentá-las ao corretor num leque, permitir **selecionar** uma para seguir, e preencher/enviar a **minuta** (Tags + Cláusulas particulares) da Cotação selecionada. Ficam **fora desta fase** (demanda própria): a **emissão** (etapa de emissão), o **followup** da análise de subscrição e a Página de Detalhes da Cotação, o **cancelamento** das Cotações (irmãs na emissão, saída da cotação, expiração por tempo), e quem pode solicitar cotação por Perfil ([OPEN-03](../open-decisions.md)). Refinada em 2026-07-27 e **ratificada em 2026-07-28** por Diego Estácho no lugar da PO ([OPEN-07](../open-decisions.md)); segue aberta a re-avaliação do veredito por cláusula particular ([OPEN-21](../open-decisions.md)).
 
 ## RN-056 — Solicitação de Cotações a partir do Grupo de Cotação
 
@@ -72,7 +72,7 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 **Critério de aceitação.** A plataforma lista as Tags exigidas pela Seguradora da Cotação selecionada e as Cláusulas particulares ativas daquela Modalidade; o corretor preenche/marca livremente (nada obrigatório nesta fase); o texto da minuta é montado com os valores preenchidos inline. Uma Seguradora/Modalidade sem Tags não exibe o bloco de Tags. Cláusulas com campos próprios exibem esses campos quando marcadas.
 
-**Casos limite.** Se marcar uma Cláusula particular altera o resultado da Cotação (automática → subscrição): **não re-avaliado nesta fase** — a minuta é capturada e o veredito da Cotação é mantido; a decisão de re-avaliar aguarda a PO ([OPEN-17](../open-decisions.md)). Tags e o texto da minuta **não** alteram o veredito.
+**Casos limite.** Se marcar uma Cláusula particular altera o resultado da Cotação (automática → subscrição): **não re-avaliado nesta fase** — a minuta é capturada e o veredito da Cotação é mantido; a decisão de re-avaliar aguarda a PO ([OPEN-21](../open-decisions.md)). Tags e o texto da minuta **não** alteram o veredito.
 
 ## RN-063 — Envio dos termos da minuta ao provedor
 

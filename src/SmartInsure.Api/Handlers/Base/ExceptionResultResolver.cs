@@ -27,6 +27,9 @@ public sealed class ExceptionResultResolver(
         CalculationEngineException engineFailure => problemFactory.Problem(
             httpContext, StatusCodes.Status502BadGateway, "Falha na comunicação com a seguradora.", engineFailure.Message),
 
+        ForbiddenException forbidden => problemFactory.Problem(
+            httpContext, StatusCodes.Status403Forbidden, "Acesso negado.", forbidden.Message),
+
         UnauthorizedException unauthorized => problemFactory.Problem(
             httpContext, StatusCodes.Status401Unauthorized, "Falha de autenticação.", unauthorized.Message),
 

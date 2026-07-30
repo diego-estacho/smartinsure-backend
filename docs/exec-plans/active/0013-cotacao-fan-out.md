@@ -2,7 +2,7 @@
 
 Status: **ativo** (planejado 2026-07-27; desenho re-grelhado e **ratificado 2026-07-28**). Etapa de cotações **ratificada** por Diego Estácho no lugar da PO ([OPEN-07](../../product-specs/open-decisions.md)) — registrar confirmação da PO. Código de comportamento de **dinheiro/status exige review humano no PR** (AGENTS). Atividade **cross-repo numa única worktree** (`C:\wt\cotacao-passo-4\{smartinsure-backend, smartinsure-frontend, smartinsure-dbmigration}`), **uma branch** `cotacao-passo-4` nos três repos (backend/front de `main`, migration de `develop`). Entrevista de refinamento: `.grill/passo-4-cotacao.md`.
 
-Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`; ADRs `064` (classificação/de-para — **aceito**), `045` (ACL do motor), `044` (resiliência HTTP), `050`/`051` (fan-out por Channel + polling), `031` (enums string), `041/042/043` (migrations Flyway); RNs `cotacao.md` (RN-056..063), `grupo-de-cotacao.md` (RN-050/051 — Rascunho), `motor-de-calculo.md` (RN-022..024 — Habilitação/motor), `tags-e-clausulas.md` (RN-047..049 — **Tag e Cláusulas já importadas**), `modalidades.md`/`coberturas-adicionais.md`; `open-decisions.md` (OPEN-07 ratificada; **OPEN-17** cláusula→veredito pendente; OPEN-03 perfis). Reuso: `ExecuteCreditInquiryUseCase` (fan-out por Habilitação), `PlugV2CalculationEngine` + ACL, `ModalityImporter` (padrão de import; repositórios `ImportedModalityTag`/`ImportedModalityParticularClause`), entidades `QuotationGroup`/`QuotationGroupInsurer`.
+Contexto obrigatório (ler antes de executar): `AGENTS.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`; ADRs `064` (classificação/de-para — **aceito**), `045` (ACL do motor), `044` (resiliência HTTP), `050`/`051` (fan-out por Channel + polling), `031` (enums string), `041/042/043` (migrations Flyway); RNs `cotacao.md` (RN-056..063), `grupo-de-cotacao.md` (RN-050/051 — Rascunho), `motor-de-calculo.md` (RN-022..024 — Habilitação/motor), `tags-e-clausulas.md` (RN-047..049 — **Tag e Cláusulas já importadas**), `modalidades.md`/`coberturas-adicionais.md`; `open-decisions.md` (OPEN-07 ratificada; **OPEN-21** cláusula→veredito pendente; OPEN-03 perfis). Reuso: `ExecuteCreditInquiryUseCase` (fan-out por Habilitação), `PlugV2CalculationEngine` + ACL, `ModalityImporter` (padrão de import; repositórios `ImportedModalityTag`/`ImportedModalityParticularClause`), entidades `QuotationGroup`/`QuotationGroupInsurer`.
 
 ## Objetivo
 
@@ -56,7 +56,7 @@ Implementar a **etapa de cotações**: de um Grupo de Cotação em Rascunho, **c
 
 ## Riscos e pendências
 
-- **OPEN-17 (cláusula→veredito):** regra conhecida do gateway; nesta fase **não re-avaliamos** o veredito por cláusula (captura a minuta, mantém o veredito). Evidência documentada para a PO.
+- **OPEN-21 (cláusula→veredito):** regra conhecida do gateway; nesta fase **não re-avaliamos** o veredito por cláusula (captura a minuta, mantém o veredito). Evidência documentada para a PO.
 - **Validade por tempo (RN-061) e cancelamento** (irmãs na emissão, saída, expiração): **deferidos** — demanda própria; interim = cancelamento por inatividade do provedor.
 - **Não-idempotência:** `/Cotation` cria proposta → **sem retry automático** (RN-057); retry futuro exigiria idempotência/`CancelCotation`.
 - **CCG** só vem preenchido se o chamador se identificar como o produto esperado (`EmissionProposalType`) — a ACL precisa resolver, senão CCG vem nulo.

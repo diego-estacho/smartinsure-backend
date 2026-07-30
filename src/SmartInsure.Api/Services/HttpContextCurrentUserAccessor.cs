@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using SmartInsure.Core.Abstractions.Services;
+using SmartInsure.Core.Constants;
 
 namespace SmartInsure.Api.Services;
 
@@ -34,5 +35,17 @@ public sealed class HttpContextCurrentUserAccessor(IHttpContextAccessor httpCont
                 ? DateTimeOffset.FromUnixTimeSeconds(unixSeconds).UtcDateTime
                 : null;
         }
+    }
+
+    /// <summary>RN-064/ADR-065: Escopo ativo lido do próprio acesso, nunca do corpo da requisição.</summary>
+    public Guid? ActiveBrokerageId => ReadScope(ScopeClaimNames.ActiveBrokerage);
+
+    public Guid? ActivePolicyHolderId => ReadScope(ScopeClaimNames.ActivePolicyHolder);
+
+    private Guid? ReadScope(string claimName)
+    {
+        var value = httpContextAccessor.HttpContext?.User.FindFirstValue(claimName);
+
+        return Guid.TryParse(value, out var scopeId) ? scopeId : null;
     }
 }

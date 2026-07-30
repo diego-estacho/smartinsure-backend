@@ -35,7 +35,7 @@ A resposta da cotação carrega o **status imediato** do resultado. O **status d
 
 ## De-para PLUG V2 → resultado da Cotação (eixo imediato — 11 valores, conferidos na fonte)
 
-> O conjunto abaixo é o **completo** do eixo imediato, conforme o gateway do fornecedor que define esses status. A decisão de negócio do **tomador nomeado** foi resolvida — indisponibilidade **informativa** (nomeação/transferência = evolução futura). Uma regra **conhecida** do gateway afeta o veredito por **cláusula particular** (`AllowAutomaticIssue`), fora deste eixo imediato e **não re-avaliada nesta fase** ([OPEN-17](../product-specs/open-decisions.md)).
+> O conjunto abaixo é o **completo** do eixo imediato, conforme o gateway do fornecedor que define esses status. A decisão de negócio do **tomador nomeado** foi resolvida — indisponibilidade **informativa** (nomeação/transferência = evolução futura). Uma regra **conhecida** do gateway afeta o veredito por **cláusula particular** (`AllowAutomaticIssue`), fora deste eixo imediato e **não re-avaliada nesta fase** ([OPEN-21](../product-specs/open-decisions.md)).
 
 | Resultado do parceiro (PLUG V2) | Classificação | Esteira / motivo |
 |---|---|---|
@@ -57,7 +57,7 @@ A resposta da cotação carrega o **status imediato** do resultado. O **status d
 
 **Motivo local (fora do provedor):** no modo *escolhidas* (RN-056), as Seguradoras habilitadas não selecionadas viram `Unavailable` com motivo **local** ("não incluída na solicitação") — motivo deliberado e conhecido nosso, não status do provedor mal-classificado; não fere a invariante (o `Unrecognized` continua reservado a status do provedor não mapeados).
 
-**Cláusula particular × veredito (conhecido, PARKED — OPEN-17):** o gateway tem regra, documentada e replicada em ~11 plugins de Seguradora, em que uma cláusula particular `AllowAutomaticIssue=false` (não-fixa) encaminha a proposta para a esteira de subscrição em vez de emitir automaticamente. Nesta fase o Passo 4 **não re-avalia** o veredito por marcação de cláusula (captura a minuta — RN-062 — e mantém o resultado da cotação); Tags/texto da minuta **não** alteram o veredito. A decisão de re-avaliar aguarda a PO ([OPEN-17](../product-specs/open-decisions.md)) e, se confirmada, entra como regra (RN) sem reabrir esta ADR.
+**Cláusula particular × veredito (conhecido, PARKED — OPEN-21):** o gateway tem regra, documentada e replicada em ~11 plugins de Seguradora, em que uma cláusula particular `AllowAutomaticIssue=false` (não-fixa) encaminha a proposta para a esteira de subscrição em vez de emitir automaticamente. Nesta fase o Passo 4 **não re-avalia** o veredito por marcação de cláusula (captura a minuta — RN-062 — e mantém o resultado da cotação); Tags/texto da minuta **não** alteram o veredito. A decisão de re-avaliar aguarda a PO ([OPEN-21](../product-specs/open-decisions.md)) e, se confirmada, entra como regra (RN) sem reabrir esta ADR.
 
 ## Consequências
 

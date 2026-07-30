@@ -1,7 +1,9 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using SmartInsure.Application.UseCase.Services.Invitations;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.CreateUser.Requests;
@@ -10,21 +12,34 @@ using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Exceptions;
+using SmartInsure.Infra.CrossCutting.Options;
 
 namespace SmartInsure.Tests.Application.UseCases.UserUseCases.CreateUser;
 
-/// <summary>RN-001 — Criação de Usuário.</summary>
+/// <summary>RN-001/RN-065 — Criação de Usuário + Convite.</summary>
 [Trait("RuleId", "RN-001")]
+[Trait("RuleId", "RN-065")]
 public class CreateUserUseCaseTests
 {
     private readonly IUserRepository _repository = Substitute.For<IUserRepository>();
+    private readonly IInvitationRepository _invitationRepository = Substitute.For<IInvitationRepository>();
     private readonly IIdentityProvider _identityProvider = Substitute.For<IIdentityProvider>();
+    private readonly IInvitationMailer _invitationMailer = Substitute.For<IInvitationMailer>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly ILogger<CreateUserUseCase> _logger = Substitute.For<ILogger<CreateUserUseCase>>();
     private readonly CreateUserUseCase _useCase;
 
     public CreateUserUseCaseTests()
-        => _useCase = new CreateUserUseCase(_repository, _identityProvider, _unitOfWork, _logger);
+    {
+        var options = Options.Create(new InvitationOptions
+        {
+            AppBaseUrl = "https://app.example.com",
+            LinkExpiryDays = 7,
+        });
+
+        _useCase = new CreateUserUseCase(
+            _repository, _invitationRepository, _identityProvider, _invitationMailer, _unitOfWork, options, _logger);
+    }
 
     private static CreateUserRequest Request()
         => new("Maria Silva", "maria.silva@corretora.com.br");
