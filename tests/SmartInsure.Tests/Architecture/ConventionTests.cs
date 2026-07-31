@@ -34,7 +34,7 @@ public class ConventionTests
         var offenders = CoreAssembly.GetTypes()
             .Where(type => type is { IsClass: true, IsAbstract: false }
                 // Ignora tipos gerados pelo compilador (closures de lambda/expression, iteradores):
-                // nunca são entidades de domínio — ex.: `BrokerageSituationRules+<>c` da regra RN-053.
+                // nunca são entidades de domínio — ex.: `BrokerageSituationRules+<>c` da regra RN-102.
                 && !type.IsDefined(typeof(CompilerGeneratedAttribute), inherit: false)
                 && type.Namespace?.StartsWith("SmartInsure.Core.Entities", StringComparison.Ordinal) == true
                 && !typeof(EntityBase).IsAssignableFrom(type));

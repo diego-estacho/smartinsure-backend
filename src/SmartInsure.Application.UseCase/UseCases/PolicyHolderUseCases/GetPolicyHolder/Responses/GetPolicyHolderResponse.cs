@@ -9,7 +9,8 @@ public sealed record GetPolicyHolderResponse(
     string? LegalNatureDescription,
     bool? IsPrivateSector,
     IReadOnlyList<PolicyHolderAddressResponse> Addresses,
-    IReadOnlyList<PolicyHolderAppointmentResponse> Appointments);
+    IReadOnlyList<PolicyHolderAppointmentResponse> Appointments,
+    IReadOnlyList<PolicyHolderBranchResponse> Branches);
 
 public sealed record PolicyHolderAddressResponse(
     Guid Id,
@@ -33,3 +34,10 @@ public sealed record PolicyHolderAppointmentResponse(
     string Status,
     DateTime StartedAt,
     DateTime? EndedAt);
+
+/// <summary>RN-101: Filial do Tomador — Pessoa jurídica vinculada à matriz, sem Papel próprio.</summary>
+public sealed record PolicyHolderBranchResponse(
+    Guid Id,
+    string DocumentNumber,
+    string Name,
+    string? SocialName);

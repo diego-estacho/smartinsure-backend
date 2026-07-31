@@ -10,11 +10,17 @@ using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicy
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderAppointment.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderAppointment.Requests;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderAppointment.Responses;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderBranch.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderBranch.Requests;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.CreatePolicyHolderBranch.Responses;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.EndPolicyHolderAppointment.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.EndPolicyHolderAppointment.Requests;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.GetPolicyHolder.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.GetPolicyHolder.Requests;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.GetPolicyHolder.Responses;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHolderBranches.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHolderBranches.Requests;
+using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHolderBranches.Responses;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHolders.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHolders.Requests;
 using SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHolders.Responses;
@@ -63,6 +69,13 @@ public sealed class PolicyHoldersEndpoint : CarterModule
 
         app.MapPatch("/{id:guid}/appointments/{appointmentId:guid}/end", EndAppointmentAsync)
             .Produces(StatusCodes.Status204NoContent);
+
+        app.MapGet("/{id:guid}/branches", ListBranchesAsync)
+            .Produces<ListPolicyHolderBranchesResponse>(StatusCodes.Status200OK);
+
+        app.MapPost("/{id:guid}/branches", CreateBranchAsync)
+            .Produces<CreatePolicyHolderBranchResponse>(StatusCodes.Status201Created)
+            .Produces<CreatePolicyHolderBranchResponse>(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> ListAsync(
@@ -174,6 +187,32 @@ public sealed class PolicyHoldersEndpoint : CarterModule
             new EndPolicyHolderAppointmentRequest(appointmentId),
             validator,
             _ => Results.NoContent());
+
+    private static async Task<IResult> ListBranchesAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        IListPolicyHolderBranchesUseCase useCase,
+        Guid id)
+        => await handler.TryHandleAsync(
+            httpContext, useCase, new ListPolicyHolderBranchesRequest(id));
+
+    private static async Task<IResult> CreateBranchAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        ICreatePolicyHolderBranchUseCase useCase,
+        IValidator<CreatePolicyHolderBranchRequest> validator,
+        Guid id,
+        CreatePolicyHolderBranchBody body)
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new CreatePolicyHolderBranchRequest(id, body.DocumentNumber),
+            validator,
+            // RN-101: BranchId nulo é aviso (Filial não localizada no Birô), não erro — a
+            // matriz permanece gravada e utilizável (ADR-101). 201 só quando algo nasceu.
+            response => response.BranchId is null
+                ? Results.Ok(response)
+                : Results.Created($"/api/v1/policy-holders/{id}/branches/{response.BranchId}", response));
 }
 
 public sealed record AddPolicyHolderAddressBody(
@@ -195,3 +234,5 @@ public sealed record UpdatePolicyHolderAddressBody(
     string? State);
 
 public sealed record CreatePolicyHolderAppointmentBody(Guid BrokerageId, Guid InsurerId);
+
+public sealed record CreatePolicyHolderBranchBody(string DocumentNumber);

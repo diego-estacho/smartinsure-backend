@@ -4,7 +4,7 @@ using SmartInsure.Core.Enumerators;
 namespace SmartInsure.Core.Entities;
 
 /// <summary>
-/// RN-053 — fonte única da regra da situação apresentada da Corretora (derivada).
+/// RN-102 — fonte única da regra da situação apresentada da Corretora (derivada).
 /// A Corretora com papel Inativo é sempre Inativa; com papel Ativo, é Ativa quando o cadastro
 /// está completo (nome fantasia e e-mail de contato presentes) e Incompleta quando falta um deles.
 /// A mesma regra vale na listagem, na contagem, no filtro e no detalhe (calculada no servidor):
@@ -34,7 +34,7 @@ public static class BrokerageSituationRules
         => !string.IsNullOrWhiteSpace(socialName) && !string.IsNullOrWhiteSpace(contactEmail);
 
     /// <summary>
-    /// RN-053 — a mesma regra de <see cref="Resolve"/> como predicado sobre a Pessoa, traduzível
+    /// RN-102 — a mesma regra de <see cref="Resolve"/> como predicado sobre a Pessoa, traduzível
     /// para SQL (filtro e contagem por situação, sobre o papel Corretor). A completude usa
     /// <c>Trim()</c> (→ <c>LTRIM(RTRIM())</c>) para casar com o <c>IsNullOrWhiteSpace</c> de
     /// <see cref="IsComplete"/>, então valores só-com-espaço contam como ausentes nos dois lados.

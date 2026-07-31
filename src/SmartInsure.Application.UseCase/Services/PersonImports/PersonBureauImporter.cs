@@ -29,6 +29,8 @@ public sealed class PersonBureauImporter(
         var legalNature = await ResolveLegalNatureAsync(complement, cancellationToken);
 
         var person = Person.Create(cnpj, complement.Name, complement.TradeName, legalNature.Id);
+
+        // RN-101 (preview de Corretora) e RN-101/ADR-101 (Filial): importa sem Papel da Pessoa.
         if (assignRole)
         {
             person.AssignRole(role);

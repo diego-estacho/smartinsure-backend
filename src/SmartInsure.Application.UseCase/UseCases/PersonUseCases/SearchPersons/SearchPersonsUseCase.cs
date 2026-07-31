@@ -15,11 +15,15 @@ namespace SmartInsure.Application.UseCase.UseCases.PersonUseCases.SearchPersons;
 /// RN-013: busca por trecho de nome (nome/nome social) ou documento; pessoa já
 /// cadastrada vem da base, sem Birô e sem atualização. RN-014: CNPJ não cadastrado é
 /// importado do Birô uma única vez. RN-016: no contexto de tomador só matriz; CNPJ de
-/// filial resolve a matriz com a filial pré-selecionada.
+/// filial resolve a matriz com a filial pré-selecionada. RN-101: essa resolução delega a
+/// IBranchRegistrar — cadastro de matriz/Filial pelo Birô e vínculo entre elas passam a
+/// ser responsabilidade do registrar; este use case só reage ao BranchRegistration
+/// devolvido.
 /// </summary>
 public sealed class SearchPersonsUseCase(
     IPersonRepository personRepository,
     IPersonBureauImporter personBureauImporter,
+    IBranchRegistrar branchRegistrar,
     IUnitOfWork unitOfWork) : ISearchPersonsUseCase
 {
     private const string NotFoundNotice = "CNPJ não localizado na fonte de dados cadastrais.";
@@ -81,23 +85,39 @@ public sealed class SearchPersonsUseCase(
         EPersonRole role,
         CancellationToken cancellationToken)
     {
-        var headquartersCnpj = CnpjValidator.HeadquartersOf(branchCnpj);
+        // RN-101: cadastra matriz e Filial pelo Birô e vincula; a Filial deixa de ser
+        // indicação transitória (RN-016 revisada) e passa a existir como dado.
+        var registration = await branchRegistrar.RegisterAsync(branchCnpj, cancellationToken);
 
-        var existing = await personRepository.GetByDocumentNumberAsync(
-            headquartersCnpj, cancellationToken);
-
-        if (existing is not null)
+        if (registration is null)
         {
-            await AssignRoleByDocumentAsync(headquartersCnpj, role, cancellationToken);
-
-            return new SearchPersonsResponse([MapItem(existing, branchCnpj, role)]);
+            return new SearchPersonsResponse([], NotFoundNotice);
         }
 
-        var imported = await ImportFromBureauAsync(headquartersCnpj, role, cancellationToken);
+        var headquartersCnpj = CnpjValidator.HeadquartersOf(branchCnpj);
 
-        return imported is null
+        // RN-017: BranchRegistrar nunca atribui Papel (ADR-101) — permanece com o caller.
+        await AssignRoleByDocumentAsync(headquartersCnpj, role, cancellationToken);
+
+        var headquarters = await personRepository.GetByDocumentNumberAsync(
+            headquartersCnpj, cancellationToken);
+
+        // Defensivo: registration não nulo já implica que o registrar comitou a matriz
+        // nesta mesma DbContext, então headquarters nulo aqui não é alcançável na
+        // prática — fallback mantido apenas por segurança, não é um bug a "corrigir".
+        // RN-016 (Casos limite): Filial não localizada no Birô devolve a matriz SEM Filial
+        // pré-selecionada — o documento da Filial só acompanha a resposta quando ela de fato
+        // existe (registration.BranchId não nulo); do contrário ficaria com o documento
+        // preenchido e o id nulo, uma pré-seleção inconsistente que o contrato não deveria expor.
+        return headquarters is null
             ? new SearchPersonsResponse([], NotFoundNotice)
-            : new SearchPersonsResponse([MapItem(imported, branchCnpj)]);
+            : new SearchPersonsResponse(
+                [MapItem(
+                    headquarters,
+                    registration.BranchId is null ? null : branchCnpj,
+                    role,
+                    registration.BranchId)],
+                registration.Notice);
     }
 
     /// <summary>RN-017: vincula o papel via change tracker; idempotente na entidade.</summary>
@@ -159,7 +179,8 @@ public sealed class SearchPersonsUseCase(
     private static PersonSearchItemResponse MapItem(
         PersonSearchItemDto item,
         string? preSelectedBranchDocumentNumber = null,
-        EPersonRole? ensuredRole = null)
+        EPersonRole? ensuredRole = null,
+        Guid? preSelectedBranchId = null)
         => new(
             item.Id,
             item.DocumentNumber,
@@ -178,7 +199,8 @@ public sealed class SearchPersonsUseCase(
                     item.MainAddress.Neighborhood,
                     item.MainAddress.City,
                     item.MainAddress.State),
-            preSelectedBranchDocumentNumber);
+            preSelectedBranchDocumentNumber,
+            preSelectedBranchId);
 
     private static IReadOnlyList<string> EnsureRole(
         IReadOnlyList<string> roles, EPersonRole? ensuredRole)

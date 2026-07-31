@@ -17,6 +17,9 @@ public sealed class GetPolicyHolderUseCase(IPersonRepository personRepository) :
             request.PolicyHolderId, cancellationToken)
             ?? throw new NotFoundException("Tomador não encontrado.");
 
+        // RN-101: as Filiais cadastradas e vinculadas ao Tomador aparecem na sua ficha.
+        var branches = await personRepository.ListBranchesAsync(policyHolder.Id, cancellationToken);
+
         return new GetPolicyHolderResponse(
             policyHolder.Id,
             policyHolder.DocumentNumber,
@@ -49,6 +52,13 @@ public sealed class GetPolicyHolderUseCase(IPersonRepository personRepository) :
                     appointment.Status,
                     appointment.StartedAt,
                     appointment.EndedAt))
+                .ToList(),
+            branches
+                .Select(branch => new PolicyHolderBranchResponse(
+                    branch.Id,
+                    branch.DocumentNumber,
+                    branch.Name,
+                    branch.SocialName))
                 .ToList());
     }
 }

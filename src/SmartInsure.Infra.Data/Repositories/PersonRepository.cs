@@ -118,7 +118,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
             baseQuery = baseQuery.Where(person => ids.Contains(person.Id));
         }
 
-        // Contagem por situação apresentada, sobre os demais filtros (sem a própria situação) — RN-018/RN-053.
+        // Contagem por situação apresentada, sobre os demais filtros (sem a própria situação) — RN-018/RN-102.
         // O predicado é a regra única de Core (BrokerageSituationRules), a mesma que resolve a linha.
         var counts = new BrokerageSituationCountsDto(
             await baseQuery.LongCountAsync(cancellationToken),
@@ -132,7 +132,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
 
         var totalCount = await filtered.LongCountAsync(cancellationToken);
 
-        // Página: projeta os campos crus (a situação é resolvida em memória pela regra única, RN-053).
+        // Página: projeta os campos crus (a situação é resolvida em memória pela regra única, RN-102).
         // RN-018: ordena por data de cadastro (criação do papel Corretor) decrescente — as últimas
         // Corretoras cadastradas aparecem primeiro; Id (UUIDv7, monotônico) desempata.
         var pageRows = await filtered
@@ -499,6 +499,18 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                     && person.Roles.Any(role => role.Role == EPersonRole.PolicyHolder)
                     && person.DocumentNumber.Substring(8, 4) == "0001",
                 cancellationToken);
+
+    public async Task<Person?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken)
+        => await Set.FirstOrDefaultAsync(person => person.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyList<PersonBranchDto>> ListBranchesAsync(
+        Guid headquartersPersonId, CancellationToken cancellationToken)
+        => await Set.AsNoTracking()
+            .Where(person => person.HeadquartersPersonId == headquartersPersonId)
+            .OrderBy(person => person.DocumentNumber)
+            .Select(person => new PersonBranchDto(
+                person.Id, person.DocumentNumber, person.Name, person.SocialName))
+            .ToListAsync(cancellationToken);
 
     private static IQueryable<PersonSearchItemDto> ProjectItems(IQueryable<Person> query)
         => query.Select(person => new PersonSearchItemDto(

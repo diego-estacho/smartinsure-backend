@@ -39,7 +39,7 @@ public class GetQuotationGroupUseCaseTests
         var insurer = Guid.CreateVersion7();
 
         var group = QuotationGroup.Create(
-            policyHolderId, insuredId, modalityId,
+            policyHolderId, branchPersonId: null, insuredId, modalityId,
             2000m, new DateOnly(2026, 3, 1), new DateOnly(2026, 6, 1),
             EQuotationScopeMode.Specific, [insurer], true, false);
 
@@ -86,7 +86,7 @@ public class GetQuotationGroupUseCaseTests
     public async Task Execute_DeveRecusar_QuandoTomadorNaoEncontrado()
     {
         var group = QuotationGroup.Create(
-            Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
+            Guid.CreateVersion7(), branchPersonId: null, Guid.CreateVersion7(), Guid.CreateVersion7(),
             500m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
             EQuotationScopeMode.All, [], false, false);
         _quotationGroupRepository.GetByIdWithInsurersAsync(group.Id, Arg.Any<CancellationToken>())
