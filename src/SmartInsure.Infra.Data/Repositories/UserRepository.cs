@@ -157,7 +157,9 @@ public sealed class UserRepository(SmartInsureDbContext context)
                 joined => joined.membership.ProfileId,
                 profile => profile.Id,
                 (joined, profile) => new { joined.membership, joined.brokerage, profile })
-            // Ordenar pela coluna antes de projetar: OrderBy sobre membro do DTO não traduz.
+            // Mesma ordem de antes (ScopeName do DTO É o Person.Name), só que ANTES de projetar:
+            // o EF não traduz OrderBy por propriedade de DTO construído — mesmo caso do
+            // PersonRepository. Ordenar depois do Select derrubava GET /me com 500.
             .OrderBy(joined => joined.brokerage.Name)
             .Select(joined => new UserMembershipDto(
                 joined.membership.Id,
