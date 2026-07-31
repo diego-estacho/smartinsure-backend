@@ -41,6 +41,11 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
             .Where(quotation => quotation.QuotationGroupId == quotationGroupId)
             .ToListAsync(cancellationToken);
 
+    /// <summary>RN-060: existe Cotação no Grupo? Barato (EXISTS), usado para barrar a edição de Grupo cotado.</summary>
+    public async Task<bool> ExistsForGroupAsync(Guid quotationGroupId, CancellationToken cancellationToken)
+        => await dbContext.Quotations
+            .AnyAsync(quotation => quotation.QuotationGroupId == quotationGroupId, cancellationToken);
+
     public async Task AddRangeAsync(IEnumerable<Quotation> quotations, CancellationToken cancellationToken)
         => await dbContext.Quotations.AddRangeAsync(quotations, cancellationToken);
 
