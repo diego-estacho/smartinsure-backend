@@ -6,7 +6,7 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 ## RN-050 — Criação do Grupo de Cotação
 
-**Descrição.** Ao concluir a etapa de dados de risco do wizard de nova oferta, a plataforma persiste um Grupo de Cotação em Rascunho, reunindo o que o corretor montou até ali: o Tomador, o Segurado, o escopo de Seguradoras a cotar, a Modalidade, o valor segurado, a vigência e as Coberturas Adicionais marcadas. Existe um único Grupo de Cotação por jornada; enquanto Rascunho, revisões das etapas anteriores atualizam o mesmo grupo (RN-051), nunca criam um novo.
+**Descrição.** Ao concluir a etapa de dados de risco do wizard de nova oferta, a plataforma persiste um Grupo de Cotação em Rascunho, reunindo o que o corretor montou até ali: o Tomador, o Segurado, o escopo de Seguradoras a cotar, a Modalidade, o valor segurado, a vigência e as Coberturas Adicionais marcadas. Existe um único Grupo de Cotação por jornada **enquanto ele não tiver Cotações obtidas**; nesse estado, revisões das etapas anteriores atualizam o mesmo grupo (RN-051), nunca criam um novo. A partir da primeira Cotação obtida, os dados-base do Grupo tornam-se **imutáveis**: alterar um dado-base cria um Grupo novo, não edita o existente (RN-060).
 
 **Pré-condições.** Usuário autenticado por uma Corretora (nesta fase, sem restrição de Perfil — OPEN-03). Tomador e Segurado já existentes como Papéis de Pessoa (RN-017). Modalidade Ativa no catálogo do Smart.
 
@@ -16,10 +16,10 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 ## RN-051 — Atualização do Grupo de Cotação em Rascunho
 
-**Descrição.** Enquanto o Grupo de Cotação está em Rascunho, o corretor volta livremente às etapas de tomador, segurado e risco e altera os dados; ao prosseguir da etapa de risco, a plataforma atualiza o **mesmo** Grupo de Cotação, mantendo o identificador — nunca cria um novo. Alterar dados que alimentam a cotação (escopo de Seguradoras, Modalidade, valor segurado, vigência, Coberturas Adicionais) invalida as Cotações eventualmente já obtidas, que são recalculadas ao reentrar na etapa de cotações.
+**Descrição.** Enquanto o Grupo de Cotação está em Rascunho **e ainda não tem Cotações obtidas**, o corretor volta livremente às etapas de tomador, segurado e risco e altera os dados; ao prosseguir da etapa de risco, a plataforma atualiza o **mesmo** Grupo de Cotação, mantendo o identificador — nunca cria um novo. **A partir do momento em que o Grupo tem Cotações obtidas**, alterar qualquer dado-base não edita o grupo existente: resulta em um **Grupo novo** (RN-060), que preserva o anterior e suas Cotações.
 
 **Pré-condições.** Grupo de Cotação existente em Rascunho, criado na mesma jornada (RN-050).
 
-**Critério de aceitação.** Ao prosseguir da etapa de risco com um Grupo de Cotação já existente na jornada, a plataforma atualiza o registro corrente com os dados informados e devolve o mesmo identificador. O grupo permanece em Rascunho após a atualização.
+**Critério de aceitação.** Ao prosseguir da etapa de risco com um Grupo de Cotação **sem Cotações obtidas** já existente na jornada, a plataforma atualiza o registro corrente com os dados informados e devolve o mesmo identificador; o grupo permanece em Rascunho. **O servidor recusa atualizar um Grupo que já tem Cotações obtidas** — nesse estado, a mudança de dado-base segue pela criação de um Grupo novo (RN-060), não pela edição.
 
-**Casos limite.** [ABERTO: o conjunto exato de campos que "alimentam a cotação" (assinatura de recálculo) e o comportamento a partir da etapa de cotações/emissão dependem de ratificação da PO — OPEN-07. Nesta fase o backend persiste apenas o Rascunho; a invalidação/recálculo das Cotações e a emissão são comportamento do front, ainda mockados.]
+**Casos limite.** Voltar sem alterar valor (ou alterar e desfazer para o mesmo valor) não atualiza nem cria nada. Os dados-base cujo valor efetivo, num Grupo já com Cotações, dispara um novo Grupo (RN-060) são: Tomador, Segurado, escopo de Seguradoras, Modalidade, valor segurado, vigência e Coberturas Adicionais. A emissão permanece fora de escopo (OPEN-07).

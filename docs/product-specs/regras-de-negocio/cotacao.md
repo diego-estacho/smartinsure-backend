@@ -46,23 +46,23 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 **Casos limite.** Grupo sem nenhuma Cotação seguível: nenhuma escolha é possível. O aceite da Cotação escolhida como Proposta, o followup da análise de subscrição e a emissão são demanda própria, fora desta fase ([OPEN-07](../open-decisions.md)).
 
-## RN-060 — Recálculo e invalidação por mudança de dados
+## RN-060 — Imutabilidade e novo Grupo por mudança de dado-base
 
-**Descrição.** Enquanto o Grupo está em Rascunho, **alterar o valor de qualquer dado-base** do Grupo invalida as Cotações já obtidas; ao reentrar na etapa de cotações, a plataforma **re-solicita** as Cotações mediante **confirmação** do corretor. Voltar às etapas anteriores sem alterar valor (ou alterar e desfazer para o mesmo valor) não invalida.
+**Descrição.** Um Grupo de Cotação **com Cotações obtidas** é imutável nos seus dados-base. Ao voltar às etapas anteriores e **efetivar mudança de valor** de qualquer dado-base — Tomador, Segurado, escopo de Seguradoras, Modalidade, valor segurado, vigência, Coberturas Adicionais — a plataforma **não altera** o Grupo atual: cria um **Grupo novo** em Rascunho com os dados alterados (RN-050), **preservando intactos** o Grupo anterior e suas Cotações (inclusive a escolhida, RN-059). Voltar sem alterar valor (ou alterar e desfazer para o mesmo valor) não cria nada.
 
 **Pré-condições.** Grupo com Cotações já obtidas, e retorno do corretor às etapas anteriores do wizard.
 
-**Critério de aceitação.** Uma mudança **efetiva de valor** de dado-base do Grupo (Tomador, Segurado, escopo de Seguradoras, Modalidade, valor segurado, vigência, Coberturas Adicionais) invalida as Cotações obtidas. Ao voltar à etapa de cotações com dados alterados, a plataforma pede confirmação **bloqueante** antes de re-solicitar; confirmada, re-solicita conforme RN-056/RN-057. Se nenhum valor mudou, mantém as Cotações e a seleção sem reprocessar. Havendo uma Cotação escolhida (RN-059), o recálculo **descarta a escolha** — que se referia a um risco que deixou de valer — e o corretor é informado do descarte.
+**Critério de aceitação.** Uma mudança **efetiva de valor** de dado-base num Grupo que já tem Cotações dispara **confirmação bloqueante** ("iniciar uma nova cotação com os dados alterados? a cotação atual será preservada"); confirmada, a plataforma cria um Grupo novo (RN-050) com os dados alterados e conduz o corretor a ele, deixando o Grupo anterior — Cotações e eventual escolha (RN-059) — inalterado. Se nenhum valor mudou, permanece no Grupo atual sem reprocessar. O **servidor recusa** (fail-closed) atualizar dado-base de um Grupo que já tem Cotações; a criação de um novo Grupo é o único caminho. Grupo ainda **sem** Cotações continua sendo editado no lugar (RN-051).
 
-**Casos limite.** O corretor recusa a confirmação de re-solicitação: a etapa mantém as Cotações anteriores, apresentadas como desatualizadas, sem re-solicitar. (A confirmação é bloqueante porque cada solicitação tem custo por chamada à Seguradora.) Nesta fase a re-solicitação **não cancela** as Cotações/propostas anteriores no provedor (o cancelamento é demanda própria); as antigas expiram pelo cancelamento por inatividade do provedor (RN-061).
+**Casos limite.** O corretor recusa a confirmação: mantém o Grupo atual sem mudança. Os Grupos resultantes do fork são **independentes** — não guardam vínculo de origem entre si nesta fase; o registro de cada pedido vive no livro de Cotações (listagem read-only, demanda própria). Obter números novos para o **mesmo** pedido (re-solicitar as mesmas Seguradoras sem mudar dado-base) e o cancelamento das Cotações no provedor seguem como demanda própria; até lá, as Cotações do Grupo anterior expiram pelo cancelamento por inatividade do provedor (RN-061).
 
 ## RN-061 — Validade da Cotação
 
-**Descrição.** Uma Cotação obtida permanece válida até ser invalidada por mudança de dados (RN-060) ou o Grupo seguir para as etapas posteriores. A expiração **por tempo** existe no lado do provedor (cancelamento por inatividade, indicado em ~15 dias), mas **não é modelada pela plataforma nesta fase**.
+**Descrição.** Uma Cotação obtida permanece válida enquanto pertencer ao seu Grupo — mudança de dado-base **não a invalida**: cria um Grupo novo (RN-060), deixando esta intacta — ou até o Grupo seguir para as etapas posteriores. A expiração **por tempo** existe no lado do provedor (cancelamento por inatividade, indicado em ~15 dias), mas **não é modelada pela plataforma nesta fase**.
 
 **Pré-condições.** Cotação obtida.
 
-**Critério de aceitação.** Nesta fase, a plataforma **não** apresenta nem controla expiração por tempo da Cotação: a Cotação permanece exibida até ser invalidada por mudança de dado (RN-060) ou o Grupo avançar. O cancelamento por inatividade do provedor é a garantia interina de que Cotações abandonadas não perduram indefinidamente do lado da Seguradora.
+**Critério de aceitação.** Nesta fase, a plataforma **não** apresenta nem controla expiração por tempo da Cotação: a Cotação permanece exibida enquanto o Grupo existir (mudança de dado-base cria um Grupo novo, RN-060, e não altera esta) ou até o Grupo avançar. O cancelamento por inatividade do provedor é a garantia interina de que Cotações abandonadas não perduram indefinidamente do lado da Seguradora.
 
 **Casos limite.** O espelhamento da expiração por tempo (apresentar a Cotação como desatualizada e oferecer re-solicitar quando a janela do provedor vence) fica para a demanda de **cancelamento** (demanda própria), junto com o cancelamento das demais Cotações. O prazo exato e o gatilho do job de inatividade do provedor serão confirmados nessa demanda.
 

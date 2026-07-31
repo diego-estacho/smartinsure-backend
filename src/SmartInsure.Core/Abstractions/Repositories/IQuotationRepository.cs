@@ -12,6 +12,12 @@ public interface IQuotationRepository : IRepository<Quotation>
     /// <summary>RN-057: Cotações do Grupo, para o acompanhamento (polling) e a seleção.</summary>
     Task<IReadOnlyList<Quotation>> ListByGroupAsync(Guid quotationGroupId, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// RN-060: há ao menos uma Cotação no Grupo? Um Grupo já cotado é imutável nos dados-base — a
+    /// atualização no lugar é recusada e a mudança segue pela criação de um novo Grupo.
+    /// </summary>
+    Task<bool> ExistsForGroupAsync(Guid quotationGroupId, CancellationToken cancellationToken);
+
     /// <summary>RN-056/RN-057: persiste em lote as Cotações materializadas pelo fan-out.</summary>
     Task AddRangeAsync(IEnumerable<Quotation> quotations, CancellationToken cancellationToken);
 
