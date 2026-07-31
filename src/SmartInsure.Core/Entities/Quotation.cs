@@ -137,9 +137,9 @@ public sealed class Quotation : EntityBase
             throw new InvalidOperationException("Esteira só se aplica a Cotação em Análise (RN-058).");
         }
 
-        if (result != EQuotationResult.Automatic && premium is not null)
+        if (result != EQuotationResult.ReadyForEmission && premium is not null)
         {
-            throw new InvalidOperationException("Prêmio só é aplicável a Cotação Automática (RN-058).");
+            throw new InvalidOperationException("Prêmio só é aplicável a Cotação Pronta para emissão (RN-058).");
         }
 
         if (result == EQuotationResult.Unavailable && reasons.Count == 0)
@@ -200,6 +200,6 @@ public sealed class Quotation : EntityBase
     /// (ADR-064) — a exigência só é enforçada na emissão.
     /// </summary>
     public bool IsFollowable
-        => Result == EQuotationResult.Automatic
+        => Result == EQuotationResult.ReadyForEmission
            || (Result == EQuotationResult.Analysis && AnalysisTrack == EAnalysisTrack.Underwriting);
 }

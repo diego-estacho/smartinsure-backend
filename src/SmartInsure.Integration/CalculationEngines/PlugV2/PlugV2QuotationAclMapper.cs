@@ -7,7 +7,7 @@ namespace SmartInsure.Integration.CalculationEngines.PlugV2;
 /// Camada anticorrupção (ADR-045, ADR-064): traduz o status imediato do PlugV2 (os 11 valores do eixo
 /// imediato) para o resultado estável do domínio (EQuotationResult + esteira + motivos), num ÚNICO
 /// ponto. Todo status NÃO reconhecido recai em Unrecognized (sem prêmio, não seguível) — jamais
-/// convertido em silêncio para outra classificação. Prêmio só é lido em Automatic. CCG é ortogonal,
+/// convertido em silêncio para outra classificação. Prêmio só é lido em ReadyForEmission. CCG é ortogonal,
 /// capturado independentemente da classificação. Nada do modelo do fornecedor sai daqui (ADR-028).
 /// </summary>
 public static class PlugV2QuotationAclMapper
@@ -35,7 +35,7 @@ public static class PlugV2QuotationAclMapper
 
         return status switch
         {
-            EPlugApiStatus.Success => Automatic(response, ccg),
+            EPlugApiStatus.Success => ReadyForEmission(response, ccg),
             EPlugApiStatus.KanbanSubscricao => Analysis(EAnalysisTrack.Underwriting, ccg),
             EPlugApiStatus.KanbanCadastro => Analysis(EAnalysisTrack.Registration, ccg),
             EPlugApiStatus.KanbanPep => Analysis(EAnalysisTrack.Pep, ccg),
@@ -51,10 +51,10 @@ public static class PlugV2QuotationAclMapper
         };
     }
 
-    private static QuotationResult Automatic(PlugV2CotationData response, PlugV2CcgResult? ccg)
+    private static QuotationResult ReadyForEmission(PlugV2CotationData response, PlugV2CcgResult? ccg)
         => new()
         {
-            Result = EQuotationResult.Automatic,
+            Result = EQuotationResult.ReadyForEmission,
             Premium = response.InsurancePremium,
             CommissionPercentage = response.ComissionPercentage,
             CommissionValue = response.ComissionValue,

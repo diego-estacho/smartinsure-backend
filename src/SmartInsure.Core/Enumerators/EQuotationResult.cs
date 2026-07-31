@@ -8,7 +8,7 @@ namespace SmartInsure.Core.Enumerators;
 /// </summary>
 public enum EQuotationResult
 {
-    Automatic,
+    ReadyForEmission,
     Analysis,
     Unavailable,
     Unrecognized,
