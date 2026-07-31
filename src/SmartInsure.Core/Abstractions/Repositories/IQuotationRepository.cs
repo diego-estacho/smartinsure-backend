@@ -1,6 +1,5 @@
 using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Entities;
-using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Core.Abstractions.Repositories;
 
@@ -30,11 +29,5 @@ public interface IQuotationRepository : IRepository<Quotation>
     /// resultado do provedor** (exclui Requested/Failed e indisponibilidades de origem local); escopo
     /// pela Corretora do Grupo (RN-064). A contagem respeita a busca mas ignora a situação filtrada.
     /// </summary>
-    Task<QuotationBookPageDto> ListBookAsync(
-        Guid brokerageId,
-        int page,
-        int pageSize,
-        string? search,
-        EQuotationResult? situation,
-        CancellationToken cancellationToken);
+    Task<QuotationBookPageDto> ListBookAsync(QuotationBookFilter filter, CancellationToken cancellationToken);
 }

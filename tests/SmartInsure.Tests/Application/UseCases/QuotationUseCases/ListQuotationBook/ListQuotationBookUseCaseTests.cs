@@ -15,21 +15,23 @@ namespace SmartInsure.Tests.Application.UseCases.QuotationUseCases.ListQuotation
 public sealed class ListQuotationBookUseCaseTests
 {
     private readonly IQuotationRepository _quotationRepository = Substitute.For<IQuotationRepository>();
-    private readonly IInsurerRepository _insurerRepository = Substitute.For<IInsurerRepository>();
     private readonly ListQuotationBookUseCase _useCase;
 
     private readonly Guid _brokerageId = Guid.NewGuid();
 
     public ListQuotationBookUseCaseTests()
-        => _useCase = new ListQuotationBookUseCase(_quotationRepository, _insurerRepository);
+        => _useCase = new ListQuotationBookUseCase(_quotationRepository);
 
-    private static QuotationBookItemDto Item(Guid insurerId, EQuotationResult result = EQuotationResult.ReadyForEmission)
+    private static QuotationBookItemDto Item(EQuotationResult result = EQuotationResult.ReadyForEmission)
         => new(
             QuotationId: Guid.NewGuid(),
             Number: "PROP-1",
             PolicyHolderName: "Pilão Engenharia Ltda",
             InsuredName: "Secretaria Municipal",
-            InsurerId: insurerId,
+            InsurerId: Guid.NewGuid(),
+            InsurerName: "Newe Seguros",
+            InsurerLogoUrl: "https://cdn/newe.png",
+            ModalityId: Guid.NewGuid(),
             ModalityName: "Executante Fornecedor",
             InsuredAmount: 1_500_000m,
             Premium: 18_000m,
@@ -39,10 +41,15 @@ public sealed class ListQuotationBookUseCaseTests
             CoverageEndDate: new DateOnly(2027, 7, 29),
             CreatedAt: DateTime.UtcNow);
 
+    private static QuotationBookPageDto Page(
+        IReadOnlyList<QuotationBookItemDto>? items = null,
+        IReadOnlyList<QuotationSituationCountDto>? counts = null,
+        IReadOnlyList<QuotationBookOptionDto>? insurers = null,
+        IReadOnlyList<QuotationBookOptionDto>? modalities = null)
+        => new(items ?? [], items?.Count ?? 0, counts ?? [], insurers ?? [], modalities ?? []);
+
     private void ArrangeBook(QuotationBookPageDto page)
-        => _quotationRepository.ListBookAsync(
-                _brokerageId, Arg.Any<int>(), Arg.Any<int>(), Arg.Any<string?>(),
-                Arg.Any<EQuotationResult?>(), Arg.Any<CancellationToken>())
+        => _quotationRepository.ListBookAsync(Arg.Any<QuotationBookFilter>(), Arg.Any<CancellationToken>())
             .Returns(page);
 
     [Fact]
@@ -53,14 +60,13 @@ public sealed class ListQuotationBookUseCaseTests
             new ListQuotationBookRequest { ActiveBrokerageId = null }, CancellationToken.None);
 
         await act.Should().ThrowAsync<ForbiddenException>();
-        await _quotationRepository.DidNotReceiveWithAnyArgs()
-            .ListBookAsync(default, default, default, default, default, default);
+        await _quotationRepository.DidNotReceiveWithAnyArgs().ListBookAsync(default!, default);
     }
 
     [Fact]
     public async Task Execute_DeveSanearPaginacao()
     {
-        ArrangeBook(new QuotationBookPageDto([], 0, []));
+        ArrangeBook(Page());
 
         var result = await _useCase.ExecuteAsync(
             new ListQuotationBookRequest { ActiveBrokerageId = _brokerageId, Page = 0, PageSize = 500 },
@@ -69,21 +75,23 @@ public sealed class ListQuotationBookUseCaseTests
         result.Page.Should().Be(1);
         result.PageSize.Should().Be(100);
         await _quotationRepository.Received(1).ListBookAsync(
-            _brokerageId, 1, 100, null, null, Arg.Any<CancellationToken>());
+            Arg.Is<QuotationBookFilter>(f => f.BrokerageId == _brokerageId && f.Page == 1 && f.PageSize == 100),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
     [Trait("RuleId", "RN-078")]
     public async Task Execute_DeveFiltrarPorSituacao_PeloNomeEstavel()
     {
-        ArrangeBook(new QuotationBookPageDto([], 0, []));
+        ArrangeBook(Page());
 
         await _useCase.ExecuteAsync(
             new ListQuotationBookRequest { ActiveBrokerageId = _brokerageId, Situation = "analysis" },
             CancellationToken.None);
 
         await _quotationRepository.Received(1).ListBookAsync(
-            _brokerageId, 1, 20, null, EQuotationResult.Analysis, Arg.Any<CancellationToken>());
+            Arg.Is<QuotationBookFilter>(f => f.Situation == EQuotationResult.Analysis),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -95,43 +103,38 @@ public sealed class ListQuotationBookUseCaseTests
             CancellationToken.None);
 
         await act.Should().ThrowAsync<BusinessRuleException>();
-        await _quotationRepository.DidNotReceiveWithAnyArgs()
-            .ListBookAsync(default, default, default, default, default, default);
+        await _quotationRepository.DidNotReceiveWithAnyArgs().ListBookAsync(default!, default);
     }
 
     [Fact]
     [Trait("RuleId", "RN-077")]
-    public async Task Execute_DeveResolverNomeELogoDaSeguradora_ComFallback()
+    public async Task Execute_DeveMapearLinha_ComSeguradoraESituacaoPorNomeEstavel()
     {
-        var comLogo = Guid.NewGuid();
-        var semCadastro = Guid.NewGuid();
-        ArrangeBook(new QuotationBookPageDto([Item(comLogo), Item(semCadastro)], 2, []));
-        _insurerRepository.GetCorporateNamesByIdsAsync(Arg.Any<IReadOnlyCollection<Guid>>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<Guid, string> { [comLogo] = "Newe Seguros" });
-        _insurerRepository.GetLogoUrlsByIdsAsync(Arg.Any<IReadOnlyCollection<Guid>>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<Guid, string> { [comLogo] = "https://cdn/newe.png" });
+        var item = Item();
+        ArrangeBook(Page([item]));
 
         var result = await _useCase.ExecuteAsync(
             new ListQuotationBookRequest { ActiveBrokerageId = _brokerageId }, CancellationToken.None);
 
-        result.Items[0].InsurerName.Should().Be("Newe Seguros");
-        result.Items[0].InsurerLogoUrl.Should().Be("https://cdn/newe.png");
-        result.Items[1].InsurerName.Should().Be("Seguradora");
-        result.Items[1].InsurerLogoUrl.Should().BeNull();
-        result.Items[0].Result.Should().Be("ReadyForEmission");
+        result.Items.Should().HaveCount(1);
+        var mapped = result.Items[0];
+        mapped.InsurerName.Should().Be("Newe Seguros");
+        mapped.InsurerLogoUrl.Should().Be("https://cdn/newe.png");
+        mapped.ModalityName.Should().Be("Executante Fornecedor");
+        mapped.Result.Should().Be("ReadyForEmission");
+        mapped.Premium.Should().Be(18_000m);
+        result.TotalCount.Should().Be(1);
     }
 
     [Fact]
     [Trait("RuleId", "RN-078")]
     public async Task Execute_DeveMapearContagemPorSituacao_PeloNomeEstavel()
     {
-        ArrangeBook(new QuotationBookPageDto(
-            [],
-            0,
-            [
-                new QuotationSituationCountDto(EQuotationResult.ReadyForEmission, 3),
-                new QuotationSituationCountDto(EQuotationResult.Analysis, 1),
-            ]));
+        ArrangeBook(Page(counts:
+        [
+            new QuotationSituationCountDto(EQuotationResult.ReadyForEmission, 3),
+            new QuotationSituationCountDto(EQuotationResult.Analysis, 1),
+        ]));
 
         var result = await _useCase.ExecuteAsync(
             new ListQuotationBookRequest { ActiveBrokerageId = _brokerageId }, CancellationToken.None);
@@ -144,21 +147,55 @@ public sealed class ListQuotationBookUseCaseTests
     }
 
     [Fact]
-    public async Task Execute_DeveRepassarBuscaEPaginacao()
+    [Trait("RuleId", "RN-077")]
+    public async Task Execute_DeveMapearOpcoesDeFiltro()
     {
-        ArrangeBook(new QuotationBookPageDto([], 0, []));
+        var insurerId = Guid.NewGuid();
+        var modalityId = Guid.NewGuid();
+        ArrangeBook(Page(
+            insurers: [new QuotationBookOptionDto(insurerId, "Newe Seguros")],
+            modalities: [new QuotationBookOptionDto(modalityId, "Executante Fornecedor")]));
+
+        var result = await _useCase.ExecuteAsync(
+            new ListQuotationBookRequest { ActiveBrokerageId = _brokerageId }, CancellationToken.None);
+
+        result.Insurers.Should().ContainSingle(o => o.Id == insurerId && o.Name == "Newe Seguros");
+        result.Modalities.Should().ContainSingle(o => o.Id == modalityId && o.Name == "Executante Fornecedor");
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-077")]
+    public async Task Execute_DeveRepassarFiltrosAvancados()
+    {
+        ArrangeBook(Page());
+        var insurerId = Guid.NewGuid();
+        var modalityId = Guid.NewGuid();
 
         await _useCase.ExecuteAsync(
             new ListQuotationBookRequest
             {
                 ActiveBrokerageId = _brokerageId,
-                Page = 2,
-                PageSize = 10,
                 Search = "pilão",
+                InsurerId = insurerId,
+                ModalityId = modalityId,
+                PremiumMin = 1_000m,
+                PremiumMax = 50_000m,
+                InsuredAmountMin = 100_000m,
+                CreatedFrom = new DateOnly(2026, 7, 1),
+                CoverageStartFrom = new DateOnly(2026, 7, 15),
             },
             CancellationToken.None);
 
         await _quotationRepository.Received(1).ListBookAsync(
-            _brokerageId, 2, 10, "pilão", null, Arg.Any<CancellationToken>());
+            Arg.Is<QuotationBookFilter>(f =>
+                f.Search == "pilão"
+                && f.InsurerId == insurerId
+                && f.ModalityId == modalityId
+                && f.PremiumMin == 1_000m
+                && f.PremiumMax == 50_000m
+                && f.InsuredAmountMin == 100_000m
+                && f.CreatedFrom == new DateOnly(2026, 7, 1)
+                && f.CoverageStartFrom == new DateOnly(2026, 7, 15)),
+            Arg.Any<CancellationToken>());
     }
 }

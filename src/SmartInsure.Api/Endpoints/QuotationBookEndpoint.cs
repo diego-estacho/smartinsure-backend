@@ -26,7 +26,7 @@ public sealed class QuotationBookEndpoint : CarterModule
             .Produces<QuotationBookResponse>(StatusCodes.Status200OK);
     }
 
-    // RN-077: página do livro com busca + filtro de situação; a Corretora ativa vem do acesso (RN-064).
+    // RN-077: página do livro com busca + situação + filtros avançados; a Corretora ativa vem do acesso (RN-064).
     private static async Task<IResult> ListAsync(
         HttpContext httpContext,
         RequestHandler handler,
@@ -35,7 +35,17 @@ public sealed class QuotationBookEndpoint : CarterModule
         int? page,
         int? pageSize,
         string? search,
-        string? situation)
+        string? situation,
+        Guid? insurerId,
+        Guid? modalityId,
+        decimal? premiumMin,
+        decimal? premiumMax,
+        decimal? insuredAmountMin,
+        decimal? insuredAmountMax,
+        DateOnly? createdFrom,
+        DateOnly? createdTo,
+        DateOnly? coverageStartFrom,
+        DateOnly? coverageStartTo)
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
@@ -46,5 +56,15 @@ public sealed class QuotationBookEndpoint : CarterModule
                 PageSize = pageSize ?? 20,
                 Search = search,
                 Situation = situation,
+                InsurerId = insurerId,
+                ModalityId = modalityId,
+                PremiumMin = premiumMin,
+                PremiumMax = premiumMax,
+                InsuredAmountMin = insuredAmountMin,
+                InsuredAmountMax = insuredAmountMax,
+                CreatedFrom = createdFrom,
+                CreatedTo = createdTo,
+                CoverageStartFrom = coverageStartFrom,
+                CoverageStartTo = coverageStartTo,
             });
 }
