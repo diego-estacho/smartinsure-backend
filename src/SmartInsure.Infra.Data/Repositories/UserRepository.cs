@@ -120,48 +120,11 @@ public sealed class UserRepository(SmartInsureDbContext context)
             return null;
         }
 
-        // RN-064: o Escopo do vínculo (Corretora/Tomador) é uma Person; o Perfil é o daquele Escopo.
-        var brokerageMemberships = await Context.Set<UserBrokerageMembership>().AsNoTracking()
-            .Where(membership => membership.UserId == userId)
-            .Join(
-                Context.Set<Person>().AsNoTracking(),
-                membership => membership.BrokerageId,
-                brokerage => brokerage.Id,
-                (membership, brokerage) => new { membership, brokerage })
-            .Join(
-                Context.Set<Profile>().AsNoTracking(),
-                joined => joined.membership.ProfileId,
-                profile => profile.Id,
-                (joined, profile) => new UserMembershipDto(
-                    joined.membership.Id,
-                    joined.brokerage.Id,
-                    joined.brokerage.DocumentNumber,
-                    joined.brokerage.Name,
-                    profile.Id,
-                    profile.Name))
-            .OrderBy(membership => membership.ScopeName)
-            .ToListAsync(cancellationToken);
+        var brokerageMemberships =
+            await BrokerageMembershipsQuery(Context, userId).ToListAsync(cancellationToken);
 
-        var policyHolderMemberships = await Context.Set<UserPolicyHolderMembership>().AsNoTracking()
-            .Where(membership => membership.UserId == userId)
-            .Join(
-                Context.Set<Person>().AsNoTracking(),
-                membership => membership.PolicyHolderId,
-                policyHolder => policyHolder.Id,
-                (membership, policyHolder) => new { membership, policyHolder })
-            .Join(
-                Context.Set<Profile>().AsNoTracking(),
-                joined => joined.membership.ProfileId,
-                profile => profile.Id,
-                (joined, profile) => new UserMembershipDto(
-                    joined.membership.Id,
-                    joined.policyHolder.Id,
-                    joined.policyHolder.DocumentNumber,
-                    joined.policyHolder.Name,
-                    profile.Id,
-                    profile.Name))
-            .OrderBy(membership => membership.ScopeName)
-            .ToListAsync(cancellationToken);
+        var policyHolderMemberships =
+            await PolicyHolderMembershipsQuery(Context, userId).ToListAsync(cancellationToken);
 
         return new UserDetailsDto(
             user.Id,
@@ -174,4 +137,58 @@ public sealed class UserRepository(SmartInsureDbContext context)
             brokerageMemberships,
             policyHolderMemberships);
     }
+
+    /// <summary>
+    /// RN-064: o Escopo do vínculo de Corretora é uma Person; o Perfil é o daquele Escopo.
+    /// Consulta isolada para o teste conseguir traduzi-la (ToQueryString) sem abrir conexão.
+    /// </summary>
+    internal static IQueryable<UserMembershipDto> BrokerageMembershipsQuery(
+        SmartInsureDbContext context,
+        Guid userId)
+        => context.Set<UserBrokerageMembership>().AsNoTracking()
+            .Where(membership => membership.UserId == userId)
+            .Join(
+                context.Set<Person>().AsNoTracking(),
+                membership => membership.BrokerageId,
+                brokerage => brokerage.Id,
+                (membership, brokerage) => new { membership, brokerage })
+            .Join(
+                context.Set<Profile>().AsNoTracking(),
+                joined => joined.membership.ProfileId,
+                profile => profile.Id,
+                (joined, profile) => new { joined.membership, joined.brokerage, profile })
+            // Ordenar pela coluna antes de projetar: OrderBy sobre membro do DTO não traduz.
+            .OrderBy(joined => joined.brokerage.Name)
+            .Select(joined => new UserMembershipDto(
+                joined.membership.Id,
+                joined.brokerage.Id,
+                joined.brokerage.DocumentNumber,
+                joined.brokerage.Name,
+                joined.profile.Id,
+                joined.profile.Name));
+
+    /// <summary>RN-064: mesma leitura da <see cref="BrokerageMembershipsQuery"/>, para Tomador.</summary>
+    internal static IQueryable<UserMembershipDto> PolicyHolderMembershipsQuery(
+        SmartInsureDbContext context,
+        Guid userId)
+        => context.Set<UserPolicyHolderMembership>().AsNoTracking()
+            .Where(membership => membership.UserId == userId)
+            .Join(
+                context.Set<Person>().AsNoTracking(),
+                membership => membership.PolicyHolderId,
+                policyHolder => policyHolder.Id,
+                (membership, policyHolder) => new { membership, policyHolder })
+            .Join(
+                context.Set<Profile>().AsNoTracking(),
+                joined => joined.membership.ProfileId,
+                profile => profile.Id,
+                (joined, profile) => new { joined.membership, joined.policyHolder, profile })
+            .OrderBy(joined => joined.policyHolder.Name)
+            .Select(joined => new UserMembershipDto(
+                joined.membership.Id,
+                joined.policyHolder.Id,
+                joined.policyHolder.DocumentNumber,
+                joined.policyHolder.Name,
+                joined.profile.Id,
+                joined.profile.Name));
 }
