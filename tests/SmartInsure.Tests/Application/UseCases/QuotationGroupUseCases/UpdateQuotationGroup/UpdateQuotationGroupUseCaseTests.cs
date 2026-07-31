@@ -17,6 +17,7 @@ public class UpdateQuotationGroupUseCaseTests
     private readonly IQuotationGroupRepository _quotationGroupRepository =
         Substitute.For<IQuotationGroupRepository>();
 
+    private readonly IQuotationRepository _quotationRepository = Substitute.For<IQuotationRepository>();
     private readonly IPersonRepository _personRepository = Substitute.For<IPersonRepository>();
     private readonly IModalityRepository _modalityRepository = Substitute.For<IModalityRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
@@ -24,7 +25,7 @@ public class UpdateQuotationGroupUseCaseTests
 
     public UpdateQuotationGroupUseCaseTests()
         => _useCase = new UpdateQuotationGroupUseCase(
-            _quotationGroupRepository, _personRepository, _modalityRepository, _unitOfWork);
+            _quotationGroupRepository, _quotationRepository, _personRepository, _modalityRepository, _unitOfWork);
 
     private static QuotationGroup ExistingDraft()
         => QuotationGroup.Create(
@@ -103,6 +104,29 @@ public class UpdateQuotationGroupUseCaseTests
         var act = () => _useCase.ExecuteAsync(request, CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
+        await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-060")]
+    public async Task Execute_DeveRecusar_QuandoGrupoJaTemCotacoes()
+    {
+        // RN-060: Grupo já cotado é imutável nos dados-base — a edição no lugar é recusada (fail-closed);
+        // a mudança segue pela criação de um novo Grupo (fork no front).
+        var group = ExistingDraft();
+        _quotationGroupRepository.GetByIdWithInsurersAsync(group.Id, Arg.Any<CancellationToken>())
+            .Returns(group);
+        _quotationRepository.ExistsForGroupAsync(group.Id, Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        var request = new UpdateQuotationGroupRequest(
+            group.Id, Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
+            1000m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
+            "All", [], false, false);
+
+        var act = () => _useCase.ExecuteAsync(request, CancellationToken.None);
+
+        await act.Should().ThrowAsync<ConflictException>();
         await _unitOfWork.DidNotReceiveWithAnyArgs().CommitAsync(default);
     }
 }
