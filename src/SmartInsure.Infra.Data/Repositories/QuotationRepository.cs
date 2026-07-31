@@ -83,8 +83,13 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
         var baseQuery =
             from quotation in dbContext.Quotations.AsNoTracking()
             where quotation.ProcessingStatus == EQuotationProcessingStatus.Obtained
+                  // Inclusão como EXISTS correlacionado no DbSet (não a navegação `quotation.Reasons.Any`):
+                  // o EF Core não traduz a navegação de coleção dentro deste `||` quando a base é depois
+                  // materializada com `Distinct()` (opções de filtro) — o EXISTS explícito traduz sempre.
                   && (quotation.Result != EQuotationResult.Unavailable
-                      || quotation.Reasons.Any(reason => reason.Source == EQuotationReasonSource.Provider))
+                      || dbContext.QuotationReasons.Any(reason =>
+                          reason.QuotationId == quotation.Id
+                          && reason.Source == EQuotationReasonSource.Provider))
             join grp in dbContext.QuotationGroups.AsNoTracking() on quotation.QuotationGroupId equals grp.Id
             where grp.BrokerageId == filter.BrokerageId
             join policyHolder in dbContext.Persons.AsNoTracking() on grp.PolicyHolderId equals policyHolder.Id
@@ -105,16 +110,21 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
             };
 
         // Q10: opções de filtro = distintos presentes no livro da Corretora (independentes dos demais filtros).
+        // Distinct sobre tipo ANÔNIMO (não sobre o DTO com construtor): o EF Core não traduz `Distinct()`
+        // de uma projeção para um record/DTO com ctor — o anônimo tem igualdade estrutural e vira
+        // `SELECT DISTINCT col1, col2`; só depois projetamos para o DTO.
         var insurers = await baseQuery
-            .Select(row => new QuotationBookOptionDto(row.InsurerId, row.InsurerName))
+            .Select(row => new { Id = row.InsurerId, Name = row.InsurerName })
             .Distinct()
             .OrderBy(option => option.Name)
+            .Select(option => new QuotationBookOptionDto(option.Id, option.Name))
             .ToListAsync(cancellationToken);
 
         var modalities = await baseQuery
-            .Select(row => new QuotationBookOptionDto(row.ModalityId, row.ModalityName))
+            .Select(row => new { Id = row.ModalityId, Name = row.ModalityName })
             .Distinct()
             .OrderBy(option => option.Name)
+            .Select(option => new QuotationBookOptionDto(option.Id, option.Name))
             .ToListAsync(cancellationToken);
 
         // Busca livre (número/Tomador/Segurado/Seguradora/Modalidade).
