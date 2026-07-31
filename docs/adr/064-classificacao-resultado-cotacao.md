@@ -25,13 +25,13 @@ A resposta da cotação carrega o **status imediato** do resultado. O **status d
 
 ## Decisão (normativa)
 
-- O resultado da Cotação no domínio é um **conjunto pequeno e fechado** de classificações estáveis, persistidas como string (ADR-031): `Automatic`, `Analysis`, `Unavailable`, `Unrecognized`.
+- O resultado da Cotação no domínio é um **conjunto pequeno e fechado** de classificações estáveis, persistidas como string (ADR-031): `ReadyForEmission`, `Analysis`, `Unavailable`, `Unrecognized`.
 - **Motivo e esteira são dado que acompanha a classificação, não classificação nova.** A esteira da `Analysis` (`Underwriting`/`Credit`/`Pep`/`Reinsurance`/`Registration`, exposta por nome estável) e a lista de motivos do `Unavailable` são campos — assim um motivo novo do parceiro NÃO cria um status de domínio novo nem obriga tocar telas. O conjunto de esteiras é **completo**: o fornecedor sempre atribui uma esteira específica (a primeira regra que falha), então não existe "análise genérica" sem esteira.
 - A tradução parceiro→domínio vive **num único lugar**: o mapper da ACL do PlugV2 (ADR-045). Nenhum `if` de status do parceiro fora da ACL; o modelo do parceiro nunca vaza para o domínio (ADR-028).
 - Todo resultado que a ACL **não reconhece** DEVE recair em `Unrecognized` — **nunca** convertido em silêncio para outra classificação. `Unrecognized` é exibido sem prêmio, não é seguível, e é registrado/alertado para revisão (RN-058).
 - Uma Cotação sem prêmio aplicável (`Analysis`, `Unavailable`, `Unrecognized`) NÃO expõe valor de prêmio.
-- A **seguibilidade** (RN-059) é derivada de (classificação, esteira): `Automatic` e `Analysis`+`Underwriting` são seguíveis nesta fase; as demais não.
-- **Contragarantia (CCG) é ortogonal à classificação, não uma esteira nem um status.** A resposta da cotação traz um veredito de que a Seguradora **exige CCG** para emitir, mais dados informativos (limite máximo sem CCG, se já assinada). Isso é capturado como **atributo da Cotação** e exibido ao corretor; uma Cotação `Automatic` pode exigir CCG. Uma Cotação que exige CCG **permanece seguível** — o corretor segue até a emissão normalmente e a exigência só é enforçada no emitir (barrado sem a CCG assinada — confirmado pela PO). O ciclo de assinatura do contrato de CCG é da **etapa de emissão** (fora desta fase).
+- A **seguibilidade** (RN-059) é derivada de (classificação, esteira): `ReadyForEmission` e `Analysis`+`Underwriting` são seguíveis nesta fase; as demais não.
+- **Contragarantia (CCG) é ortogonal à classificação, não uma esteira nem um status.** A resposta da cotação traz um veredito de que a Seguradora **exige CCG** para emitir, mais dados informativos (limite máximo sem CCG, se já assinada). Isso é capturado como **atributo da Cotação** e exibido ao corretor; uma Cotação `ReadyForEmission` pode exigir CCG. Uma Cotação que exige CCG **permanece seguível** — o corretor segue até a emissão normalmente e a exigência só é enforçada no emitir (barrado sem a CCG assinada — confirmado pela PO). O ciclo de assinatura do contrato de CCG é da **etapa de emissão** (fora desta fase).
 
 ## De-para PLUG V2 → resultado da Cotação (eixo imediato — 11 valores, conferidos na fonte)
 
@@ -39,7 +39,7 @@ A resposta da cotação carrega o **status imediato** do resultado. O **status d
 
 | Resultado do parceiro (PLUG V2) | Classificação | Esteira / motivo |
 |---|---|---|
-| Sucesso / emissão automática | `Automatic` | — |
+| Sucesso / emissão automática | `ReadyForEmission` | — |
 | Esteira de subscrição | `Analysis` | `Underwriting` (seguível — RN-059) |
 | Esteira de cadastro | `Analysis` | `Registration` |
 | Esteira de PEP | `Analysis` | `Pep` |

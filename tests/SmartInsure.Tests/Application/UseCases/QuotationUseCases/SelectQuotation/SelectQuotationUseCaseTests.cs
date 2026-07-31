@@ -34,7 +34,7 @@ public class SelectQuotationUseCaseTests
     {
         var quotation = Quotation.Requested(groupId, Guid.CreateVersion7());
         quotation.MarkObtained(
-            EQuotationResult.Automatic, analysisTrack: null,
+            EQuotationResult.ReadyForEmission, analysisTrack: null,
             premium: 300m, commissionPercentage: null, commissionValue: null, tax: null, availableLimit: null,
             proposalExternalId: null, proposalNumber: null,
             requiresCcg: false, ccgMaxLimitWithoutNeed: null, ccgSigned: false,

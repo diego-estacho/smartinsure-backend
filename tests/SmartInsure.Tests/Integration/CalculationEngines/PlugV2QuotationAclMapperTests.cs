@@ -27,7 +27,7 @@ public class PlugV2QuotationAclMapperTests
     {
         var result = PlugV2QuotationAclMapper.Map(Response(1, premium: 300m));
 
-        result.Result.Should().Be(EQuotationResult.Automatic);
+        result.Result.Should().Be(EQuotationResult.ReadyForEmission);
         result.Premium.Should().Be(300m);
     }
 

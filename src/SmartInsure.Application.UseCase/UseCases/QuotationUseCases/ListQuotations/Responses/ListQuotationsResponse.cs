@@ -11,7 +11,7 @@ public sealed record ListQuotationsResponse(
 
 /// <summary>
 /// RN-058: uma Cotação no leque — classificação estável + esteira + motivos + prêmio/limite + CCG. Sem
-/// prêmio quando não Automática; a esteira específica quando em Análise; os motivos quando Indisponível.
+/// prêmio quando não Pronta para emissão; a esteira específica quando em Análise; os motivos quando Indisponível.
 /// </summary>
 public sealed record QuotationListItemResponse(
     Guid QuotationId,

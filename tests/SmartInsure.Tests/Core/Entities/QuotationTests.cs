@@ -35,14 +35,14 @@ public class QuotationTests
         var quotation = Requested();
 
         quotation.MarkObtained(
-            EQuotationResult.Automatic, analysisTrack: null,
+            EQuotationResult.ReadyForEmission, analysisTrack: null,
             premium: 300m, commissionPercentage: 25m, commissionValue: 75m, tax: 0.42m, availableLimit: 1_000_000m,
             proposalExternalId: "abc", proposalNumber: "P-1",
             requiresCcg: false, ccgMaxLimitWithoutNeed: null, ccgSigned: false,
             reasonTexts: [], obtainedAt: ObtainedAt);
 
         quotation.ProcessingStatus.Should().Be(EQuotationProcessingStatus.Obtained);
-        quotation.Result.Should().Be(EQuotationResult.Automatic);
+        quotation.Result.Should().Be(EQuotationResult.ReadyForEmission);
         quotation.Premium.Should().Be(300m);
         quotation.ObtainedAt.Should().Be(ObtainedAt);
         quotation.IsFollowable.Should().BeTrue();
@@ -156,7 +156,7 @@ public class QuotationTests
         var quotation = Requested();
 
         quotation.MarkObtained(
-            EQuotationResult.Automatic, analysisTrack: null,
+            EQuotationResult.ReadyForEmission, analysisTrack: null,
             premium: 300m, commissionPercentage: null, commissionValue: null, tax: null, availableLimit: null,
             proposalExternalId: null, proposalNumber: null,
             requiresCcg: true, ccgMaxLimitWithoutNeed: 500_000m, ccgSigned: false,
