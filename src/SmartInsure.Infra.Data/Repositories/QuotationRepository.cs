@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Infra.Data.Context;
@@ -68,4 +69,89 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
                 row.quotation.InsurerId,
                 row.BrokerageId!.Value))
             .ToListAsync(cancellationToken);
+
+    /// <summary>
+    /// RN-077/RN-078: livro de Cotações da Corretora. Inclui só as Obtained com resultado do provedor
+    /// (não Unavailable, ou Unavailable com ao menos um motivo de origem Provider — exclui as locais
+    /// "não incluída"); junta Grupo/Tomador/Segurado/Modalidade; a contagem por situação respeita a
+    /// busca mas ignora a aba ativa. Nome/logo da Seguradora ficam para o use case resolver por id.
+    /// </summary>
+    public async Task<QuotationBookPageDto> ListBookAsync(
+        Guid brokerageId,
+        int page,
+        int pageSize,
+        string? search,
+        EQuotationResult? situation,
+        CancellationToken cancellationToken)
+    {
+        var query =
+            from quotation in dbContext.Quotations.AsNoTracking()
+            where quotation.ProcessingStatus == EQuotationProcessingStatus.Obtained
+                  && (quotation.Result != EQuotationResult.Unavailable
+                      || quotation.Reasons.Any(reason => reason.Source == EQuotationReasonSource.Provider))
+            join grp in dbContext.QuotationGroups.AsNoTracking() on quotation.QuotationGroupId equals grp.Id
+            where grp.BrokerageId == brokerageId
+            join policyHolder in dbContext.Persons.AsNoTracking() on grp.PolicyHolderId equals policyHolder.Id
+            join insured in dbContext.Persons.AsNoTracking() on grp.InsuredId equals insured.Id
+            join modality in dbContext.Modalities.AsNoTracking() on grp.ModalityId equals modality.Id
+            select new
+            {
+                Quotation = quotation,
+                Group = grp,
+                PolicyHolderName = policyHolder.Name,
+                InsuredName = insured.Name,
+                ModalityName = modality.Name,
+            };
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(row =>
+                (row.Quotation.ProposalNumber != null && row.Quotation.ProposalNumber.Contains(term))
+                || row.PolicyHolderName.Contains(term)
+                || row.InsuredName.Contains(term)
+                || row.ModalityName.Contains(term));
+        }
+
+        // RN-078: contagem por situação sobre a busca corrente, ANTES de aplicar a aba (para as abas
+        // mostrarem o total de cada situação). Chaves não-nulas: incluídas são sempre Obtained com resultado.
+        var rawCounts = await query
+            .GroupBy(row => row.Quotation.Result)
+            .Select(group => new { group.Key, Count = group.LongCount() })
+            .ToListAsync(cancellationToken);
+
+        var counts = rawCounts
+            .Where(entry => entry.Key.HasValue)
+            .Select(entry => new QuotationSituationCountDto(entry.Key!.Value, entry.Count))
+            .ToList();
+
+        if (situation is { } situacao)
+        {
+            query = query.Where(row => row.Quotation.Result == situacao);
+        }
+
+        var totalCount = await query.LongCountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(row => row.Quotation.ObtainedAt ?? row.Quotation.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(row => new QuotationBookItemDto(
+                row.Quotation.Id,
+                row.Quotation.ProposalNumber,
+                row.PolicyHolderName,
+                row.InsuredName,
+                row.Quotation.InsurerId,
+                row.ModalityName,
+                row.Group.InsuredAmount,
+                row.Quotation.Premium,
+                row.Quotation.CommissionPercentage,
+                row.Quotation.Result!.Value,
+                row.Group.CoverageStartDate,
+                row.Group.CoverageEndDate,
+                row.Quotation.CreatedAt))
+            .ToListAsync(cancellationToken);
+
+        return new QuotationBookPageDto(items, totalCount, counts);
+    }
 }

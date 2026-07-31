@@ -1,4 +1,6 @@
+using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Entities;
+using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Core.Abstractions.Repositories;
 
@@ -21,4 +23,18 @@ public interface IQuotationRepository : IRepository<Quotation>
     /// </summary>
     Task<IReadOnlyList<QuotationRequestWorkItem>> ListStaleRequestedWorkItemsAsync(
         DateTime staleBeforeUtc, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-077/RN-078: o "livro" de Cotações da Corretora — projeção achatada (Grupo/Tomador/Segurado/
+    /// Modalidade), paginada e filtrada, com a contagem por situação. Inclui só as **obtidas com
+    /// resultado do provedor** (exclui Requested/Failed e indisponibilidades de origem local); escopo
+    /// pela Corretora do Grupo (RN-064). A contagem respeita a busca mas ignora a situação filtrada.
+    /// </summary>
+    Task<QuotationBookPageDto> ListBookAsync(
+        Guid brokerageId,
+        int page,
+        int pageSize,
+        string? search,
+        EQuotationResult? situation,
+        CancellationToken cancellationToken);
 }
