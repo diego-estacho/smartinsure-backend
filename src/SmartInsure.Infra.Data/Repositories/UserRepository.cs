@@ -132,14 +132,17 @@ public sealed class UserRepository(SmartInsureDbContext context)
                 Context.Set<Profile>().AsNoTracking(),
                 joined => joined.membership.ProfileId,
                 profile => profile.Id,
-                (joined, profile) => new UserMembershipDto(
-                    joined.membership.Id,
-                    joined.brokerage.Id,
-                    joined.brokerage.DocumentNumber,
-                    joined.brokerage.Name,
-                    profile.Id,
-                    profile.Name))
-            .OrderBy(membership => membership.ScopeName)
+                (joined, profile) => new { joined.membership, joined.brokerage, profile })
+            // Ordena pela coluna real (Name) ANTES de projetar: o EF Core não traduz OrderBy por
+            // propriedade de um DTO já construído no Select (não enxerga através do construtor).
+            .OrderBy(row => row.brokerage.Name)
+            .Select(row => new UserMembershipDto(
+                row.membership.Id,
+                row.brokerage.Id,
+                row.brokerage.DocumentNumber,
+                row.brokerage.Name,
+                row.profile.Id,
+                row.profile.Name))
             .ToListAsync(cancellationToken);
 
         var policyHolderMemberships = await Context.Set<UserPolicyHolderMembership>().AsNoTracking()
@@ -153,14 +156,16 @@ public sealed class UserRepository(SmartInsureDbContext context)
                 Context.Set<Profile>().AsNoTracking(),
                 joined => joined.membership.ProfileId,
                 profile => profile.Id,
-                (joined, profile) => new UserMembershipDto(
-                    joined.membership.Id,
-                    joined.policyHolder.Id,
-                    joined.policyHolder.DocumentNumber,
-                    joined.policyHolder.Name,
-                    profile.Id,
-                    profile.Name))
-            .OrderBy(membership => membership.ScopeName)
+                (joined, profile) => new { joined.membership, joined.policyHolder, profile })
+            // Ordena pela coluna real (Name) ANTES de projetar (mesmo motivo do vínculo de Corretora).
+            .OrderBy(row => row.policyHolder.Name)
+            .Select(row => new UserMembershipDto(
+                row.membership.Id,
+                row.policyHolder.Id,
+                row.policyHolder.DocumentNumber,
+                row.policyHolder.Name,
+                row.profile.Id,
+                row.profile.Name))
             .ToListAsync(cancellationToken);
 
         return new UserDetailsDto(
