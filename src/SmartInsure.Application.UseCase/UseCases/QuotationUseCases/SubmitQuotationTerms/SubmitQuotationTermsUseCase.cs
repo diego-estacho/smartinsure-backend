@@ -12,7 +12,7 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Application.UseCase.UseCases.QuotationUseCases.SubmitQuotationTerms;
 
 /// <summary>
-/// RN-063 — "Baixar minuta": envia ao provedor os termos preenchidos da Cotação (UpdateProposalTerms) e,
+/// RN-080 — "Baixar minuta": envia ao provedor os termos preenchidos da Cotação (UpdateProposalTerms) e,
 /// em seguida, obtém a minuta gerada (GetProposalContractDraft). A conexão/motor vêm da Habilitação da
 /// Corretora com a Seguradora da Cotação (RN-023). Exige que a Cotação tenha proposta no provedor
 /// (ProposalExternalId — só existe em Cotação obtida). Uma falha isolada sobe como erro da requisição —
@@ -25,7 +25,7 @@ public sealed class SubmitQuotationTermsUseCase(
     IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider) : ISubmitQuotationTermsUseCase
 {
-    // camelCase (Web) para a minuta capturada casar com o contrato/leitura do front (RN-062).
+    // camelCase (Web) para a minuta capturada casar com o contrato/leitura do front (RN-079).
     private static readonly JsonSerializerOptions MinutaJsonOptions = new(JsonSerializerDefaults.Web);
 
     public async Task<SubmitQuotationTermsResponse> ExecuteAsync(
@@ -34,13 +34,13 @@ public sealed class SubmitQuotationTermsUseCase(
         var quotation = await quotationRepository.GetByIdAsync(request.QuotationId, cancellationToken)
             ?? throw new NotFoundException("Cotação não encontrada.");
 
-        // RN-062: a Cotação da rota tem de pertencer ao Grupo da rota (evita submeter minuta de outro Grupo).
+        // RN-079: a Cotação da rota tem de pertencer ao Grupo da rota (evita submeter minuta de outro Grupo).
         if (quotation.QuotationGroupId != request.QuotationGroupId)
         {
             throw new BusinessRuleException("A Cotação não pertence a este Grupo de Cotação.");
         }
 
-        // RN-063: só há termos a enviar quando existe proposta no provedor (Cotação obtida com id externo).
+        // RN-080: só há termos a enviar quando existe proposta no provedor (Cotação obtida com id externo).
         if (string.IsNullOrWhiteSpace(quotation.ProposalExternalId))
         {
             throw new BusinessRuleException(
@@ -76,7 +76,7 @@ public sealed class SubmitQuotationTermsUseCase(
                 .ToList(),
         };
 
-        // RN-062: captura a minuta preenchida na Cotação selecionada antes de acionar o provedor — o
+        // RN-079: captura a minuta preenchida na Cotação selecionada antes de acionar o provedor — o
         // preenchimento fica persistido mesmo quando a geração da minuta falha (CA-07) e sobrevive a um refresh.
         quotation.SetMinuta(
             JsonSerializer.Serialize(request.Terms, MinutaJsonOptions),

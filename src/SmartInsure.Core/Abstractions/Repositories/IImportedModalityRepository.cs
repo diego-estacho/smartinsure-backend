@@ -9,7 +9,7 @@ public interface IImportedModalityRepository : IRepository<ImportedModality>
     Task<ImportedModality?> GetByInsurerAndSourceAsync(
         Guid insurerId, string sourceId, CancellationToken cancellationToken);
 
-    /// <summary>RN-062: Modalidade Importada Ativa de uma Seguradora vinculada a uma Modalidade (para ler Tag/Cláusulas da minuta).</summary>
+    /// <summary>RN-079: Modalidade Importada Ativa de uma Seguradora vinculada a uma Modalidade (para ler Tag/Cláusulas da minuta).</summary>
     Task<ImportedModality?> GetActiveByInsurerAndModalityAsync(
         Guid insurerId, Guid modalityId, CancellationToken cancellationToken);
 

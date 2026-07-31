@@ -66,7 +66,7 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 **Casos limite.** O espelhamento da expiração por tempo (apresentar a Cotação como desatualizada e oferecer re-solicitar quando a janela do provedor vence) fica para a demanda de **cancelamento** (demanda própria), junto com o cancelamento das demais Cotações. O prazo exato e o gatilho do job de inatividade do provedor serão confirmados nessa demanda.
 
-## RN-062 — Minuta da Cotação selecionada: Tags e Cláusulas particulares
+## RN-079 — Minuta da Cotação selecionada: Tags e Cláusulas particulares
 
 **Descrição.** Ao selecionar uma Cotação, a plataforma apresenta a **minuta** da Seguradora: as **Tags da minuta** (campos do objeto do contrato, que variam por Seguradora/Modalidade) e as **Cláusulas particulares** disponíveis. O corretor preenche as Tags (refletidas no texto do objeto) e marca as Cláusulas. As definições vêm do catálogo **já importado** (Tag e Cláusulas por Modalidade Importada — RN-047, RN-048). O preenchimento é **opcional na etapa de cotações** e torna-se obrigatório na etapa de emissão (fora desta fase).
 
@@ -76,11 +76,11 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 **Casos limite.** Se marcar uma Cláusula particular altera o resultado da Cotação (automática → subscrição): **não re-avaliado nesta fase** — a minuta é capturada e o veredito da Cotação é mantido; a decisão de re-avaliar aguarda a PO ([OPEN-21](../open-decisions.md)). Tags e o texto da minuta **não** alteram o veredito.
 
-## RN-063 — Envio dos termos da minuta ao provedor
+## RN-080 — Envio dos termos da minuta ao provedor
 
 **Descrição.** O corretor pode **enviar** os termos e cláusulas preenchidos da Cotação selecionada ao provedor (atualizando a proposta correspondente) e **obter a minuta** (documento) para baixar. O envio ocorre ao acionar "Baixar minuta" na etapa de cotações.
 
-**Pré-condições.** Cotação selecionada, com Tags/Cláusulas preenchidas ou não (RN-062).
+**Pré-condições.** Cotação selecionada, com Tags/Cláusulas preenchidas ou não (RN-079).
 
 **Critério de aceitação.** Ao acionar "Baixar minuta", a plataforma envia ao provedor os termos e cláusulas atuais da Cotação selecionada, atualizando a proposta, e disponibiliza a minuta gerada para download refletindo esses termos. O preenchimento parcial é aceito nesta fase. O envio definitivo/obrigatório dos termos e a emissão ocorrem na etapa de emissão (fora desta fase).
 

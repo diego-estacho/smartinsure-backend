@@ -8,7 +8,7 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Application.UseCase.UseCases.QuotationUseCases.GetQuotationMinuta;
 
 /// <summary>
-/// RN-062 — Minuta da Cotação selecionada: lê, do catálogo já importado (Tag/Cláusulas da Modalidade
+/// RN-079 — Minuta da Cotação selecionada: lê, do catálogo já importado (Tag/Cláusulas da Modalidade
 /// Importada da Seguradora), as Tags do objeto e as Cláusulas particulares ativas para o corretor
 /// preencher/marcar. Sem catálogo importado para a Seguradora/Modalidade, a minuta vem vazia.
 /// </summary>
@@ -25,7 +25,7 @@ public sealed class GetQuotationMinutaUseCase(
         var quotation = await quotationRepository.GetByIdAsync(request.QuotationId, cancellationToken)
             ?? throw new NotFoundException("Cotação não encontrada.");
 
-        // RN-062: a Cotação da rota tem de pertencer ao Grupo da rota (evita ler minuta de outro Grupo).
+        // RN-079: a Cotação da rota tem de pertencer ao Grupo da rota (evita ler minuta de outro Grupo).
         if (quotation.QuotationGroupId != request.QuotationGroupId)
         {
             throw new BusinessRuleException("A Cotação não pertence a este Grupo de Cotação.");

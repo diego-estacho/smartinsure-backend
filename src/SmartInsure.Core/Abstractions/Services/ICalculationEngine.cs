@@ -71,7 +71,7 @@ public interface ICalculationEngine
         string? connectionParameters, QuotationRequestInput request, CancellationToken cancellationToken);
 
     /// <summary>
-    /// RN-063 ("Baixar minuta", parte 1): envia ao provedor os termos preenchidos da proposta selecionada
+    /// RN-080 ("Baixar minuta", parte 1): envia ao provedor os termos preenchidos da proposta selecionada
     /// — as Tags do objeto e as Cláusulas particulares marcadas (POST /UpdateProposalTerms). Preenchimento
     /// parcial é aceito. Falha de transporte sobe como CalculationEngineException.
     /// </summary>
@@ -79,7 +79,7 @@ public interface ICalculationEngine
         string? connectionParameters, SubmitProposalTermsInput request, CancellationToken cancellationToken);
 
     /// <summary>
-    /// RN-063 ("Baixar minuta", parte 2): obtém a minuta (documento) da proposta no provedor
+    /// RN-080 ("Baixar minuta", parte 2): obtém a minuta (documento) da proposta no provedor
     /// (POST /GetProposalContractDraft), tipicamente uma URL para o contrato gerado. Falha de transporte
     /// sobe como CalculationEngineException.
     /// </summary>
@@ -191,7 +191,7 @@ public sealed record QuotationResult
 }
 
 /// <summary>
-/// Dados para enviar os termos preenchidos de uma proposta ao provedor (RN-063). A proposta é
+/// Dados para enviar os termos preenchidos de uma proposta ao provedor (RN-080). A proposta é
 /// identificada pelo id externo (o ProposalUniqueId devolvido na Cotação). Tags do objeto em
 /// <see cref="Terms"/>; cada Cláusula particular marcada em <see cref="ParticularClauses"/>.
 /// </summary>
@@ -206,11 +206,11 @@ public sealed record SubmitProposalTermsInput
     public IReadOnlyList<ProposalParticularClauseInput> ParticularClauses { get; init; } = [];
 }
 
-/// <summary>Uma Tag preenchida (nome + valor) do objeto ou de uma cláusula (RN-063).</summary>
+/// <summary>Uma Tag preenchida (nome + valor) do objeto ou de uma cláusula (RN-080).</summary>
 public sealed record ProposalTermInput(string Name, string Value);
 
-/// <summary>Cláusula particular marcada + suas Tags preenchidas (RN-063).</summary>
+/// <summary>Cláusula particular marcada + suas Tags preenchidas (RN-080).</summary>
 public sealed record ProposalParticularClauseInput(int ParticularClauseId, IReadOnlyList<ProposalTermInput> Tags);
 
-/// <summary>Minuta (documento) da proposta devolvida pelo provedor (RN-063): URL + id + data de geração.</summary>
+/// <summary>Minuta (documento) da proposta devolvida pelo provedor (RN-080): URL + id + data de geração.</summary>
 public sealed record ProposalContractDraftResult(string? Url, string? ExternalId, DateTime? CreatedAt);

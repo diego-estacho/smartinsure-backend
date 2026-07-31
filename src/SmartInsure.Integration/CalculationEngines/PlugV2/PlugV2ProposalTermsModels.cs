@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace SmartInsure.Integration.CalculationEngines.PlugV2;
 
 /// <summary>
-/// Request de envio dos termos preenchidos da proposta (POST /UpdateProposalTerms — RN-063). Espelha o
+/// Request de envio dos termos preenchidos da proposta (POST /UpdateProposalTerms — RN-080). Espelha o
 /// contrato legado (UpdateProposalTermsRequest): as Tags do objeto em <see cref="Terms"/> e cada Cláusula
 /// particular marcada em <see cref="ParticularClauses"/> com suas próprias Tags. Shape do fornecedor —
 /// não vaza da ACL (ADR-028).
@@ -43,7 +43,7 @@ public sealed record PlugV2ProposalParticularClause
     public IReadOnlyList<PlugV2ProposalTerm> Tags { get; init; } = [];
 }
 
-/// <summary>Request da minuta (documento) da proposta (POST /GetProposalContractDraft — RN-063).</summary>
+/// <summary>Request da minuta (documento) da proposta (POST /GetProposalContractDraft — RN-080).</summary>
 public sealed record PlugV2GetProposalContractDraftRequest
 {
     [JsonPropertyName("BrokerCnpj")]

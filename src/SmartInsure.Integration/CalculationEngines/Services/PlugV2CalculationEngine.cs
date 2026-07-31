@@ -215,7 +215,7 @@ public sealed class PlugV2CalculationEngine(
     }
 
     /// <summary>
-    /// RN-063 ("Baixar minuta", parte 1): envia os termos preenchidos (Tags do objeto + Cláusulas
+    /// RN-080 ("Baixar minuta", parte 1): envia os termos preenchidos (Tags do objeto + Cláusulas
     /// particulares marcadas) da proposta selecionada (POST /UpdateProposalTerms).
     /// </summary>
     public async Task SubmitProposalTermsAsync(
@@ -266,7 +266,7 @@ public sealed class PlugV2CalculationEngine(
         }
     }
 
-    /// <summary>RN-063 ("Baixar minuta", parte 2): obtém a minuta (documento) da proposta (POST /GetProposalContractDraft).</summary>
+    /// <summary>RN-080 ("Baixar minuta", parte 2): obtém a minuta (documento) da proposta (POST /GetProposalContractDraft).</summary>
     public async Task<ProposalContractDraftResult> GetProposalContractDraftAsync(
         string? connectionParameters, string brokerCnpj, string proposalExternalId, CancellationToken cancellationToken)
     {

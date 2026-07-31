@@ -13,10 +13,10 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Tests.Application.UseCases.QuotationUseCases.SubmitQuotationTerms;
 
 /// <summary>
-/// RN-063 — "Baixar minuta": envia os termos preenchidos (UpdateProposalTerms) e devolve a minuta
+/// RN-080 — "Baixar minuta": envia os termos preenchidos (UpdateProposalTerms) e devolve a minuta
 /// (GetProposalContractDraft). Exige proposta no provedor; id de cláusula não-numérico é dado inválido.
 /// </summary>
-[Trait("RuleId", "RN-063")]
+[Trait("RuleId", "RN-080")]
 public class SubmitQuotationTermsUseCaseTests
 {
     private readonly IQuotationRepository _quotationRepository = Substitute.For<IQuotationRepository>();
@@ -119,7 +119,7 @@ public class SubmitQuotationTermsUseCaseTests
 
         await BuildUseCase().ExecuteAsync(Request(quotation), CancellationToken.None);
 
-        // RN-062: a minuta preenchida é capturada na Cotação e comitada (não some num refresh).
+        // RN-079: a minuta preenchida é capturada na Cotação e comitada (não some num refresh).
         quotation.MinutaTagsJson.Should().NotBeNull();
         quotation.MinutaClausesJson.Should().NotBeNull();
         _quotationRepository.Received().Update(quotation);
