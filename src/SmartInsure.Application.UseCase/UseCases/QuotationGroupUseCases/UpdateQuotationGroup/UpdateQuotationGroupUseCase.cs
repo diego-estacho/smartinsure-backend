@@ -9,11 +9,13 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup;
 
 /// <summary>
-/// RN-051 — enquanto Rascunho, atualiza o Grupo de Cotação no lugar (mesmo id). Tomador, Segurado e
-/// Modalidade precisam existir; o estado não muda aqui.
+/// RN-051/RN-060 — enquanto Rascunho E sem Cotações, atualiza o Grupo de Cotação no lugar (mesmo id).
+/// Um Grupo que já tem Cotações é imutável nos dados-base: a edição é recusada (fail-closed) e a
+/// mudança segue pela criação de um novo Grupo. Tomador, Segurado e Modalidade precisam existir.
 /// </summary>
 public sealed class UpdateQuotationGroupUseCase(
     IQuotationGroupRepository quotationGroupRepository,
+    IQuotationRepository quotationRepository,
     IPersonRepository personRepository,
     IModalityRepository modalityRepository,
     IUnitOfWork unitOfWork) : IUpdateQuotationGroupUseCase
@@ -31,6 +33,14 @@ public sealed class UpdateQuotationGroupUseCase(
         if (group.Status != EQuotationGroupStatus.Draft)
         {
             throw new ConflictException("O grupo de cotação só pode ser atualizado enquanto está em Rascunho.");
+        }
+
+        // RN-060: um Grupo que já tem Cotações é imutável nos dados-base. A alteração não edita este
+        // Grupo — segue pela criação de um novo (fork no front); aqui o servidor recusa (fail-closed).
+        if (await quotationRepository.ExistsForGroupAsync(request.Id, cancellationToken))
+        {
+            throw new ConflictException(
+                "O grupo de cotação já possui cotações e não pode ter os dados alterados; inicie uma nova cotação.");
         }
 
         var policyHolder = await personRepository.GetByIdWithRolesAsync(request.PolicyHolderId, cancellationToken)

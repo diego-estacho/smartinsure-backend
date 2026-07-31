@@ -43,7 +43,7 @@ public class SubmitQuotationTermsUseCaseTests
     {
         var quotation = Quotation.Requested(_groupId, _insurerId);
         quotation.MarkObtained(
-            EQuotationResult.Automatic, null, 300m, null, null, null, null,
+            EQuotationResult.ReadyForEmission, null, 300m, null, null, null, null,
             proposalExternalId, "PN-1", false, null, false, [],
             new DateTime(2026, 7, 28, 12, 0, 0, DateTimeKind.Utc));
         return quotation;

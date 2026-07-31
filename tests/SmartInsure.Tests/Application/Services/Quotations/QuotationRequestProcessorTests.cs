@@ -86,12 +86,12 @@ public class QuotationRequestProcessorTests
     {
         SetupValidGraph();
         _engine.RunQuotationAsync(Arg.Any<string?>(), Arg.Any<QuotationRequestInput>(), Arg.Any<CancellationToken>())
-            .Returns(new QuotationResult { Result = EQuotationResult.Automatic, Premium = 300m });
+            .Returns(new QuotationResult { Result = EQuotationResult.ReadyForEmission, Premium = 300m });
 
         await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
 
         _quotation.ProcessingStatus.Should().Be(EQuotationProcessingStatus.Obtained);
-        _quotation.Result.Should().Be(EQuotationResult.Automatic);
+        _quotation.Result.Should().Be(EQuotationResult.ReadyForEmission);
         _quotation.Premium.Should().Be(300m);
         // Lease carimbado (ADR-050) + resultado: dois Update/Commit (lease antes do provedor, resultado depois).
         _quotation.ProcessingStartedAt.Should().NotBeNull();
@@ -136,7 +136,7 @@ public class QuotationRequestProcessorTests
         SetupValidGraph();
         // Já obtida (não mais Requested) — item duplicado/idempotência: nada a fazer.
         _quotation.MarkObtained(
-            EQuotationResult.Automatic, null, 300m, null, null, null, null, null, null,
+            EQuotationResult.ReadyForEmission, null, 300m, null, null, null, null, null, null,
             false, null, false, [], new DateTime(2026, 7, 28, 12, 0, 0, DateTimeKind.Utc));
 
         await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
@@ -159,7 +159,7 @@ public class QuotationRequestProcessorTests
         QuotationRequestInput? captured = null;
         _engine.RunQuotationAsync(
                 Arg.Any<string?>(), Arg.Do<QuotationRequestInput>(request => captured = request), Arg.Any<CancellationToken>())
-            .Returns(new QuotationResult { Result = EQuotationResult.Automatic, Premium = 300m });
+            .Returns(new QuotationResult { Result = EQuotationResult.ReadyForEmission, Premium = 300m });
 
         await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
 
@@ -179,7 +179,7 @@ public class QuotationRequestProcessorTests
         QuotationRequestInput? captured = null;
         _engine.RunQuotationAsync(
                 Arg.Any<string?>(), Arg.Do<QuotationRequestInput>(request => captured = request), Arg.Any<CancellationToken>())
-            .Returns(new QuotationResult { Result = EQuotationResult.Automatic, Premium = 300m });
+            .Returns(new QuotationResult { Result = EQuotationResult.ReadyForEmission, Premium = 300m });
 
         await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
 
