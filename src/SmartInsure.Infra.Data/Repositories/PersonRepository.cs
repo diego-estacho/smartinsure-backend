@@ -10,16 +10,32 @@ namespace SmartInsure.Infra.Data.Repositories;
 public sealed class PersonRepository(SmartInsureDbContext context)
     : Repository<Person>(context), IPersonRepository
 {
+    // A base é CI mas AS (SQL_Latin1_General_CP1_CI_AS): "pilão" não casaria "PILAO". Comparar sob a
+    // variante acento-insensível (…_CI_AI) torna a busca por nome insensível a acento (RN-013).
+    private const string AccentInsensitiveCollation = "SQL_Latin1_General_CP1_CI_AI";
+
     public async Task<IReadOnlyList<PersonSearchItemDto>> SearchByNameOrDocumentAsync(
         string nameTerm,
         string? documentNumber,
         bool headquartersOnly,
         CancellationToken cancellationToken)
     {
-        var query = Set.AsNoTracking()
-            .Where(person => person.Name.Contains(nameTerm)
-                || (person.SocialName != null && person.SocialName.Contains(nameTerm))
-                || (documentNumber != null && person.DocumentNumber == documentNumber));
+        // RN-013: cada palavra do trecho precisa aparecer no nome ou nome social, em qualquer ordem
+        // (antes era um único LIKE contíguo — "yoshii construcoes" não casava). AND entre as palavras
+        // via .Where encadeado; comparação acento-insensível. A igualdade de documento entra em cada
+        // cláusula para que o documento já cadastrado devolva a Pessoa mesmo que o trecho seja o CNPJ.
+        var tokens = nameTerm.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+
+        IQueryable<Person> query = Set.AsNoTracking();
+        foreach (var token in tokens)
+        {
+            var value = token;
+            query = query.Where(person =>
+                (documentNumber != null && person.DocumentNumber == documentNumber)
+                || EF.Functions.Collate(person.Name, AccentInsensitiveCollation).Contains(value)
+                || (person.SocialName != null
+                    && EF.Functions.Collate(person.SocialName, AccentInsensitiveCollation).Contains(value)));
+        }
 
         if (headquartersOnly)
         {
