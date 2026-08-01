@@ -10,9 +10,20 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddCalculationEngines(this IServiceCollection services)
     {
-        // RN-029: cliente HTTP PlugV2 com resiliência padrão para consultas de crédito e demais operações.
+        // Configuração de resiliência por fornecedor (isolada, ajustável por ambiente) — nunca global.
+        services.AddOptions<PlugV2Options>().BindConfiguration(PlugV2Options.SectionName);
+
+        // RN-029: cliente PlugV2 para chamadas IDEMPOTENTES (leituras: limites, minuta). Retry padrão é
+        // seguro — repetir uma leitura não gera efeito colateral.
         services.AddHttpClient("PlugV2")
             .AddStandardResilienceHandler();
+
+        // RN-057: cliente PlugV2 para chamadas NÃO idempotentes (/Cotation, /UpdateProposalTerms) — SEM
+        // retry. Re-tentar um POST que CRIA recurso re-dispara o create e cai no dedup do gateway ("já
+        // existe uma cotação"); a resiliência padrão re-tentaria no timeout de tentativa (10s). Aqui:
+        // tentativa única, com timeout generoso e configurável (PlugV2Options). Padrão que todo motor
+        // futuro segue: leitura idempotente = resiliência padrão; escrita = sem retry.
+        services.AddHttpClient(PlugV2CalculationEngine.NonIdempotentClientName);
 
         // RN-023: motores registrados por chave do enum — a escolha em runtime é sempre
         // da Habilitação de Seguradora, via ICalculationEngineResolver. A conexão
