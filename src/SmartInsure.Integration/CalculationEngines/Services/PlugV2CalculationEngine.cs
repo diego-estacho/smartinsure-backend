@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
@@ -16,10 +17,15 @@ namespace SmartInsure.Integration.CalculationEngines.Services;
 /// </summary>
 public sealed class PlugV2CalculationEngine(
     IServiceProvider serviceProvider,
-    IHttpClientFactory httpClientFactory) : ICalculationEngine
+    IHttpClientFactory httpClientFactory,
+    IOptions<PlugV2Options> options) : ICalculationEngine
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private const string ClientName = "PlugV2";
+
+    /// <summary>Client das chamadas NÃO idempotentes (/Cotation, /UpdateProposalTerms): registrado SEM retry (RN-057, ver DependencyInjection).</summary>
+    public const string NonIdempotentClientName = "PlugV2-nonidempotent";
+
     private const int TimeoutSeconds = 30;
 
     public ECalculationEngine Engine => ECalculationEngine.PlugV2;
@@ -167,7 +173,9 @@ public sealed class PlugV2CalculationEngine(
         string? connectionParameters, QuotationRequestInput request, CancellationToken cancellationToken)
     {
         var config = PlugV2ConnectionParameters.Parse(connectionParameters);
-        var client = CreateClient(config);
+        // RN-057: /Cotation CRIA a proposta → client sem retry. Repetir a chamada re-dispara o create e o
+        // gateway responde "já existe uma cotação" (dedup de 60s). Ver CreateNonIdempotentClient.
+        var client = CreateNonIdempotentClient(config);
 
         var payload = new PlugV2CotationRequest
         {
@@ -222,7 +230,8 @@ public sealed class PlugV2CalculationEngine(
         string? connectionParameters, SubmitProposalTermsInput request, CancellationToken cancellationToken)
     {
         var config = PlugV2ConnectionParameters.Parse(connectionParameters);
-        var client = CreateClient(config);
+        // Mutação de proposta → também sem retry (mesma razão do /Cotation, RN-057).
+        var client = CreateNonIdempotentClient(config);
 
         var payload = new PlugV2UpdateProposalTermsRequest
         {
@@ -312,6 +321,20 @@ public sealed class PlugV2CalculationEngine(
         // Barra final preserva o caminho do gateway (ex.: /qa/garantia/api/PlugV2) na resolução relativa.
         client.BaseAddress = new Uri(config.BaseUrl.EndsWith('/') ? config.BaseUrl : config.BaseUrl + "/");
         client.Timeout = TimeSpan.FromSeconds(TimeoutSeconds);
+        return client;
+    }
+
+    /// <summary>
+    /// Client das chamadas NÃO idempotentes (/Cotation, /UpdateProposalTerms). Registrado SEM resiliência
+    /// de retry (RN-057): repetir um POST que CRIA/muta recurso re-dispara o create e cai no dedup do
+    /// gateway ("já existe uma cotação"). Tentativa única, com timeout largo e configurável
+    /// (<see cref="PlugV2Options.NonIdempotentTimeoutSeconds"/>) para acomodar a latência real numa só ida.
+    /// </summary>
+    private HttpClient CreateNonIdempotentClient(PlugV2ConnectionParameters config)
+    {
+        var client = httpClientFactory.CreateClient(NonIdempotentClientName);
+        client.BaseAddress = new Uri(config.BaseUrl.EndsWith('/') ? config.BaseUrl : config.BaseUrl + "/");
+        client.Timeout = TimeSpan.FromSeconds(options.Value.NonIdempotentTimeoutSeconds);
         return client;
     }
 
