@@ -139,6 +139,10 @@ public sealed partial class CasdoorIdentityProvider(
         }
     }
 
+    /// <summary>
+    /// RN-065: define a senha no provedor. O <c>set-password</c> do Casdoor endereça a identidade por
+    /// organização + username, então o UUID guardado em <c>ExternalIdentity</c> é resolvido antes.
+    /// </summary>
     public async Task SetPasswordAsync(
         string externalIdentity, string newPassword, CancellationToken cancellationToken)
     {
@@ -150,13 +154,14 @@ public sealed partial class CasdoorIdentityProvider(
                 $"Identidade {externalIdentity} não encontrada no provedor.");
         }
 
-        var updatedUser = user.Data with
-        {
-            Password = newPassword,
-            NeedUpdatePassword = false,
-        };
-
-        var response = await api.UpdateUserAsync(updatedUser, cancellationToken);
+        var response = await api.SetPasswordAsync(
+            new Dictionary<string, string>
+            {
+                ["userOwner"] = user.Data.Owner,
+                ["userName"] = user.Data.Name,
+                ["newPassword"] = newPassword,
+            },
+            cancellationToken);
 
         if (!response.IsOk)
         {
