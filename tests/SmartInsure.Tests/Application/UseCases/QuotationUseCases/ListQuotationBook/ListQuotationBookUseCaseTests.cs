@@ -22,7 +22,8 @@ public sealed class ListQuotationBookUseCaseTests
     public ListQuotationBookUseCaseTests()
         => _useCase = new ListQuotationBookUseCase(_quotationRepository);
 
-    private static QuotationBookItemDto Item(EQuotationResult result = EQuotationResult.ReadyForEmission)
+    private static QuotationBookItemDto Item(
+        EQuotationResult result = EQuotationResult.ReadyForEmission, bool requiresCcg = false)
         => new(
             QuotationId: Guid.NewGuid(),
             Number: "PROP-1",
@@ -37,6 +38,7 @@ public sealed class ListQuotationBookUseCaseTests
             Premium: 18_000m,
             CommissionPercentage: 20m,
             Result: result,
+            RequiresCcg: requiresCcg,
             CoverageStartDate: new DateOnly(2026, 7, 29),
             CoverageEndDate: new DateOnly(2027, 7, 29),
             CreatedAt: DateTime.UtcNow);
@@ -110,7 +112,7 @@ public sealed class ListQuotationBookUseCaseTests
     [Trait("RuleId", "RN-077")]
     public async Task Execute_DeveMapearLinha_ComSeguradoraESituacaoPorNomeEstavel()
     {
-        var item = Item();
+        var item = Item(requiresCcg: true);
         ArrangeBook(Page([item]));
 
         var result = await _useCase.ExecuteAsync(
@@ -123,6 +125,8 @@ public sealed class ListQuotationBookUseCaseTests
         mapped.ModalityName.Should().Be("Executante Fornecedor");
         mapped.Result.Should().Be("ReadyForEmission");
         mapped.Premium.Should().Be(18_000m);
+        // RN-058/059: a exigência de CCG é ortogonal ao resultado e trafega na linha (badge no front).
+        mapped.RequiresCcg.Should().BeTrue();
         result.TotalCount.Should().Be(1);
     }
 

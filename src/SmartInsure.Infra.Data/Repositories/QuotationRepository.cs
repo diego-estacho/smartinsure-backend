@@ -236,6 +236,7 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
                 row.Quotation.Premium,
                 row.Quotation.CommissionPercentage,
                 row.Quotation.Result!.Value,
+                row.Quotation.RequiresCcg,
                 row.Group.CoverageStartDate,
                 row.Group.CoverageEndDate,
                 row.Quotation.CreatedAt))

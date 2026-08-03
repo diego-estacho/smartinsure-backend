@@ -2007,8 +2007,8 @@
           "required": true
         },
         "responses": {
-          "201": {
-            "description": "Created",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -2017,8 +2017,8 @@
               }
             }
           },
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -7010,6 +7010,7 @@
           "premium",
           "commissionPercentage",
           "result",
+          "requiresCcg",
           "coverageStartDate",
           "coverageEndDate",
           "createdAt"
@@ -7080,6 +7081,9 @@
           },
           "result": {
             "type": "string"
+          },
+          "requiresCcg": {
+            "type": "boolean"
           },
           "coverageStartDate": {
             "type": "string",

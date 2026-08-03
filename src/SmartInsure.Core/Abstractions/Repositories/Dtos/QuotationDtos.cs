@@ -41,6 +41,7 @@ public sealed record QuotationBookItemDto(
     decimal? Premium,
     decimal? CommissionPercentage,
     EQuotationResult Result,
+    bool RequiresCcg,
     DateOnly CoverageStartDate,
     DateOnly CoverageEndDate,
     DateTime CreatedAt);

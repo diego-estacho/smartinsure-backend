@@ -61,6 +61,7 @@ public sealed class ListQuotationBookUseCase(IQuotationRepository quotationRepos
                 item.Premium,
                 item.CommissionPercentage,
                 item.Result.ToString(),
+                item.RequiresCcg,
                 item.CoverageStartDate,
                 item.CoverageEndDate,
                 item.CreatedAt))
