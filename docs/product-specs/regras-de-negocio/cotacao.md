@@ -48,7 +48,7 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 ## RN-060 — Imutabilidade e novo Grupo por mudança de dado-base
 
-**Descrição.** Um Grupo de Cotação **com Cotações obtidas** é imutável nos seus dados-base. Ao voltar às etapas anteriores e **efetivar mudança de valor** de qualquer dado-base — Tomador, Segurado, escopo de Seguradoras, Modalidade, valor segurado, vigência, Coberturas Adicionais — a plataforma **não altera** o Grupo atual: cria um **Grupo novo** em Rascunho com os dados alterados (RN-050), **preservando intactos** o Grupo anterior e suas Cotações (inclusive a escolhida, RN-059). Voltar sem alterar valor (ou alterar e desfazer para o mesmo valor) não cria nada.
+**Descrição.** Um Grupo de Cotação **com Cotações obtidas** é imutável nos seus dados-base. Ao voltar às etapas anteriores e **efetivar mudança de valor** de qualquer dado-base — Tomador, **estabelecimento cotado** (RN-102), Segurado, escopo de Seguradoras, Modalidade, valor segurado, vigência, Coberturas Adicionais — a plataforma **não altera** o Grupo atual: cria um **Grupo novo** em Rascunho com os dados alterados (RN-050), **preservando intactos** o Grupo anterior e suas Cotações (inclusive a escolhida, RN-059). Voltar sem alterar valor (ou alterar e desfazer para o mesmo valor) não cria nada.
 
 **Pré-condições.** Grupo com Cotações já obtidas, e retorno do corretor às etapas anteriores do wizard.
 

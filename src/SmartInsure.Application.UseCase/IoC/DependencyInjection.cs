@@ -51,6 +51,9 @@ public static class DependencyInjection
         services.AddScoped<IScopeAuthorization, ScopeAuthorization>();
         services.AddScoped<IInvitedUserService, InvitedUserService>();
 
+        // Cadastro em cadeia da Filial (RN-101), consumido pelos use cases de Tomador/Filial.
+        services.AddScoped<IBranchRegistrar, BranchRegistrar>();
+
         // Serviço de importação de modalidades (RN-034), orquestrado pelo timer das Functions.
         services.AddScoped<IModalityImporter, ModalityImporter>();
 

@@ -22,6 +22,12 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
             .WithMany()
             .HasForeignKey(group => group.PolicyHolderId);
 
+        // RN-102/ADR-101: estabelecimento cotado — Filial opcional; sem navegação (o design não pede).
+        builder.HasOne<Person>()
+            .WithMany()
+            .HasForeignKey(group => group.BranchPersonId)
+            .OnDelete(DeleteBehavior.NoAction);
+
         builder.HasOne<Person>()
             .WithMany()
             .HasForeignKey(group => group.InsuredId);
@@ -64,6 +70,11 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
         // Histórico consultável por tomador e por segurado.
         builder.HasIndex(group => group.PolicyHolderId);
         builder.HasIndex(group => group.InsuredId);
+
+        // Filtrado: espelha a migration Flyway (só grupos com Filial cotada têm BranchPersonId preenchido).
+        builder.HasIndex(group => group.BranchPersonId)
+            .HasDatabaseName("IX_QuotationGroups_BranchPersonId")
+            .HasFilter("[BranchPersonId] IS NOT NULL");
 
         // Coleção filha das Seguradoras do escopo — acesso por field.
         builder.HasMany(group => group.SelectedInsurers)

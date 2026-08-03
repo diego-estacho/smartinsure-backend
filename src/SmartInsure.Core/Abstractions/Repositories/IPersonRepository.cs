@@ -49,7 +49,7 @@ public interface IPersonRepository : IRepository<Person>
         Guid personId,
         CancellationToken cancellationToken);
 
-    /// <summary>RN-052: dados de um CNPJ já cadastrado (somente leitura), para a consulta do cadastro.</summary>
+    /// <summary>RN-101: dados de um CNPJ já cadastrado (somente leitura), para a consulta do cadastro.</summary>
     Task<BrokeragePreviewDto?> FindBrokeragePreviewByDocumentAsync(
         string documentNumber,
         CancellationToken cancellationToken);
@@ -75,4 +75,11 @@ public interface IPersonRepository : IRepository<Person>
     Task<Person?> GetTrackedPolicyHolderByIdAsync(
         Guid personId,
         CancellationToken cancellationToken);
+
+    /// <summary>RN-101: Pessoa rastreada por id, para vincular a Filial à matriz.</summary>
+    Task<Person?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>RN-101: Filiais vinculadas a uma matriz, ordenadas por documento.</summary>
+    Task<IReadOnlyList<PersonBranchDto>> ListBranchesAsync(
+        Guid headquartersPersonId, CancellationToken cancellationToken);
 }

@@ -126,6 +126,19 @@ public sealed class QuotationRequestProcessor(
         var insured = await personRepository.GetByIdAsync(group.InsuredId, cancellationToken)
             ?? throw new QuotationSetupException("Segurado não encontrado.");
 
+        // RN-102: o CNPJ enviado à Seguradora é o do estabelecimento cotado — a Filial marcada
+        // quando houver, senão a matriz (Tomador). Limite de Crédito e taxa continuam sempre da
+        // matriz (RN-029) e não são afetados por esta resolução.
+        var policyHolderCnpj = policyHolder.DocumentNumber;
+
+        if (group.BranchPersonId is not null)
+        {
+            var branch = await personRepository.GetByIdAsync(group.BranchPersonId.Value, cancellationToken)
+                ?? throw new QuotationSetupException("Filial do estabelecimento cotado não encontrada.");
+
+            policyHolderCnpj = branch.DocumentNumber;
+        }
+
         // TODO(probe T14): mapear as Coberturas Adicionais do Grupo (IncludesPenaltyCoverage /
         // IncludesLaborCoverage — provisórios) para os códigos que o PLUG espera. Vazio até confirmar.
         var additionalCoverages = new List<string>();
@@ -133,7 +146,7 @@ public sealed class QuotationRequestProcessor(
         var request = new QuotationRequestInput
         {
             BrokerCnpj = brokerage.DocumentNumber,
-            PolicyHolderCnpj = policyHolder.DocumentNumber,
+            PolicyHolderCnpj = policyHolderCnpj,
             InsuredCpfCnpj = insured.DocumentNumber,
             InsuranceUniqueId = insurer.ReferenceExternalId,
             ModalityGlobalId = modality.GlobalModalityExternalId,

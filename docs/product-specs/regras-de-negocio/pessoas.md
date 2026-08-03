@@ -6,7 +6,7 @@
 
 **Pré-condições.** O solicitante informa o termo de busca (trecho de nome ou documento) e o papel do contexto da busca (segurado, corretor ou tomador).
 
-**Critério de aceitação.** Busca por trecho de nome devolve todas as Pessoas cujo nome ou nome social contém o trecho informado. Busca por documento já cadastrado devolve a Pessoa correspondente, sem gerar consulta ao Birô. No contexto de tomador, o resultado contém apenas matrizes (RN-016).
+**Critério de aceitação.** Busca por trecho de nome devolve todas as Pessoas cujo nome ou nome social contém o trecho informado, tratando o trecho por palavras (cada palavra precisa aparecer, em qualquer ordem) e de forma insensível a acento — "yoshii construcoes" e "pilão" localizam "PILAO ENGENHARIA E CONSTRUCOES". Busca por documento já cadastrado devolve a Pessoa correspondente, sem gerar consulta ao Birô. No contexto de tomador, o resultado contém apenas matrizes (RN-016).
 
 **Casos limite.** Trecho de nome sem correspondência: lista vazia. CPF ou qualquer valor que não seja um CNPJ, sem correspondência na base: lista vazia, sem consulta ao Birô — pessoa física não é importada por este fluxo, apenas localizada quando já cadastrada.
 
@@ -32,13 +32,13 @@
 
 ## RN-016 — Tomador é sempre a matriz
 
-**Descrição.** No contexto de tomador, apenas a matriz (Pessoa jurídica de ordem `/0001` do CNPJ) pode figurar como Pessoa. Quando o solicitante informa o CNPJ de uma filial, a plataforma resolve a matriz correspondente e a devolve com a filial informada pré-selecionada.
+**Descrição.** No contexto de tomador, apenas a matriz (Pessoa jurídica de ordem `/0001` do CNPJ) pode figurar como Pessoa. Quando o solicitante informa o CNPJ de uma filial, a plataforma resolve a matriz correspondente e a devolve com a Filial informada pré-selecionada — a Filial é cadastrada e vinculada à matriz conforme a RN-101, deixando de ser apenas uma indicação transitória.
 
 **Pré-condições.** Busca no contexto de tomador (RN-013).
 
-**Critério de aceitação.** Busca por nome ou documento no contexto de tomador devolve apenas matrizes. Busca pelo CNPJ de uma filial devolve a matriz da mesma raiz de CNPJ — importada conforme RN-014 quando ainda não cadastrada — com a indicação da filial pré-selecionada.
+**Critério de aceitação.** Busca por nome ou documento no contexto de tomador devolve apenas matrizes. Busca pelo CNPJ de uma filial devolve a matriz da mesma raiz de CNPJ — importada conforme RN-014 quando ainda não cadastrada — com a Filial cadastrada e vinculada conforme a RN-101 e identificada como pré-selecionada.
 
-**Casos limite.** Matriz não localizada nem na base nem no Birô: lista vazia com aviso de não localizado. Matriz já cadastrada: devolvida da base, sem nova consulta ao Birô, mantendo a filial pré-selecionada.
+**Casos limite.** Matriz não localizada nem na base nem no Birô: lista vazia com aviso de não localizado. Matriz já cadastrada: devolvida da base, sem nova consulta ao Birô, mantendo a Filial pré-selecionada. Matriz localizada e Filial não localizada no Birô: a matriz é devolvida sem Filial pré-selecionada, com o aviso da RN-101.
 
 ## RN-017 — Vínculo de papel da Pessoa
 

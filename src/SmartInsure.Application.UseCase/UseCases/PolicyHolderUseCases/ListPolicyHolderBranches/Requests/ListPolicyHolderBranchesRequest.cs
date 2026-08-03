@@ -1,0 +1,3 @@
+namespace SmartInsure.Application.UseCase.UseCases.PolicyHolderUseCases.ListPolicyHolderBranches.Requests;
+
+public sealed record ListPolicyHolderBranchesRequest(Guid PolicyHolderId);

@@ -10,13 +10,13 @@ public static class ProfileNames
     public const string PolicyHolderAdministrator = nameof(PolicyHolderAdministrator);
 
     /// <summary>
-    /// Perfil fixo Corretor (RN-062). Nome técnico decidido em 2026-07-29 (OPEN-17): `BrokerageUser`
+    /// Perfil fixo Corretor (RN-062). Nome técnico decidido em 2026-07-29 (OPEN-90): `BrokerageUser`
     /// para não colidir com o Papel da Pessoa `Broker`, que é conceito distinto.
     /// </summary>
     public const string BrokerageUser = nameof(BrokerageUser);
 
     /// <summary>
-    /// Perfil fixo Tomador (RN-062). Nome técnico decidido em 2026-07-29 (OPEN-17): `PolicyHolderUser`
+    /// Perfil fixo Tomador (RN-062). Nome técnico decidido em 2026-07-29 (OPEN-90): `PolicyHolderUser`
     /// para não colidir com o Papel da Pessoa `PolicyHolder`.
     /// </summary>
     public const string PolicyHolderUser = nameof(PolicyHolderUser);

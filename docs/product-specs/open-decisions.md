@@ -136,3 +136,15 @@ Dono: PO (gerente de projeto)
 Bloqueia: a **re-avaliação** do veredito da Cotação (automática → subscrição) quando o corretor marca uma cláusula particular não-automática. **NÃO bloqueia** o fluxo do Passo 4 — a minuta é capturada e enviada normalmente (RN-079/080).
 Status: aberta
 Contexto: levantado em 2026-07-28 (jornada Cotação, Passo 4; antes OPEN-17, renumerado para OPEN-21 por colisão com os Perfis fixos na integração com a main). O gateway OnPoint/Plug V2 tem regra — **documentada** e replicada em ~11 plugins de Seguradora — em que uma cláusula particular com `AllowAutomaticIssue=false` (e não-fixa) encaminha a proposta para a esteira de **subscrição** em vez de emitir automaticamente (evidência levantada e conferida no código legado: `evidencia-clausula-particular-subscricao.md`/`.pdf`, área de trabalho do dev). Falta a PO confirmar se, no produto novo, marcar tal cláusula deve **re-avaliar** o veredito da Cotação (podendo virar subscrição) ou se isso é tratado apenas na emissão. Até decidir, o Passo 4 **não re-avalia** o veredito por causa de cláusula — captura a minuta e mantém o resultado da cotação; tags/texto da minuta não afetam o veredito.
+
+## OPEN-90 — Efeito da Filial fora do Grupo de Cotação
+Dono: PO (gerente de projeto)
+Bloqueia: qual CNPJ (matriz ou Filial) é enviado à Seguradora ao cotar; Consulta de Crédito por Filial; Nomeação de Tomador por estabelecimento; remoção/desvínculo de Filial
+Status: aberta
+Contexto: levantado em 2026-07-27 (jornada Tomadores/Grupo de Cotação, AB#0005). A Filial passa a existir como cadastro vinculado à matriz (RN-052) e a ser registrada como estabelecimento cotado do Grupo de Cotação (RN-053). Por decisão do negócio, nesta entrega o efeito da Filial se limita a **registro e exibição**: a Consulta de Crédito (RN-029) continua consultando o CNPJ informado na tela, e a Nomeação de Tomador (RN-027, RN-028) continua valendo por Tomador (matriz), não por estabelecimento.
+Parcialmente resolvida em 2026-07-28 (decisão do dono), itens (a) e (b) encerrados — são coisas separadas e a divisão é esta:
+- **(b) Limite de Crédito e taxa são sempre da matriz.** A Seguradora não consulta limite pelo CNPJ da Filial. A Consulta de Crédito (RN-029) **não** passa a aceitar Filial, e a Filial marcada no Grupo de Cotação não altera limites nem taxas.
+- **(a) Ao cotar, o CNPJ enviado à Seguradora é o da Filial marcada, e a apólice é emitida para o CNPJ da Filial.** Que a Seguradora avalie o risco com base na matriz é **funcionamento interno dela**, não comportamento da plataforma — o Smart envia o estabelecimento cotado. Sem Filial marcada, envia o da matriz (RN-053).
+A implementação de (a) chega quando as etapas de cotação e emissão saírem do mock (OPEN-07); a regra, porém, já está definida e não depende mais de decisão.
+Segue em aberto: (c) se a Nomeação passa a valer por estabelecimento — hoje a unicidade é por par Tomador×Seguradora; (d) como uma Filial é removida ou desvinculada da matriz (o cadastro nasce sem remoção, como o vínculo de papel da RN-017).
+

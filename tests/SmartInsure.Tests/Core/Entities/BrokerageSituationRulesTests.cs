@@ -4,8 +4,8 @@ using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Tests.Core.Entities;
 
-/// <summary>RN-053 — Situação apresentada da Corretora (derivada no servidor).</summary>
-[Trait("RuleId", "RN-053")]
+/// <summary>RN-102 — Situação apresentada da Corretora (derivada no servidor).</summary>
+[Trait("RuleId", "RN-102")]
 public class BrokerageSituationRulesTests
 {
     [Fact]
@@ -40,7 +40,7 @@ public class BrokerageSituationRulesTests
     /// Paridade da regra única: o predicado <see cref="BrokerageSituationRules.Matches"/> (usado no
     /// filtro/contagem em SQL) deve concordar com <see cref="BrokerageSituationRules.Resolve"/>
     /// (usado na projeção da linha) para toda situação — assim a contagem nunca destoa da situação
-    /// apresentada (RN-018/RN-053). Compila a expressão e roda contra a Pessoa em memória.
+    /// apresentada (RN-018/RN-102). Compila a expressão e roda contra a Pessoa em memória.
     /// </summary>
     [Theory]
     [InlineData(true, "Alfa", "contato@alfa.com.br")]

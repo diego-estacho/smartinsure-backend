@@ -1952,6 +1952,84 @@
         }
       }
     },
+    "/api/v1/policy-holders/{id}/branches": {
+      "get": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListPolicyHolderBranchesResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PolicyHoldersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePolicyHolderBranchBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePolicyHolderBranchResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePolicyHolderBranchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/profiles": {
       "get": {
         "tags": [
@@ -4226,6 +4304,44 @@
           }
         }
       },
+      "CreatePolicyHolderBranchBody": {
+        "required": [
+          "documentNumber"
+        ],
+        "type": "object",
+        "properties": {
+          "documentNumber": {
+            "type": "string"
+          }
+        }
+      },
+      "CreatePolicyHolderBranchResponse": {
+        "required": [
+          "headquartersId",
+          "branchId",
+          "notice"
+        ],
+        "type": "object",
+        "properties": {
+          "headquartersId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "notice": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "CreatePolicyHolderRequest": {
         "required": [
           "cnpj"
@@ -4299,6 +4415,7 @@
       "CreateQuotationGroupRequest": {
         "required": [
           "policyHolderId",
+          "branchId",
           "insuredId",
           "modalityId",
           "insuredAmount",
@@ -4313,6 +4430,13 @@
         "properties": {
           "policyHolderId": {
             "type": "string",
+            "format": "uuid"
+          },
+          "branchId": {
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "insuredId": {
@@ -5080,7 +5204,8 @@
           "legalNatureDescription",
           "isPrivateSector",
           "addresses",
-          "appointments"
+          "appointments",
+          "branches"
         ],
         "type": "object",
         "properties": {
@@ -5128,6 +5253,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PolicyHolderAppointmentResponse"
+            }
+          },
+          "branches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyHolderBranchResponse"
             }
           }
         }
@@ -5840,6 +5971,20 @@
               "string"
             ],
             "format": "int64"
+          }
+        }
+      },
+      "ListPolicyHolderBranchesResponse": {
+        "required": [
+          "branches"
+        ],
+        "type": "object",
+        "properties": {
+          "branches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyHolderBranchResponse"
+            }
           }
         }
       },
@@ -6583,6 +6728,13 @@
               "null",
               "string"
             ]
+          },
+          "preSelectedBranchId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -6703,6 +6855,33 @@
               "string"
             ],
             "format": "date-time"
+          }
+        }
+      },
+      "PolicyHolderBranchResponse": {
+        "required": [
+          "id",
+          "documentNumber",
+          "name",
+          "socialName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "documentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "socialName": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -7978,6 +8157,7 @@
       "UpdateQuotationGroupBody": {
         "required": [
           "policyHolderId",
+          "branchId",
           "insuredId",
           "modalityId",
           "insuredAmount",
@@ -7992,6 +8172,13 @@
         "properties": {
           "policyHolderId": {
             "type": "string",
+            "format": "uuid"
+          },
+          "branchId": {
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "insuredId": {

@@ -44,8 +44,21 @@ public sealed class CreateQuotationGroupUseCase(
         _ = await modalityRepository.GetByIdAsync(request.ModalityId, cancellationToken)
             ?? throw new NotFoundException("Modalidade não encontrada.");
 
+        // RN-102: a Filial precisa pertencer à matriz que é o Tomador do grupo; ausente significa a matriz.
+        if (request.BranchId is not null)
+        {
+            var branch = await personRepository.GetTrackedByIdAsync(request.BranchId.Value, cancellationToken)
+                ?? throw new NotFoundException("Filial não encontrada.");
+
+            if (branch.HeadquartersPersonId != request.PolicyHolderId)
+            {
+                throw new BusinessRuleException("A filial informada não pertence ao tomador do grupo de cotação.");
+            }
+        }
+
         var group = QuotationGroup.Create(
             request.PolicyHolderId,
+            request.BranchId,
             request.InsuredId,
             request.ModalityId,
             request.InsuredAmount,

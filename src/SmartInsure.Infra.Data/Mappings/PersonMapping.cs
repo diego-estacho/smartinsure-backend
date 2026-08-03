@@ -37,6 +37,21 @@ public sealed class PersonMapping : IEntityTypeConfiguration<Person>
             .WithMany()
             .HasForeignKey(entity => entity.LegalNatureId);
 
+        // RN-101/ADR-101: Filial vinculada à matriz (self-FK), coluna e FK_Persons_Headquarters
+        // criadas pela migration Flyway. Um Property escalar aqui não basta — sem HasOne o EF
+        // não infere relação nenhuma de um Guid? "nu" sem navegação, então nada garante a ordem
+        // de gravação entre matriz e Filial num mesmo SaveChanges; espelha QuotationGroupMapping
+        // (BranchPersonId), mesmo padrão de self-FK opcional sem navegação.
+        builder.HasOne<Person>()
+            .WithMany()
+            .HasForeignKey(entity => entity.HeadquartersPersonId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // Filtrado: espelha a migration Flyway (só filiais têm HeadquartersPersonId preenchido).
+        builder.HasIndex(entity => entity.HeadquartersPersonId)
+            .HasDatabaseName("IX_Persons_HeadquartersPersonId")
+            .HasFilter("[HeadquartersPersonId] IS NOT NULL");
+
         builder.HasMany(entity => entity.Addresses)
             .WithOne()
             .HasForeignKey(address => address.PersonId)

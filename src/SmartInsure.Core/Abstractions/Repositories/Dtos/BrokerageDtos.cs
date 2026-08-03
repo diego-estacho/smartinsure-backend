@@ -19,7 +19,7 @@ public sealed record BrokerageListResult(
     long TotalCount,
     BrokerageSituationCountsDto Counts);
 
-/// <summary>RN-018/RN-053 — contagem por situação apresentada, considerando os demais filtros.</summary>
+/// <summary>RN-018/RN-102 — contagem por situação apresentada, considerando os demais filtros.</summary>
 public sealed record BrokerageSituationCountsDto(
     long All,
     long Active,
@@ -63,7 +63,7 @@ public sealed record BrokerageHistoryEventDto(
     DateTime OccurredAt,
     string Author);
 
-/// <summary>RN-052 — dados de um CNPJ já cadastrado, para a consulta somente leitura do cadastro.</summary>
+/// <summary>RN-101 — dados de um CNPJ já cadastrado, para a consulta somente leitura do cadastro.</summary>
 public sealed record BrokeragePreviewDto(
     Guid PersonId,
     string DocumentNumber,
