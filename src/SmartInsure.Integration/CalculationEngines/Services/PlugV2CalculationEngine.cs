@@ -189,6 +189,11 @@ public sealed class PlugV2CalculationEngine(
             StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue),
             EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue),
             AdditionalCoverages = request.AdditionalCoverages,
+            // O gateway PlugV2 só inclui o PolicyHolderCCG (veredito de CCG) quando EmissionProposalType
+            // == 2 (InsurePoint) — confirmado no OnPoint-Backend (BuildCotationResponse) e no probe ao
+            // vivo. Enviamos 2 para receber o CCG, como a plataforma legada. Trocar se o gateway passar a
+            // reconhecer um tipo próprio do SmartInsure.
+            EmissionProposalType = 2,
         };
 
         try

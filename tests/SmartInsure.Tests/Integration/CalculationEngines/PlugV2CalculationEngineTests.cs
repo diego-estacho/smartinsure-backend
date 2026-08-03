@@ -534,4 +534,39 @@ public class PlugV2CalculationEngineTests
         // Exatamente 1 ida ao gateway — sem a 2ª tentativa que dispararia o "já existe".
         counter.Count.Should().Be(1);
     }
+
+    [Fact]
+    [Trait("RuleId", "RN-058")]
+    public async Task RunQuotationAsync_EnviaEmissionProposalType2_ParaReceberOCcgDoGateway()
+    {
+        // O gateway PlugV2 só devolve o PolicyHolderCCG (veredito de CCG) quando EmissionProposalType == 2
+        // (InsurePoint) — sem esse campo o CCG NUNCA vem (confirmado no OnPoint-Backend e no probe ao vivo).
+        var fakeHandler = new FakeHttpMessageHandler(request =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new { StatusCode = 200, HasError = false, Errors = new object[] { }, Response = new { ResponseStatus = new { Status = 1, Message = "ok" }, Success = true, InsurancePremium = 300m } }),
+                    System.Text.Encoding.UTF8, "application/json"),
+            }));
+
+        var engine = BuildEngine(fakeHandler);
+        var input = new QuotationRequestInput
+        {
+            BrokerCnpj = BrokerageCnpj,
+            PolicyHolderCnpj = PolicyHolderCnpj,
+            InsuredCpfCnpj = PolicyHolderCnpj,
+            InsuranceUniqueId = InsurerExternalId,
+            ModalityGlobalId = "84",
+            ModalityName = "Executante Construtor",
+            InsuredAmount = 1_000_000m,
+            StartDate = new DateOnly(2026, 8, 3),
+            EndDate = new DateOnly(2027, 8, 3),
+        };
+
+        await engine.RunQuotationAsync(ConnectionParameters, input, CancellationToken.None);
+
+        fakeHandler.CapturedRequestBody.Should().NotBeNull();
+        var body = JsonSerializer.Deserialize<JsonElement>(fakeHandler.CapturedRequestBody!);
+        body.GetProperty("EmissionProposalType").GetInt32().Should().Be(2);
+    }
 }
