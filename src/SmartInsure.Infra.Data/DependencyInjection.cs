@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
@@ -57,6 +60,11 @@ public static class DependencyInjection
         // registerMongo:false para não exigir config de Mongo só para bootar o host.
         if (registerMongo)
         {
+            // MongoDB.Driver 3.x: o default de GuidRepresentation é Unspecified e serializar POCO com Guid
+            // lança. Registramos Standard uma vez no startup (idempotente) — sem isso o QuotationIntegrationLog
+            // (3 Guids) falha no insert e, por ser best-effort, some silenciosamente (ADR-102).
+            BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+
             services.AddOptions<MongoOptions>()
                 .BindConfiguration(MongoOptions.SectionName)
                 .ValidateDataAnnotations()

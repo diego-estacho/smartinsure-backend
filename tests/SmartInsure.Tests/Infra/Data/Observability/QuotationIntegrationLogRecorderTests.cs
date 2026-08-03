@@ -1,6 +1,9 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using SmartInsure.Core.Abstractions.Repositories;
@@ -117,5 +120,37 @@ public class QuotationIntegrationLogRecorderTests
         var act = () => recorder.RecordCotationAsync(BuildContext("{}"), CancellationToken.None);
 
         await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    [Trait("RuleId", "ADR-102")]
+    public void QuotationIntegrationLog_SerializaParaBson_ComGuids()
+    {
+        // Regressão: MongoDB.Driver 3.x lança ao serializar Guid sem GuidRepresentation definida. O documento
+        // tem 3 Guids — sem o GuidSerializer(Standard) registrado (AddInfraData), o InsertAsync falharia e o
+        // best-effort esconderia (0 docs gravados). Este teste serializa de verdade (o substituto do repo não).
+        BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+
+        var createdAtUtc = DateTime.UtcNow;
+        var document = new QuotationIntegrationLog
+        {
+            QuotationId = Guid.CreateVersion7(),
+            QuotationGroupId = Guid.CreateVersion7(),
+            InsurerId = Guid.CreateVersion7(),
+            EngineType = "PlugV2",
+            Outcome = QuotationIntegrationOutcome.Failed,
+            QuotationStatus = null,
+            CreatedAtUtc = createdAtUtc,
+            ExpiresAtUtc = createdAtUtc.AddDays(30),
+            DurationMs = 42,
+            CorrelationId = "00-abc-def-01",
+            Request = new QuotationIntegrationLogPayload { Payload = "{\"a\":1}", Truncated = false },
+            Response = new QuotationIntegrationLogResponse { Raw = "{\"b\":2}", HttpStatus = 400, Truncated = false },
+            ErrorMessage = "Modalidade indisponível para essa seguradora.",
+        };
+
+        var act = () => document.ToBson();
+
+        act.Should().NotThrow();
     }
 }
