@@ -11,9 +11,14 @@ public interface ICasdoorApi
         [AliasAs("email")] string email,
         CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Busca a identidade pelo UUID do Casdoor (o <c>ExternalIdentity</c> guardado pela plataforma).
+    /// O parâmetro é <c>userId</c>, não <c>id</c>: para o Casdoor, <c>id</c> é <c>owner/name</c> e um
+    /// UUID puro falha com <c>GetOwnerAndNameFromId() error, wrong token count for ID</c>.
+    /// </summary>
     [Get("/api/get-user")]
     Task<CasdoorResponse<CasdoorUser?>> GetUserAsync(
-        [AliasAs("id")] string id,
+        [AliasAs("userId")] string userId,
         CancellationToken cancellationToken);
 
     [Post("/api/add-user")]
@@ -27,13 +32,14 @@ public interface ICasdoorApi
         CancellationToken cancellationToken);
 
     /// <summary>
-    /// RN-065: atualiza a identidade do Usuário (usado pra definir/alterar a senha).
-    /// NOTA: a semântica (merge/update total) depende do deployment Casdoor.
-    /// Confirmação necessária no PR para o comportamento exato.
+    /// RN-065: define a senha da identidade. Endpoint dedicado do Casdoor — <c>update-user</c> com
+    /// <c>password</c> no corpo responde <c>ok</c> mas não grava a credencial (nem com
+    /// <c>columns=password</c>), então o grant seguinte falharia. Este endpoint também zera
+    /// <c>needUpdatePassword</c>, cumprindo a troca obrigatória do primeiro acesso.
     /// </summary>
-    [Post("/api/update-user")]
-    Task<CasdoorResponse<object>> UpdateUserAsync(
-        [Body] CasdoorUser user,
+    [Post("/api/set-password")]
+    Task<CasdoorResponse<object>> SetPasswordAsync(
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> form,
         CancellationToken cancellationToken);
 
     /// <summary>

@@ -6,7 +6,7 @@
 
 **Pré-condições.** O solicitante informa o termo de busca (trecho de nome ou documento) e o papel do contexto da busca (segurado, corretor ou tomador).
 
-**Critério de aceitação.** Busca por trecho de nome devolve todas as Pessoas cujo nome ou nome social contém o trecho informado. Busca por documento já cadastrado devolve a Pessoa correspondente, sem gerar consulta ao Birô. No contexto de tomador, o resultado contém apenas matrizes (RN-016).
+**Critério de aceitação.** Busca por trecho de nome devolve todas as Pessoas cujo nome ou nome social contém o trecho informado, tratando o trecho por palavras (cada palavra precisa aparecer, em qualquer ordem) e de forma insensível a acento — "yoshii construcoes" e "pilão" localizam "PILAO ENGENHARIA E CONSTRUCOES". Busca por documento já cadastrado devolve a Pessoa correspondente, sem gerar consulta ao Birô. No contexto de tomador, o resultado contém apenas matrizes (RN-016).
 
 **Casos limite.** Trecho de nome sem correspondência: lista vazia. CPF ou qualquer valor que não seja um CNPJ, sem correspondência na base: lista vazia, sem consulta ao Birô — pessoa física não é importada por este fluxo, apenas localizada quando já cadastrada.
 

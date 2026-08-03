@@ -1,9 +1,13 @@
+using System.Net;
 using System.Text.Json;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Exceptions;
 using SmartInsure.Core.Enumerators;
+using SmartInsure.Integration.CalculationEngines;
+using SmartInsure.Integration.CalculationEngines.PlugV2;
 using SmartInsure.Integration.CalculationEngines.Services;
 
 namespace SmartInsure.Tests.Integration.CalculationEngines;
@@ -61,6 +65,9 @@ public class PlugV2CalculationEngineTests
         var services = new ServiceCollection();
         var httpClient = new HttpClient(fakeHandler);
         services.AddSingleton<IHttpClientFactory>(new FakeHttpClientFactory(httpClient));
+
+        // O engine passou a depender de IOptions<PlugV2Options> (timeout das chamadas não idempotentes).
+        services.AddOptions<PlugV2Options>();
 
         // Register the engine
         services.AddKeyedScoped<ICalculationEngine, PlugV2CalculationEngine>(
@@ -482,5 +489,84 @@ public class PlugV2CalculationEngineTests
         var judicial = result.Groups.Single(g => g.GroupName == "Judiciais");
         judicial.AvailableLimit.Should().Be(800_000m);
         judicial.Rate.Should().Be(0.97m);
+    }
+
+    /// <summary>Handler que conta as invocações — prova a ausência de retry no client não idempotente.</summary>
+    private sealed class CountingHandler(HttpStatusCode status) : HttpMessageHandler
+    {
+        public int Count { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Count++;
+            return Task.FromResult(new HttpResponseMessage(status)
+            {
+                Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json"),
+            });
+        }
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-057")]
+    public async Task ClienteNaoIdempotente_NaoReTenta_MesmoComRespostaTransitoria()
+    {
+        // RN-057: /Cotation e /UpdateProposalTerms CRIAM/mutam recurso → jamais re-tentam. Re-tentar
+        // re-dispararia o create e cairia no dedup de 60s do gateway ("já existe uma cotação"). O client
+        // não idempotente é registrado SEM retry — ao contrário das leituras, com resiliência padrão.
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddCalculationEngines();
+
+        var counter = new CountingHandler(HttpStatusCode.InternalServerError);
+        services.AddHttpClient(PlugV2CalculationEngine.NonIdempotentClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => counter);
+
+        using var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IHttpClientFactory>()
+            .CreateClient(PlugV2CalculationEngine.NonIdempotentClientName);
+
+        await client.PostAsync(
+            "https://plug.example.com/Cotation",
+            new StringContent("{}", System.Text.Encoding.UTF8, "application/json"),
+            CancellationToken.None);
+
+        // Exatamente 1 ida ao gateway — sem a 2ª tentativa que dispararia o "já existe".
+        counter.Count.Should().Be(1);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-058")]
+    public async Task RunQuotationAsync_EnviaEmissionProposalType2_ParaReceberOCcgDoGateway()
+    {
+        // O gateway PlugV2 só devolve o PolicyHolderCCG (veredito de CCG) quando EmissionProposalType == 2
+        // (InsurePoint) — sem esse campo o CCG NUNCA vem (confirmado no OnPoint-Backend e no probe ao vivo).
+        var fakeHandler = new FakeHttpMessageHandler(request =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new { StatusCode = 200, HasError = false, Errors = new object[] { }, Response = new { ResponseStatus = new { Status = 1, Message = "ok" }, Success = true, InsurancePremium = 300m } }),
+                    System.Text.Encoding.UTF8, "application/json"),
+            }));
+
+        var engine = BuildEngine(fakeHandler);
+        var input = new QuotationRequestInput
+        {
+            BrokerCnpj = BrokerageCnpj,
+            PolicyHolderCnpj = PolicyHolderCnpj,
+            InsuredCpfCnpj = PolicyHolderCnpj,
+            InsuranceUniqueId = InsurerExternalId,
+            ModalityGlobalId = "84",
+            ModalityName = "Executante Construtor",
+            InsuredAmount = 1_000_000m,
+            StartDate = new DateOnly(2026, 8, 3),
+            EndDate = new DateOnly(2027, 8, 3),
+        };
+
+        await engine.RunQuotationAsync(ConnectionParameters, input, CancellationToken.None);
+
+        fakeHandler.CapturedRequestBody.Should().NotBeNull();
+        var body = JsonSerializer.Deserialize<JsonElement>(fakeHandler.CapturedRequestBody!);
+        body.GetProperty("EmissionProposalType").GetInt32().Should().Be(2);
     }
 }
