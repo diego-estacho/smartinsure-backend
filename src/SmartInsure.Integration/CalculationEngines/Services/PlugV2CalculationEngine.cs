@@ -77,10 +77,11 @@ public sealed class PlugV2CalculationEngine(
     {
         var config = PlugV2ConnectionParameters.Parse(connectionParameters);
 
-        var client = httpClientFactory.CreateClient(ClientName);
-        // Barra final preserva o caminho do gateway (ex.: /qa/garantia/plugv2) na resolução da URI relativa.
-        client.BaseAddress = new Uri(config.BaseUrl.EndsWith('/') ? config.BaseUrl : config.BaseUrl + "/");
-        client.Timeout = TimeSpan.FromSeconds(TimeoutSeconds);
+        // Embora seja leitura, o gateway trata a consulta de limites como uma "consulta" com dedup de
+        // 60s (broker+seguradora+tomador): um retry no timeout re-dispara e cai em "Já existe uma
+        // consulta para este CNPJ" (400). Por isso vai no client SEM retry (tentativa única, timeout
+        // largo), igual às chamadas mutantes — não na resiliência padrão (plugv2-dedup).
+        var client = CreateNonIdempotentClient(config);
 
         var request = new PlugV2GetPolicyHolderLimitsAndRatesRequest
         {
@@ -103,13 +104,17 @@ public sealed class PlugV2CalculationEngine(
 
             using var httpResponse = await client.SendAsync(httpRequest, cancellationToken);
 
+            var responseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+
             if (!httpResponse.IsSuccessStatusCode)
             {
+                // Inclui o motivo do gateway (Errors do envelope) — um "BadRequest" cru não diz nada ao
+                // usuário; a RN-030 apresenta este motivo por Seguradora. Consistente com as demais chamadas.
+                var reason = ExtractErrors(responseContent);
+                var suffix = string.IsNullOrEmpty(reason) ? string.Empty : $" {reason}";
                 throw new CalculationEngineException(
-                    $"PlugV2 retornou status {httpResponse.StatusCode} na consulta de limites de crédito.");
+                    $"PlugV2 retornou status {(int)httpResponse.StatusCode} ({httpResponse.StatusCode}) na consulta de limites de crédito.{suffix}");
             }
-
-            var responseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
             var response = JsonSerializer.Deserialize<PlugV2GetPolicyHolderLimitsAndRatesResponse>(
                 responseContent, JsonOptions);
@@ -391,9 +396,9 @@ public sealed class PlugV2CalculationEngine(
     }
 
     /// <summary>
-    /// Client das chamadas NÃO idempotentes (/Cotation, /UpdateProposalTerms). Registrado SEM resiliência
-    /// de retry (RN-057): repetir um POST que CRIA/muta recurso re-dispara o create e cai no dedup do
-    /// gateway ("já existe uma cotação"). Tentativa única, com timeout largo e configurável
+    /// Client das chamadas que o gateway DEDUPA — as mutantes (/Cotation, /UpdateProposalTerms) e a
+    /// consulta de limites (leitura, mas dedupada como "consulta"). Registrado SEM resiliência de retry
+    /// (RN-057): re-tentar re-dispara e cai no dedup ("já existe"). Tentativa única, com timeout largo e configurável
     /// (<see cref="PlugV2Options.NonIdempotentTimeoutSeconds"/>) para acomodar a latência real numa só ida.
     /// </summary>
     private HttpClient CreateNonIdempotentClient(PlugV2ConnectionParameters config)

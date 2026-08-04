@@ -13,16 +13,17 @@ public static class DependencyInjection
         // Configuração de resiliência por fornecedor (isolada, ajustável por ambiente) — nunca global.
         services.AddOptions<PlugV2Options>().BindConfiguration(PlugV2Options.SectionName);
 
-        // RN-029: cliente PlugV2 para chamadas IDEMPOTENTES (leituras: limites, minuta). Retry padrão é
-        // seguro — repetir uma leitura não gera efeito colateral.
+        // Cliente PlugV2 para leituras VERDADEIRAMENTE idempotentes (minuta) — retry padrão é seguro,
+        // repetir não gera efeito colateral no gateway. A consulta de LIMITES saiu daqui: embora seja
+        // leitura, o gateway a dedupa como "consulta" (o retry cairia em "já existe") — ver o client
+        // sem retry abaixo (plugv2-dedup).
         services.AddHttpClient("PlugV2")
             .AddStandardResilienceHandler();
 
-        // RN-057: cliente PlugV2 para chamadas NÃO idempotentes (/Cotation, /UpdateProposalTerms) — SEM
-        // retry. Re-tentar um POST que CRIA recurso re-dispara o create e cai no dedup do gateway ("já
-        // existe uma cotação"); a resiliência padrão re-tentaria no timeout de tentativa (10s). Aqui:
-        // tentativa única, com timeout generoso e configurável (PlugV2Options). Padrão que todo motor
-        // futuro segue: leitura idempotente = resiliência padrão; escrita = sem retry.
+        // RN-057: cliente PlugV2 SEM retry — para chamadas que o gateway dedupa: as mutantes (/Cotation,
+        // /UpdateProposalTerms) E a consulta de limites (GetPolicyHolderLimitsAndRates). Re-tentar re-dispara
+        // e cai no dedup do gateway ("já existe uma cotação/consulta"); a resiliência padrão re-tentaria no
+        // timeout de tentativa (10s). Aqui: tentativa única, com timeout generoso e configurável (PlugV2Options).
         services.AddHttpClient(PlugV2CalculationEngine.NonIdempotentClientName);
 
         // RN-023: motores registrados por chave do enum — a escolha em runtime é sempre
