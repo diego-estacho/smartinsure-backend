@@ -2,7 +2,9 @@ using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuot
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Requests;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Responses;
 using SmartInsure.Core.Abstractions;
+using SmartInsure.Application.UseCase.Services.Quotations;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
@@ -17,7 +19,8 @@ public sealed class CreateQuotationGroupUseCase(
     IQuotationGroupRepository quotationGroupRepository,
     IPersonRepository personRepository,
     IModalityRepository modalityRepository,
-    IAdditionalCoverageRepository additionalCoverageRepository,
+    IImportedAdditionalCoverageRepository importedAdditionalCoverageRepository,
+    ICurrentUserAccessor currentUserAccessor,
     IUnitOfWork unitOfWork) : ICreateQuotationGroupUseCase
 {
     public async Task<CreateQuotationGroupResponse> ExecuteAsync(
@@ -57,10 +60,11 @@ public sealed class CreateQuotationGroupUseCase(
             }
         }
 
-        // RN-104: a escolha é pela Cobertura Adicional canônica — id inexistente é recusado aqui,
-        // no mesmo padrão de Tomador/Segurado/Modalidade.
-        await EnsureAdditionalCoveragesExistAsync(
-            additionalCoverageRepository, request.AdditionalCoverageIds, cancellationToken);
+        // RN-104: a escolha é pela Cobertura Adicional canônica e tem de estar ofertável para a
+        // Modalidade nas Seguradoras habilitadas da Corretora ativa — não basta existir no catálogo.
+        await AdditionalCoverageSelectionRules.EnsureAvailableForModalityAsync(
+            importedAdditionalCoverageRepository, currentUserAccessor,
+            request.ModalityId, request.AdditionalCoverageIds, cancellationToken);
 
         var group = QuotationGroup.Create(
             request.PolicyHolderId,
@@ -72,7 +76,7 @@ public sealed class CreateQuotationGroupUseCase(
             request.CoverageEndDate,
             scopeMode,
             request.InsurerIds,
-            request.AdditionalCoverageIds);
+            request.AdditionalCoverageIds ?? []);
 
         await quotationGroupRepository.AddAsync(group, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
@@ -89,19 +93,6 @@ public sealed class CreateQuotationGroupUseCase(
             group.SelectedInsurers.Select(insurer => insurer.InsurerId).ToList(),
             group.AdditionalCoverages.Select(coverage => coverage.AdditionalCoverageId).ToList(),
             group.Status.ToString());
-    }
-
-    /// <summary>RN-104: toda Cobertura Adicional escolhida tem de existir no catálogo canônico.</summary>
-    internal static async Task EnsureAdditionalCoveragesExistAsync(
-        IAdditionalCoverageRepository repository,
-        IReadOnlyList<Guid> additionalCoverageIds,
-        CancellationToken cancellationToken)
-    {
-        foreach (var coverageId in additionalCoverageIds.Distinct())
-        {
-            _ = await repository.GetByIdAsync(coverageId, cancellationToken)
-                ?? throw new NotFoundException("Cobertura adicional não encontrada.");
-        }
     }
 
     private static EQuotationScopeMode ParseScopeMode(string scopeMode)

@@ -36,7 +36,12 @@ public sealed class UpdateQuotationGroupValidator : AbstractValidator<UpdateQuot
         RuleForEach(request => request.InsurerIds)
             .NotEmpty().WithMessage("Seguradora inválida no escopo.");
 
-        // RN-104: id vazio na lista de Coberturas Adicionais é forma inválida (a existência é do servidor).
+        // RN-104: a coleção é obrigatória (lista vazia = nenhuma cobertura escolhida). Sem o NotNull,
+        // corpo sem a chave chega como null e o RuleForEach passa em silêncio, virando 500 adiante.
+        RuleFor(request => request.AdditionalCoverageIds)
+            .NotNull().WithMessage("A lista de coberturas adicionais é obrigatória (use lista vazia para nenhuma).");
+
+        // Id vazio na lista é forma inválida (a existência no catálogo é checada pelo servidor).
         RuleForEach(request => request.AdditionalCoverageIds)
             .NotEmpty().WithMessage("Cobertura adicional inválida.");
 

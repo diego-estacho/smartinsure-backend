@@ -22,7 +22,8 @@ public sealed class QuotationGroupAdditionalCoverageMapping
 
         // RN-104: uma Cobertura Adicional aparece uma única vez por Grupo de Cotação.
         builder.HasIndex(coverage => new { coverage.QuotationGroupId, coverage.AdditionalCoverageId })
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("UX_QGAC_GroupCoverage");
 
         // FK com DeleteBehavior.Restrict (convenção global, ADR-034).
         builder.HasOne<AdditionalCoverage>()

@@ -271,6 +271,53 @@ public class QuotationRequestProcessorTests
 
     [Fact]
     [Trait("RuleId", "RN-106")]
+    public async Task Process_DeveGravarSituacaoDasCoberturas_QuandoResultadoIndisponivel_RN106()
+    {
+        // RN-058: Indisponível é resultado obtido (não falha) — o registro tem de estar lá do mesmo jeito.
+        SetupValidGraph(additionalCoverageIds: [MultaId]);
+        SetupResolution(new AdditionalCoverageResolution(
+            ["Multas"],
+            [new ResolvedAdditionalCoverage(MultaId, EQuotationAdditionalCoverageStatus.Sent, "Multas", null)]));
+        _engine.RunQuotationAsync(Arg.Any<string?>(), Arg.Any<QuotationRequestInput>(), Arg.Any<CancellationToken>())
+            .Returns(new QuotationResult
+            {
+                Result = EQuotationResult.Unavailable,
+                Reasons = ["Modalidade indisponível."],
+            });
+
+        await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
+
+        _quotation.Result.Should().Be(EQuotationResult.Unavailable);
+        _quotation.AdditionalCoverages.Should().ContainSingle()
+            .Which.Status.Should().Be(EQuotationAdditionalCoverageStatus.Sent);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-106")]
+    public async Task Process_DeveGravarSituacaoDasCoberturas_QuandoMotorIndisponivel_RN106()
+    {
+        // O motor não registrado lança QuotationSetupException; a resolução já aconteceu, então a
+        // informação não pode ser descartada (o RecordAdditionalCoverages vem antes do ResolveEngine).
+        SetupValidGraph(additionalCoverageIds: [MultaId]);
+        SetupResolution(new AdditionalCoverageResolution(
+            ["Multas"],
+            [new ResolvedAdditionalCoverage(MultaId, EQuotationAdditionalCoverageStatus.Sent, "Multas", null)]));
+
+        var services = new ServiceCollection();  // sem nenhum ICalculationEngine registrado
+        var processor = new QuotationRequestProcessor(
+            _quotationRepository, _groupRepository, _personRepository, _modalityRepository,
+            _insurerRepository, _enablementRepository, _unitOfWork, services.BuildServiceProvider(),
+            _coverageResolver);
+
+        await processor.ProcessAsync(WorkItem(), CancellationToken.None);
+
+        _quotation.ProcessingStatus.Should().Be(EQuotationProcessingStatus.Failed);
+        _quotation.AdditionalCoverages.Should().ContainSingle()
+            .Which.Status.Should().Be(EQuotationAdditionalCoverageStatus.Sent);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-106")]
     public async Task Process_DeveGravarSituacaoDasCoberturas_QuandoIntegracaoFalha_RN106()
     {
         // A situação é gravada ANTES de acionar o motor, então sobrevive à falha isolada (RN-057).

@@ -13,6 +13,10 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
     public async Task<Quotation?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         => await dbContext.Quotations
             .Include(quotation => quotation.Reasons)
+            // RN-105/RN-106: o processor substitui esta coleção (RecordAdditionalCoverages limpa antes
+            // de gravar) e o Remove precisa dela carregada para derrubar os filhos antes da raiz — a
+            // FK é Restrict por convenção (ADR-034). Simétrico ao Include de Reasons.
+            .Include(quotation => quotation.AdditionalCoverages)
             .FirstOrDefaultAsync(quotation => quotation.Id == id, cancellationToken);
 
     public async Task AddAsync(Quotation entity, CancellationToken cancellationToken)

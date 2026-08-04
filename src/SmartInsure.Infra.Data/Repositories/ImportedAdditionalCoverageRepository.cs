@@ -102,6 +102,12 @@ public sealed class ImportedAdditionalCoverageRepository(SmartInsureDbContext co
                 on modality.InsurerId equals enablement.InsurerId
             where enablement.BrokerageId == brokerageId
                 && enablement.Status == EBrokerageInsurerEnablementStatus.Active
+            // A Seguradora também precisa estar Ativa no catálogo: inativar a Seguradora NÃO desativa
+            // as Habilitações, e o envio recusa Seguradora inativa (QuotationSetupException). Sem este
+            // filtro, a etapa 3 ofereceria cobertura que jamais chegaria a ser enviada.
+            join insurer in Context.Set<Insurer>().AsNoTracking()
+                on modality.InsurerId equals insurer.Id
+            where insurer.Status == EInsurerStatus.Active
             join canonical in Context.Set<AdditionalCoverage>().AsNoTracking()
                 on coverage.AdditionalCoverageId equals canonical.Id
             where canonical.Status == EAdditionalCoverageStatus.Active

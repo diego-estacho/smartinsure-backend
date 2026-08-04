@@ -29,7 +29,8 @@ public sealed class QuotationAdditionalCoverageMapping : IEntityTypeConfiguratio
 
         // RN-106: uma situação por (Cotação, Cobertura Adicional escolhida).
         builder.HasIndex(coverage => new { coverage.QuotationId, coverage.AdditionalCoverageId })
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("UX_QAC_QuotationCoverage");
 
         builder.HasOne<AdditionalCoverage>()
             .WithMany()

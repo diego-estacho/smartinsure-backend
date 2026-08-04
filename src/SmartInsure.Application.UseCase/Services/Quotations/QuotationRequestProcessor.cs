@@ -43,12 +43,14 @@ public sealed class QuotationRequestProcessor(
         try
         {
             var resolved = await BuildRequestAsync(workItem, cancellationToken);
-            var engine = ResolveEngine(resolved.Engine);
 
-            // RN-106: a situação das Coberturas Adicionais é registrada ANTES de acionar a Seguradora,
-            // para existir mesmo quando a Cotação virar Indisponível (RN-058) ou falhar na integração
-            // (RN-057) — os dois caminhos abaixo não voltam aqui.
+            // RN-106: a situação das Coberturas Adicionais é registrada assim que resolvida e ANTES de
+            // qualquer coisa que possa lançar — para existir mesmo quando a Cotação virar Indisponível
+            // (RN-058) ou falhar na integração (RN-057), cujos caminhos não voltam aqui. Fica antes do
+            // ResolveEngine de propósito: um motor indisponível não deve descartar informação já obtida.
             quotation.RecordAdditionalCoverages(resolved.AdditionalCoverages.Items);
+
+            var engine = ResolveEngine(resolved.Engine);
 
             var result = await engine.RunQuotationAsync(resolved.ConnectionParameters, resolved.Request, cancellationToken);
 
