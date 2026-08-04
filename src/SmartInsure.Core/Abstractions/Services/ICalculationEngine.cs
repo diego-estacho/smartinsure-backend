@@ -135,6 +135,13 @@ public sealed record ModalityClauseData(string ExternalId, string Name, string? 
 /// </summary>
 public sealed record QuotationRequestInput
 {
+    /// <summary>Identificadores do fan-out (ADR-050/ADR-102) — carregados só para o log de integração (QuotationIntegrationLog); a chamada ao provedor não os usa.</summary>
+    public required Guid QuotationId { get; init; }
+
+    public required Guid QuotationGroupId { get; init; }
+
+    public required Guid InsurerId { get; init; }
+
     public required string BrokerCnpj { get; init; }
 
     public required string PolicyHolderCnpj { get; init; }

@@ -10,7 +10,7 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 **Descrição.** Ao concluir a etapa de risco, o corretor solicita as Cotações do Grupo de Cotação — uma Cotação por Seguradora. A solicitação tem dois escopos, escolhidos na tela de entrada da oferta: **todas as Seguradoras habilitadas** da Corretora (opção recomendada e padrão) ou **um subconjunto escolhido** pelo corretor a partir da lista de habilitadas.
 
-**Pré-condições.** Grupo de Cotação em Rascunho (RN-050, RN-051). Corretora com ao menos uma Habilitação de Seguradora ativa.
+**Pré-condições.** Grupo de Cotação em Rascunho (RN-050, RN-051). A Corretora da solicitação é a do Escopo ativo do acesso, resolvida pelo servidor (RN-103), com ao menos uma Habilitação de Seguradora ativa.
 
 **Critério de aceitação.** Ao entrar na etapa de cotações, a plataforma solicita Cotações conforme o escopo: no modo *todas*, a cada Seguradora habilitada ativa da Corretora; no modo *escolhidas*, exatamente às Seguradoras selecionadas, e a nenhuma outra. No modo *todas*, a solicitação inclui Seguradoras que não ofertam a Modalidade do Grupo — que retornam resultado de indisponibilidade com motivo do provedor — para que o corretor enxergue o resultado de cada Seguradora. No modo *escolhidas*, as Seguradoras habilitadas **não selecionadas** aparecem no leque como **indisponíveis com motivo local** ("não incluída na solicitação"), sem serem cotadas — pela mesma transparência, sem custo nem proposta no provedor.
 
@@ -80,7 +80,7 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 **Descrição.** O corretor pode **enviar** os termos e cláusulas preenchidos da Cotação selecionada ao provedor (atualizando a proposta correspondente) e **obter a minuta** (documento) para baixar. O envio ocorre ao acionar "Baixar minuta" na etapa de cotações.
 
-**Pré-condições.** Cotação selecionada, com Tags/Cláusulas preenchidas ou não (RN-079).
+**Pré-condições.** Cotação selecionada, com Tags/Cláusulas preenchidas ou não (RN-079). A Corretora do envio é a do Escopo ativo do acesso, resolvida pelo servidor (RN-103).
 
 **Critério de aceitação.** Ao acionar "Baixar minuta", a plataforma envia ao provedor os termos e cláusulas atuais da Cotação selecionada, atualizando a proposta, e disponibiliza a minuta gerada para download refletindo esses termos. O preenchimento parcial é aceito nesta fase. O envio definitivo/obrigatório dos termos e a emissão ocorrem na etapa de emissão (fora desta fase).
 
@@ -109,3 +109,12 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 **Critério de aceitação.** Resultado *Pronta para emissão* é apresentado como "Pronta para emissão"; *Análise* como "Em análise" (com a esteira específica disponível como detalhe); *Indisponível/Recusado* como "Indisponível"; *Não-reconhecido* como "Não reconhecida". A situação apresentada vale na listagem, na contagem por situação e no filtro, sempre calculada pelo servidor a partir do resultado — nunca decidida no cliente.
 
 **Casos limite.** A situação "Pronta para emissão" indica que a Cotação está **apta** a seguir para a emissão pelo corretor — não que a emissão ocorra automaticamente. A exigência de Contragarantia (CCG) **não** altera a situação apresentada (veredito ortogonal — RN-058). A situação "Cancelada" não existe nesta fase (entra com a demanda de cancelamento — Fatia 2).
+## RN-103 — Corretora da cotação é a do Escopo ativo
+
+**Descrição.** A Corretora que solicita as Cotações de um Grupo (RN-056) e que envia os termos da minuta (RN-080) é a **Corretora do Escopo ativo** do acesso (RN-064, ADR-065), resolvida pelo servidor a partir do claim — nunca informada pelo cliente. É dela que saem as Habilitações de Seguradora usadas no fan-out e a quem a proposta pertence.
+
+**Pré-condições.** Acesso autenticado com Corretora ativa no Escopo (RN-064). Grupo de Cotação em Rascunho (RN-050).
+
+**Critério de aceitação.** Ao solicitar Cotações ou enviar a minuta, a plataforma usa a Corretora ativa do acesso, ignorando qualquer Corretora informada pelo cliente; o corpo da requisição não carrega Corretora. Sem Corretora ativa no acesso, a operação é recusada com aviso.
+
+**Casos limite.** Acesso sem Corretora ativa (Usuário só com vínculo de Tomador, ou nenhum): recusado. Troca de Escopo ativo no meio da jornada passa a valer para as próximas solicitações (o Grupo em Rascunho não muda de dono retroativamente). Quais Perfis podem solicitar cotação seguem em [OPEN-03](../open-decisions.md).

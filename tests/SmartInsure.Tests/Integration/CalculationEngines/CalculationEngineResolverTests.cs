@@ -36,6 +36,8 @@ public class CalculationEngineResolverTests
 
         if (registerPlugV2)
         {
+            // ADR-102: PlugV2CalculationEngine passou a depender do recorder do log de integração.
+            services.AddSingleton(Substitute.For<IQuotationIntegrationLogRecorder>());
             services.AddKeyedScoped<ICalculationEngine, PlugV2CalculationEngine>(
                 ECalculationEngine.PlugV2);
         }

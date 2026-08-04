@@ -27,6 +27,8 @@ public class UpdateBrokerageInsurerEnablementUseCaseTests
     {
         var services = new ServiceCollection();
         services.AddHttpClient("PlugV2");
+        // ADR-102: PlugV2CalculationEngine passou a depender do recorder do log de integração.
+        services.AddSingleton(Substitute.For<IQuotationIntegrationLogRecorder>());
         services.AddKeyedScoped<ICalculationEngine, PlugV2CalculationEngine>(ECalculationEngine.PlugV2);
 
         _useCase = new UpdateBrokerageInsurerEnablementUseCase(

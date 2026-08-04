@@ -2,7 +2,9 @@ namespace SmartInsure.Application.UseCase.UseCases.QuotationUseCases.RunQuotatio
 
 /// <summary>RN-056: dados de entrada para solicitar as Cotações de um Grupo de Cotação.</summary>
 /// <param name="QuotationGroupId">Grupo de Cotação (em Rascunho) a cotar.</param>
-/// <param name="BrokerageId">Corretora dona das Habilitações de Seguradora (fonte OPEN-03).</param>
+/// <remarks>
+/// RN-103: a Corretora da solicitação é a do Escopo ativo do acesso (RN-064, ADR-065), resolvida pelo
+/// servidor a partir do claim — nunca informada pelo cliente. Por isso não há Corretora neste request.
+/// </remarks>
 public sealed record RunQuotationsRequest(
-    Guid QuotationGroupId,
-    Guid BrokerageId);
+    Guid QuotationGroupId);

@@ -51,6 +51,15 @@ services:
       mssql-init:
         condition: service_completed_successfully
 
+  # ADR-102: base do log de integração (QuotationIntegrationLog) — primeiro consumidor do IMongoRepository<>.
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
     ports:
@@ -83,3 +92,4 @@ services:
 volumes:
   mssql-data:
   azurite-data:
+  mongo-data:

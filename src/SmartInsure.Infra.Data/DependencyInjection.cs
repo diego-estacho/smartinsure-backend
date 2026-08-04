@@ -2,11 +2,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Infra.Data.Context;
+using SmartInsure.Infra.Data.Observability;
 using SmartInsure.Infra.Data.Options;
 using SmartInsure.Infra.Data.Repositories;
 
@@ -56,6 +60,11 @@ public static class DependencyInjection
         // registerMongo:false para não exigir config de Mongo só para bootar o host.
         if (registerMongo)
         {
+            // MongoDB.Driver 3.x: o default de GuidRepresentation é Unspecified e serializar POCO com Guid
+            // lança. Registramos Standard uma vez no startup (idempotente) — sem isso o QuotationIntegrationLog
+            // (3 Guids) falha no insert e, por ser best-effort, some silenciosamente (ADR-102).
+            BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+
             services.AddOptions<MongoOptions>()
                 .BindConfiguration(MongoOptions.SectionName)
                 .ValidateDataAnnotations()
@@ -69,6 +78,16 @@ public static class DependencyInjection
                     .GetDatabase(provider.GetRequiredService<IOptions<MongoOptions>>().Value.Database));
 
             services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
+
+            // ADR-102: log de integração da Cotação PlugV2 — primeiro consumidor real do IMongoRepository<>.
+            services.AddScoped<IQuotationIntegrationLogRecorder, QuotationIntegrationLogRecorder>();
+        }
+        else
+        {
+            // PlugV2CalculationEngine depende do recorder mesmo fora do fluxo de Cotação (import de
+            // modalidades/coberturas, SmartInsure.Functions) — no-op quando o host não registra Mongo
+            // (registerMongo:false), senão a resolução do motor via DI quebra por dependência ausente.
+            services.AddScoped<IQuotationIntegrationLogRecorder, NullQuotationIntegrationLogRecorder>();
         }
 
         return services;
