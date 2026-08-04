@@ -150,11 +150,14 @@ public sealed class QuotationRequestProcessor(
         // RN-105/RN-106 (ADR-103): as canônicas escolhidas no Grupo viram os NOMES com que ESTA
         // Seguradora expõe as coberturas. O gateway recusa identificador de origem e recusa a
         // solicitação INTEIRA se receber cobertura não suportada — por isso nunca se envia superset.
+        // Os ids vêm de consulta projetada, NÃO de group.AdditionalCoverages: o Grupo é carregado por
+        // GetByIdAsync (FindAsync, sem Include), então a navegação chegaria vazia e a cobertura deixaria
+        // de ser enviada em silêncio.
+        var chosenCoverageIds = await quotationGroupRepository.ListAdditionalCoverageIdsAsync(
+            workItem.QuotationGroupId, cancellationToken);
+
         var additionalCoverages = await additionalCoverageResolver.ResolveAsync(
-            workItem.InsurerId,
-            group.ModalityId,
-            group.AdditionalCoverages.Select(coverage => coverage.AdditionalCoverageId).ToList(),
-            cancellationToken);
+            workItem.InsurerId, group.ModalityId, chosenCoverageIds, cancellationToken);
 
         var request = new QuotationRequestInput
         {

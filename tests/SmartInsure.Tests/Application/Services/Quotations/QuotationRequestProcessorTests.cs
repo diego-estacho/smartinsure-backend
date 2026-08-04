@@ -59,12 +59,22 @@ public class QuotationRequestProcessorTests
         var insuredId = Guid.CreateVersion7();
         var modalityId = Guid.CreateVersion7();
 
+        // O Grupo nasce SEM as coberturas na navegação, de propósito: o fan-out o carrega por
+        // GetByIdAsync (FindAsync, sem Include) e é assim que o EF o entrega — navegação vazia.
+        // Povoar a navegação aqui deixaria o teste passar mesmo se o processor voltasse a lê-la,
+        // que foi o defeito que fez a cobertura deixar de ser enviada em silêncio.
         _group = QuotationGroup.Create(
             policyHolderId, branchPersonId, insuredId, modalityId, 100_000m,
             new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            EQuotationScopeMode.All, [], additionalCoverageIds ?? []);
+            EQuotationScopeMode.All, [], []);
 
-        // RN-105: por default o Grupo não escolheu cobertura — resolve para nada.
+        _group.AdditionalCoverages.Should().BeEmpty("o fan-out carrega o Grupo sem Include");
+
+        // RN-105: os ids escolhidos chegam SÓ pela consulta projetada do repositório.
+        _groupRepository.ListAdditionalCoverageIdsAsync(_group.Id, Arg.Any<CancellationToken>())
+            .Returns((additionalCoverageIds ?? []).ToList());
+
+        // Por default o Grupo não escolheu cobertura — resolve para nada.
         SetupResolution(new AdditionalCoverageResolution([], []));
 
         _quotation = Quotation.Requested(_group.Id, _insurerId);
