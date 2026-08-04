@@ -5,7 +5,7 @@ status: accepted
 tags: [integracao, plugv2, cotacao, cobertura-adicional]
 applies-to: ["src/*.Application.UseCase/**", "src/*.Core/**", "src/*.Integration/**"]
 supersedes: []
-evidence: ["probe /Cotation no gateway QA, 2026-08-04, corretora Finn"]
+evidence: ["probe /Cotation no gateway QA, 2026-08-04, corretora Finn", "propostas 202600000274306/274307 em db-garantia-qa-us — decomposição do prêmio"]
 ---
 
 # ADR-103: Cobertura Adicional na Cotação enviada pelo nome da Importada
@@ -79,16 +79,41 @@ Dois achados operacionais do mesmo probe:
   ignora variação de valor segurado **e** de vigência. Reforça RN-057 (a chamada não é idempotente e
   não se re-tenta) e limita probes futuros a uma chamada avaliada por tupla.
 
-**Não verificado:** que a cobertura seja efetivamente *aplicada* ao prêmio. O tomador usado no probe
-cai em análise de subscrição (`Status = 5`, prêmio `0,00`), então a comparação de prêmio com e sem
-cobertura não foi possível. Reconfirmar quando houver tomador sem pendência financeira em QA.
+### Aplicação confirmada no lado da Seguradora (2026-08-04)
+
+O probe provou que o nome é **aceito**; a confirmação de que a cobertura é **aplicada** veio depois, do
+banco da Seguradora (`db-garantia-qa-us`), sobre duas propostas criadas no mesmo fan-out, com o mesmo
+risco e no mesmo instante — uma com a cobertura enviada, outra sem:
+
+| Proposta | Enviado | `ProposalCoverage` | Prêmio principal | Coberturas | Prêmio total |
+|---|---|---|---|---|---|
+| 202600000274307 (Sombrero) | `["Multas"]` | 1 linha: `Multas`, `IsAdditionalCoverage = true` | 150,00 | **+75,00** | **225,00** |
+| 202600000274306 (SANCOR) | `[]` | nenhuma | 250,00 | — | 250,00 |
+
+Três fatos que isso estabelece:
+
+1. **O nome é resolvido, não ignorado.** A proposta ganhou linha em `ProposalCoverage` apontando para a
+   `Coverage` de Cobertura Adicional correspondente.
+2. **O prêmio reflete a cobertura.** `InsurancePremium` (225,00) = `InsurancePremiumPrincipalModality`
+   (150,00) + soma das coberturas adicionais (75,00). Um terço do prêmio vem da cobertura adicional.
+3. **A Seguradora resolve o ramo, e resolve certo.** O `Coverage.UniqueId` gravado na proposta é
+   `1B968A60-5FBE-4704-B0A1-82136ED7A6E6` — exatamente o identificador de origem da "Multas" da
+   Sombrero no ramo **Public**, o mesmo GUID que o gateway **recusou** quando enviado diretamente no
+   probe. Enviamos o nome; ela escolheu a linha do ramo correto (o Segurado é um município).
+   Isto confirma experimentalmente a consequência central desta decisão: enviando nome, a resolução de
+   ramo é responsabilidade da Seguradora — não é inferência, é medição.
+
+Também confirma que `NotOffered` é fiel: a proposta da SANCOR existe, tem zero coberturas e prêmio
+correspondente apenas à garantia principal — cotada sem a cobertura, como a regra determina (RN-106).
 
 ## Consequências
 
 - O ramo (Público/Privado) **deixa de ser problema no envio**: cada Modalidade canônica mapeia para
   duas Modalidades Importadas por Seguradora, uma por ramo, com identificadores distintos mas
-  frequentemente o **mesmo nome**. Enviando nome, quem resolve o ramo é o gateway — coerente com o
-  fan-out, que já envia apenas `ModalityGlobalId`. Resta só o caso de nomes divergentes (OPEN-22).
+  frequentemente o **mesmo nome**. Enviando nome, quem resolve o ramo é o gateway — **medido no
+  ambiente de QA** (ver a seção de aplicação confirmada: a proposta gravou o `UniqueId` do ramo
+  correto). Coerente com o fan-out, que já envia apenas `ModalityGlobalId`. Resta só o caso de nomes
+  divergentes (OPEN-22).
 - A Cotação registra o nome enviado (`SentName`), o que dá rastro auditável do que a Seguradora
   recebeu — útil porque o nome é dado da origem e pode mudar entre importações.
 - A qualidade da **curadoria** (RN-043) passa a afetar diretamente a precificação: canônica sem
