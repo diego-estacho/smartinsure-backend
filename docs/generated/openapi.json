@@ -2535,16 +2535,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RunQuotationsBody"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "202": {
             "description": "Accepted",
@@ -7592,18 +7582,6 @@
           }
         }
       },
-      "RunQuotationsBody": {
-        "required": [
-          "brokerageId"
-        ],
-        "type": "object",
-        "properties": {
-          "brokerageId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        }
-      },
       "RunQuotationsResponse": {
         "required": [
           "quotationGroupId",
@@ -7718,16 +7696,11 @@
       },
       "SubmitQuotationMinutaBody": {
         "required": [
-          "brokerageId",
           "terms",
           "particularClauses"
         ],
         "type": "object",
         "properties": {
-          "brokerageId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "terms": {
             "type": "array",
             "items": {
