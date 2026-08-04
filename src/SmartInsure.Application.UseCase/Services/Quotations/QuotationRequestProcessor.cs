@@ -145,6 +145,10 @@ public sealed class QuotationRequestProcessor(
 
         var request = new QuotationRequestInput
         {
+            // ADR-102: carregados só para o log de integração (QuotationIntegrationLog) gravado pelo motor.
+            QuotationId = workItem.QuotationId,
+            QuotationGroupId = workItem.QuotationGroupId,
+            InsurerId = workItem.InsurerId,
             BrokerCnpj = brokerage.DocumentNumber,
             PolicyHolderCnpj = policyHolderCnpj,
             InsuredCpfCnpj = insured.DocumentNumber,

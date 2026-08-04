@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Exceptions;
 using SmartInsure.Core.Enumerators;
@@ -61,6 +62,11 @@ public class PlugV2CalculationEngineTests
     }
 
     private PlugV2CalculationEngine BuildEngine(FakeHttpMessageHandler fakeHandler)
+        => BuildEngine(fakeHandler, Substitute.For<IQuotationIntegrationLogRecorder>());
+
+    /// <summary>Overload usado pelos testes de ADR-102 que precisam inspecionar as chamadas ao recorder.</summary>
+    private PlugV2CalculationEngine BuildEngine(
+        FakeHttpMessageHandler fakeHandler, IQuotationIntegrationLogRecorder integrationLogRecorder)
     {
         var services = new ServiceCollection();
         var httpClient = new HttpClient(fakeHandler);
@@ -68,6 +74,10 @@ public class PlugV2CalculationEngineTests
 
         // O engine passou a depender de IOptions<PlugV2Options> (timeout das chamadas não idempotentes).
         services.AddOptions<PlugV2Options>();
+
+        // ADR-102: log de integração da Cotação — substituto por padrão, injetado explicitamente nos
+        // testes que verificam a gravação.
+        services.AddSingleton(integrationLogRecorder);
 
         // Register the engine
         services.AddKeyedScoped<ICalculationEngine, PlugV2CalculationEngine>(
@@ -550,23 +560,99 @@ public class PlugV2CalculationEngineTests
             }));
 
         var engine = BuildEngine(fakeHandler);
-        var input = new QuotationRequestInput
-        {
-            BrokerCnpj = BrokerageCnpj,
-            PolicyHolderCnpj = PolicyHolderCnpj,
-            InsuredCpfCnpj = PolicyHolderCnpj,
-            InsuranceUniqueId = InsurerExternalId,
-            ModalityGlobalId = "84",
-            ModalityName = "Executante Construtor",
-            InsuredAmount = 1_000_000m,
-            StartDate = new DateOnly(2026, 8, 3),
-            EndDate = new DateOnly(2027, 8, 3),
-        };
+        var input = BuildQuotationRequestInput();
 
         await engine.RunQuotationAsync(ConnectionParameters, input, CancellationToken.None);
 
         fakeHandler.CapturedRequestBody.Should().NotBeNull();
         var body = JsonSerializer.Deserialize<JsonElement>(fakeHandler.CapturedRequestBody!);
         body.GetProperty("EmissionProposalType").GetInt32().Should().Be(2);
+    }
+
+    /// <summary>Monta um QuotationRequestInput válido para os testes de RunQuotationAsync — os 3 ids servem só ao log de integração (ADR-102).</summary>
+    private static QuotationRequestInput BuildQuotationRequestInput() => new()
+    {
+        QuotationId = Guid.CreateVersion7(),
+        QuotationGroupId = Guid.CreateVersion7(),
+        InsurerId = Guid.CreateVersion7(),
+        BrokerCnpj = BrokerageCnpj,
+        PolicyHolderCnpj = PolicyHolderCnpj,
+        InsuredCpfCnpj = PolicyHolderCnpj,
+        InsuranceUniqueId = InsurerExternalId,
+        ModalityGlobalId = "84",
+        ModalityName = "Executante Construtor",
+        InsuredAmount = 1_000_000m,
+        StartDate = new DateOnly(2026, 8, 3),
+        EndDate = new DateOnly(2027, 8, 3),
+    };
+
+    /// <summary>ADR-102 — a cada solicitação de Cotação (sucesso), o recorder grava Outcome=Completed com o status/HTTP/duração.</summary>
+    [Fact]
+    [Trait("RuleId", "RN-057")]
+    public async Task RunQuotationAsync_RegistraLogDeIntegracaoCompleted_QuandoGatewayResponde200()
+    {
+        var fakeHandler = new FakeHttpMessageHandler(request =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new { StatusCode = 200, HasError = false, Errors = new object[] { }, Response = new { ResponseStatus = new { Status = 1, Message = "ok" }, Success = true, InsurancePremium = 300m } }),
+                    System.Text.Encoding.UTF8, "application/json"),
+            }));
+
+        var recorder = Substitute.For<IQuotationIntegrationLogRecorder>();
+        QuotationIntegrationLogContext? captured = null;
+        recorder.RecordCotationAsync(
+                Arg.Do<QuotationIntegrationLogContext>(context => captured = context), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+
+        var engine = BuildEngine(fakeHandler, recorder);
+        var input = BuildQuotationRequestInput();
+
+        await engine.RunQuotationAsync(ConnectionParameters, input, CancellationToken.None);
+
+        await recorder.Received(1).RecordCotationAsync(Arg.Any<QuotationIntegrationLogContext>(), Arg.Any<CancellationToken>());
+        captured.Should().NotBeNull();
+        captured!.Outcome.Should().Be(QuotationIntegrationOutcome.Completed);
+        captured.QuotationId.Should().Be(input.QuotationId);
+        captured.QuotationGroupId.Should().Be(input.QuotationGroupId);
+        captured.InsurerId.Should().Be(input.InsurerId);
+        captured.HttpStatus.Should().Be(200);
+        captured.ErrorMessage.Should().BeNull();
+        captured.RequestPayload.Should().Contain("InsuranceUniqueId");
+        captured.ResponseRaw.Should().NotBeNullOrEmpty();
+    }
+
+    /// <summary>ADR-102 — em falha de gateway (400/500...), o recorder grava Outcome=Failed com o motivo, e a exceção original ainda sobe (RN-057, sem retry).</summary>
+    [Fact]
+    [Trait("RuleId", "RN-057")]
+    public async Task RunQuotationAsync_RegistraLogDeIntegracaoFailed_QuandoGatewayRetorna400()
+    {
+        var fakeHandler = new FakeHttpMessageHandler(request =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new { HasError = true, Errors = new[] { "já existe uma cotação" } }),
+                    System.Text.Encoding.UTF8, "application/json"),
+            }));
+
+        var recorder = Substitute.For<IQuotationIntegrationLogRecorder>();
+        QuotationIntegrationLogContext? captured = null;
+        recorder.RecordCotationAsync(
+                Arg.Do<QuotationIntegrationLogContext>(context => captured = context), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+
+        var engine = BuildEngine(fakeHandler, recorder);
+        var input = BuildQuotationRequestInput();
+
+        var act = () => engine.RunQuotationAsync(ConnectionParameters, input, CancellationToken.None);
+
+        (await act.Should().ThrowAsync<CalculationEngineException>())
+            .WithMessage("*já existe uma cotação*");
+
+        await recorder.Received(1).RecordCotationAsync(Arg.Any<QuotationIntegrationLogContext>(), Arg.Any<CancellationToken>());
+        captured.Should().NotBeNull();
+        captured!.Outcome.Should().Be(QuotationIntegrationOutcome.Failed);
+        captured.HttpStatus.Should().Be(400);
+        captured.ErrorMessage.Should().Contain("já existe uma cotação");
     }
 }

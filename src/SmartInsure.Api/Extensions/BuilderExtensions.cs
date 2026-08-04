@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SmartInsure.Api.Handlers.Base;
+using SmartInsure.Api.HostedServices;
 using SmartInsure.Api.Services;
 using SmartInsure.Application.UseCase.IoC;
 using SmartInsure.Core.Abstractions.Services;
@@ -43,6 +44,11 @@ public static class BuilderExtensions
 
         builder.Services.AddCrossCutting();
         builder.Services.AddInfraData(builder.Configuration);
+
+        // ADR-102: garante o índice TTL de QuotationIntegrationLog no startup — só faz sentido aqui porque
+        // a API é o único host que registra Mongo com registerMongo:true (AddInfraData acima, default).
+        builder.Services.AddHostedService<MongoIndexInitializer>();
+
         builder.Services.AddApplicationUseCases();
         builder.Services.AddCasdoorIntegration();
         builder.Services.AddBureauIntegration();
