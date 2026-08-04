@@ -12,6 +12,10 @@ namespace SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.Create
 /// <param name="InsurerIds">Seguradoras escolhidas quando o escopo é Specific.</param>
 /// <param name="IncludesPenaltyCoverage">Cobertura de Multa marcada (provisório).</param>
 /// <param name="IncludesLaborCoverage">Cobertura Trabalhista/Previdenciária marcada (provisório).</param>
+/// <param name="InsuredAddressId">
+/// RN-503: endereço do Segurado escolhido pelo corretor, entre os do cadastro da Pessoa. Ausente
+/// significa o endereço principal. O Grupo guarda uma RÉPLICA dos valores, não a referência.
+/// </param>
 public sealed record CreateQuotationGroupRequest(
     Guid PolicyHolderId,
     Guid? BranchId,
@@ -23,4 +27,5 @@ public sealed record CreateQuotationGroupRequest(
     string ScopeMode,
     IReadOnlyList<Guid> InsurerIds,
     bool IncludesPenaltyCoverage,
-    bool IncludesLaborCoverage);
+    bool IncludesLaborCoverage,
+    Guid? InsuredAddressId = null);

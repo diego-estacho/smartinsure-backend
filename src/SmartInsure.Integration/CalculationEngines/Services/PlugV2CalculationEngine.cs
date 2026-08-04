@@ -275,6 +275,221 @@ public sealed class PlugV2CalculationEngine(
         }
     }
 
+    /// <summary>
+    /// RN-504: submete a taxa nova da proposta (POST /UpdateProposalFinancialData) e devolve prêmio,
+    /// comissão e opções de parcelamento recalculados pela Seguradora. Mutação de proposta → cliente sem
+    /// nova tentativa automática (RN-057). Recusa da Seguradora vira CalculationEngineException com a
+    /// mensagem dela, para o caso de uso preservar os valores anteriores e mostrar o motivo (RN-511).
+    /// </summary>
+    public async Task<ProposalFinancialDataResult> UpdateProposalFinancialDataAsync(
+        string? connectionParameters, UpdateProposalFinancialDataInput request, CancellationToken cancellationToken)
+    {
+        var config = PlugV2ConnectionParameters.Parse(connectionParameters);
+        var client = CreateNonIdempotentClient(config);
+
+        var payload = new PlugV2UpdateProposalFinancialDataRequest
+        {
+            BrokerCnpj = request.BrokerCnpj,
+            ProposalUniqueId = request.ProposalExternalId,
+            Tax = request.Tax,
+        };
+
+        try
+        {
+            var body = await PostJsonAsync(
+                client, "UpdateProposalFinancialData", config.Key, payload, cancellationToken);
+
+            var envelope = JsonSerializer.Deserialize<PlugV2UpdateProposalFinancialDataResponse>(body, JsonOptions);
+
+            if (envelope?.Response is null || envelope.HasError || !envelope.Response.Success)
+            {
+                throw new CalculationEngineException(FailureMessage("ajustar a taxa da proposta", body));
+            }
+
+            var data = envelope.Response;
+
+            return new ProposalFinancialDataResult
+            {
+                Premium = data.InsurancePremium,
+                Tax = data.Tax,
+                CommissionPercentage = data.ComissionPercentage,
+                CommissionValue = data.ComissionValue,
+                InstallmentOptions = (data.InstallmentOptions ?? [])
+                    .Select(option => new QuotationInstallmentOption
+                    {
+                        Number = option.Number,
+                        Description = string.IsNullOrWhiteSpace(option.Description) ? null : option.Description,
+                        Value = option.Value,
+                        HasInterest = option.HasInterest,
+                    })
+                    .ToList(),
+                PossibleGracePeriodsInDays = data.PossibleGracePeriodsInDays ?? [],
+            };
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (CalculationEngineException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new CalculationEngineException("Falha ao ajustar a taxa da proposta no motor PlugV2.", exception);
+        }
+    }
+
+    /// <summary>
+    /// RN-506: comunica o aceite do Termo à Seguradora (POST /UpdatePolicyAcceptanceTerm), antes do pedido
+    /// de emissão. Mutação de proposta → cliente sem nova tentativa automática (RN-057).
+    /// </summary>
+    public async Task SubmitPolicyAcceptanceTermAsync(
+        string? connectionParameters, string brokerCnpj, string proposalExternalId, CancellationToken cancellationToken)
+    {
+        var config = PlugV2ConnectionParameters.Parse(connectionParameters);
+        var client = CreateNonIdempotentClient(config);
+
+        var payload = new PlugV2UpdatePolicyAcceptanceTermRequest
+        {
+            BrokerCnpj = brokerCnpj,
+            ProposalUniqueId = proposalExternalId,
+        };
+
+        try
+        {
+            var body = await PostJsonAsync(
+                client, "UpdatePolicyAcceptanceTerm", config.Key, payload, cancellationToken);
+
+            var envelope = JsonSerializer.Deserialize<PlugV2ErrorEnvelope>(body, JsonOptions);
+            if (envelope is { HasError: true })
+            {
+                throw new CalculationEngineException(FailureMessage("registrar o aceite do termo", body));
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (CalculationEngineException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new CalculationEngineException(
+                "Falha ao registrar o aceite do termo no motor PlugV2.", exception);
+        }
+    }
+
+    /// <summary>
+    /// RN-500/RN-514: solicita a emissão da Apólice (POST /CreatePolicy). O gateway devolve a referência da
+    /// apólice e o número da proposta — número da apólice, arquivo e boletos só na confirmação posterior,
+    /// fora desta fase. Chamada NÃO repetível (o gateway trava pedido duplicado por 30 min): cliente sem
+    /// retry (RN-057). Recusa sobe com a mensagem da Seguradora (RN-511).
+    /// </summary>
+    public async Task<PolicyIssuanceResult> CreatePolicyAsync(
+        string? connectionParameters, CreatePolicyInput request, CancellationToken cancellationToken)
+    {
+        var config = PlugV2ConnectionParameters.Parse(connectionParameters);
+        var client = CreateNonIdempotentClient(config);
+
+        var payload = new PlugV2CreatePolicyRequest
+        {
+            BrokerCnpj = request.BrokerCnpj,
+            ProposalUniqueId = request.ProposalExternalId,
+            InsuranceUniqueId = request.InsuranceUniqueId,
+            InstallmentNumber = request.InstallmentNumber,
+            GracePeriod = request.GracePeriodInDays,
+            InsuredLocation = new PlugV2PersonLocation
+            {
+                ZipCode = request.InsuredAddress.ZipCode,
+                AddressName = request.InsuredAddress.Street,
+                Number = request.InsuredAddress.Number,
+                Complement = request.InsuredAddress.Complement,
+                Neighborhood = request.InsuredAddress.Neighborhood,
+                CityName = request.InsuredAddress.City,
+                StateProvinceName = request.InsuredAddress.State,
+            },
+        };
+
+        try
+        {
+            var body = await PostJsonAsync(client, "CreatePolicy", config.Key, payload, cancellationToken);
+
+            var envelope = JsonSerializer.Deserialize<PlugV2CreatePolicyResponse>(body, JsonOptions);
+
+            if (envelope?.Response is null || envelope.HasError
+                || string.IsNullOrWhiteSpace(envelope.Response.PolicyUniqueId))
+            {
+                throw new CalculationEngineException(FailureMessage("solicitar a emissão da apólice", body));
+            }
+
+            return new PolicyIssuanceResult
+            {
+                PolicyExternalId = envelope.Response.PolicyUniqueId,
+                ProposalNumber = string.IsNullOrWhiteSpace(envelope.Response.ProposalNumber)
+                    ? null
+                    : envelope.Response.ProposalNumber,
+            };
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (CalculationEngineException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new CalculationEngineException(
+                "Falha ao solicitar a emissão da apólice no motor PlugV2.", exception);
+        }
+    }
+
+    /// <summary>
+    /// RN-509: cancela a proposta de uma Cotação irmã (POST /CancelCotation) depois que outra Cotação do
+    /// Grupo teve a emissão solicitada. Mutação → sem retry (RN-057). O insucesso é problema do chamador,
+    /// que registra e segue: cancelar irmã não desfaz emissão.
+    /// </summary>
+    public async Task CancelProposalAsync(
+        string? connectionParameters, CancelProposalInput request, CancellationToken cancellationToken)
+    {
+        var config = PlugV2ConnectionParameters.Parse(connectionParameters);
+        var client = CreateNonIdempotentClient(config);
+
+        var payload = new PlugV2CancelProposalRequest
+        {
+            BrokerCnpj = request.BrokerCnpj,
+            ProposalUniqueId = request.ProposalExternalId,
+            Reason = request.Reason,
+        };
+
+        try
+        {
+            var body = await PostJsonAsync(client, "CancelCotation", config.Key, payload, cancellationToken);
+
+            var envelope = JsonSerializer.Deserialize<PlugV2ErrorEnvelope>(body, JsonOptions);
+            if (envelope is { HasError: true })
+            {
+                throw new CalculationEngineException(FailureMessage("cancelar a proposta", body));
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (CalculationEngineException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new CalculationEngineException("Falha ao cancelar a proposta no motor PlugV2.", exception);
+        }
+    }
+
     /// <summary>RN-063 ("Baixar minuta", parte 2): obtém a minuta (documento) da proposta (POST /GetProposalContractDraft).</summary>
     public async Task<ProposalContractDraftResult> GetProposalContractDraftAsync(
         string? connectionParameters, string brokerCnpj, string proposalExternalId, CancellationToken cancellationToken)

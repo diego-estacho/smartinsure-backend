@@ -55,7 +55,19 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<QuotationGroupInsurer> QuotationGroupInsurers => Set<QuotationGroupInsurer>();
 
+    /// <summary>RN-503: réplica do endereço do Segurado por oferta.</summary>
+    public DbSet<QuotationAddress> QuotationAddresses => Set<QuotationAddress>();
+
     public DbSet<Quotation> Quotations => Set<Quotation>();
+
+    /// <summary>RN-506: Termo e declaração vigente por Seguradora.</summary>
+    public DbSet<InsurerTerm> InsurerTerms => Set<InsurerTerm>();
+
+    /// <summary>RN-506: registro dos aceites do Termo.</summary>
+    public DbSet<TermAcceptance> TermAcceptances => Set<TermAcceptance>();
+
+    /// <summary>RN-514: Apólices — registro da emissão solicitada.</summary>
+    public DbSet<Policy> Policies => Set<Policy>();
 
     public DbSet<QuotationReason> QuotationReasons => Set<QuotationReason>();
 

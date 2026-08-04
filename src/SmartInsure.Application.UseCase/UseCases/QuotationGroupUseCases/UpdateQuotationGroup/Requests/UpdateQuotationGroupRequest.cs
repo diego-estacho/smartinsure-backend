@@ -14,4 +14,5 @@ public sealed record UpdateQuotationGroupRequest(
     string ScopeMode,
     IReadOnlyList<Guid> InsurerIds,
     bool IncludesPenaltyCoverage,
-    bool IncludesLaborCoverage);
+    bool IncludesLaborCoverage,
+    Guid? InsuredAddressId = null);

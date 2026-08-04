@@ -1,3 +1,4 @@
+using SmartInsure.Application.UseCase.Services.QuotationGroups;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Requests;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Responses;
@@ -68,6 +69,10 @@ public sealed class CreateQuotationGroupUseCase(
             request.InsurerIds,
             request.IncludesPenaltyCoverage,
             request.IncludesLaborCoverage);
+
+        // RN-503: a oferta nasce com a réplica do endereço do Segurado escolhido — é ela que abastece a
+        // emissão depois, imune a alteração posterior do cadastro da Pessoa.
+        InsuredAddressReplicator.Replicate(group, insured, request.InsuredAddressId);
 
         await quotationGroupRepository.AddAsync(group, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);

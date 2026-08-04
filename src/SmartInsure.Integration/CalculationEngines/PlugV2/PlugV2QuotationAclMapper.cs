@@ -65,7 +65,36 @@ public static class PlugV2QuotationAclMapper
             RequiresCcg = ccg?.RequiresCcg ?? false,
             CcgMaxLimitWithoutNeed = ccg?.MaxLimitWithoutNeedCcg,
             CcgSigned = ccg?.HasSignedCcg ?? false,
+            InstallmentOptions = MapInstallmentOptions(response),
+            PossibleGracePeriodsInDays = response.PossibleGracePeriodsInDays ?? [],
+            RequiredDocuments = MapRequiredDocuments(response),
         };
+
+    /// <summary>
+    /// RN-505: repassa exatamente as opções que a Seguradora informou — nenhuma é inventada, ordenada
+    /// nem completada. Ausência de opções significa Cotação sem escolha de parcelamento.
+    /// </summary>
+    private static IReadOnlyList<QuotationInstallmentOption> MapInstallmentOptions(PlugV2CotationData response)
+        => (response.InstallmentOptions ?? [])
+            .Select(option => new QuotationInstallmentOption
+            {
+                Number = option.Number,
+                Description = NullIfBlank(option.Description),
+                Value = option.Value,
+                HasInterest = option.HasInterest,
+            })
+            .ToList();
+
+    /// <summary>RN-510: documento sem nome não é apresentável ao corretor — é descartado.</summary>
+    private static IReadOnlyList<QuotationRequiredDocument> MapRequiredDocuments(PlugV2CotationData response)
+        => (response.Documents ?? [])
+            .Where(document => !string.IsNullOrWhiteSpace(document.Name))
+            .Select(document => new QuotationRequiredDocument
+            {
+                Name = document.Name!,
+                Description = NullIfBlank(document.Description),
+            })
+            .ToList();
 
     private static QuotationResult Analysis(EAnalysisTrack track, PlugV2CcgResult? ccg)
         => new()

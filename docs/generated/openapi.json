@@ -1666,6 +1666,116 @@
         }
       }
     },
+    "/api/v1/quotation-groups/{groupId}/policy": {
+      "post": {
+        "tags": [
+          "PoliciesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPolicyIssuanceBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestPolicyIssuanceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/quotations/selected/tax": {
+      "post": {
+        "tags": [
+          "PoliciesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuotationTaxBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateQuotationTaxResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotation-groups/{groupId}/insurer-term": {
+      "get": {
+        "tags": [
+          "PoliciesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetInsurerTermResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/policy-holders": {
       "get": {
         "tags": [
@@ -4323,6 +4433,13 @@
           },
           "includesLaborCoverage": {
             "type": "boolean"
+          },
+          "insuredAddressId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -5012,6 +5129,22 @@
           }
         }
       },
+      "GetInsurerTermResponse": {
+        "required": [
+          "insurerId",
+          "content"
+        ],
+        "type": "object",
+        "properties": {
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      },
       "GetModalityResponse": {
         "required": [
           "id",
@@ -5460,6 +5593,42 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "InstallmentOptionResponse": {
+        "required": [
+          "number",
+          "description",
+          "value",
+          "hasInterest"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "hasInterest": {
+            "type": "boolean"
           }
         }
       },
@@ -6458,6 +6627,71 @@
           }
         }
       },
+      "PersonAddressOptionResponse": {
+        "required": [
+          "id",
+          "isMain",
+          "zipCode",
+          "street",
+          "number",
+          "complement",
+          "neighborhood",
+          "city",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isMain": {
+            "type": "boolean"
+          },
+          "zipCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complement": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "neighborhood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "PersonAddressResponse": {
         "required": [
           "zipCode",
@@ -6580,6 +6814,15 @@
               "string"
             ],
             "format": "uuid"
+          },
+          "addresses": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PersonAddressOptionResponse"
+            }
           }
         }
       },
@@ -6952,6 +7195,42 @@
           }
         }
       },
+      "QuotationInstallmentOptionResponse": {
+        "required": [
+          "number",
+          "description",
+          "value",
+          "hasInterest"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "hasInterest": {
+            "type": "boolean"
+          }
+        }
+      },
       "QuotationListItemResponse": {
         "required": [
           "quotationId",
@@ -6970,7 +7249,10 @@
           "requiresCcg",
           "ccgMaxLimitWithoutNeed",
           "ccgSigned",
-          "reasons"
+          "reasons",
+          "installmentOptions",
+          "possibleGracePeriodsInDays",
+          "requiredDocuments"
         ],
         "type": "object",
         "properties": {
@@ -7074,6 +7356,29 @@
             "items": {
               "type": "string"
             }
+          },
+          "installmentOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationInstallmentOptionResponse"
+            }
+          },
+          "possibleGracePeriodsInDays": {
+            "type": "array",
+            "items": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          "requiredDocuments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationRequiredDocumentResponse"
+            }
           }
         }
       },
@@ -7139,6 +7444,24 @@
           }
         }
       },
+      "QuotationRequiredDocumentResponse": {
+        "required": [
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "QuotationTermInput": {
         "required": [
           "name",
@@ -7183,6 +7506,66 @@
             "format": "uuid"
           },
           "linkSource": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestPolicyIssuanceBody": {
+        "required": [
+          "installmentNumber",
+          "gracePeriodInDays",
+          "termAccepted"
+        ],
+        "type": "object",
+        "properties": {
+          "installmentNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "gracePeriodInDays": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "termAccepted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RequestPolicyIssuanceResponse": {
+        "required": [
+          "policyId",
+          "policyExternalId",
+          "requestedAt",
+          "quotationGroupStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "policyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyExternalId": {
+            "type": "string"
+          },
+          "proposalNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quotationGroupStatus": {
             "type": "string"
           }
         }
@@ -7940,6 +8323,80 @@
           }
         }
       },
+      "UpdateQuotationTaxBody": {
+        "required": [
+          "tax"
+        ],
+        "type": "object",
+        "properties": {
+          "tax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "UpdateQuotationTaxResponse": {
+        "type": "object",
+        "properties": {
+          "premium": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "tax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionPercentage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionValue": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "installmentOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InstallmentOptionResponse"
+            }
+          },
+          "possibleGracePeriodsInDays": {
+            "type": "array",
+            "items": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        }
+      },
       "UpdateScopedProfileResponse": {
         "required": [
           "id",
@@ -8117,6 +8574,9 @@
     },
     {
       "name": "PersonsEndpoint"
+    },
+    {
+      "name": "PoliciesEndpoint"
     },
     {
       "name": "PolicyHoldersEndpoint"

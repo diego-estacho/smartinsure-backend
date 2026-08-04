@@ -12,6 +12,10 @@ public static class PermissionCodes
     public const string QuotationGroupsCreate = "quotation-groups.create";
     public const string QuotationGroupsEdit = "quotation-groups.edit";
 
+    /// <summary>RN-513: emitir é o ato que gera obrigação financeira — Permissão própria, separada
+    /// de criar/editar o Grupo de Cotação.</summary>
+    public const string PoliciesIssue = "policies.issue";
+
     public const string CreditInquiriesView = "credit-inquiries.view";
     public const string CreditInquiriesCreate = "credit-inquiries.create";
 
@@ -49,6 +53,7 @@ public static class PermissionCodes
     public static readonly string[] All =
     [
         QuotationGroupsView, QuotationGroupsCreate, QuotationGroupsEdit,
+        PoliciesIssue,
         CreditInquiriesView, CreditInquiriesCreate,
         PolicyHoldersView, PolicyHoldersCreate, PolicyHoldersEdit, PolicyHolderAppointmentsManage,
         BrokeragesView, BrokeragesCreate, BrokeragesEdit, BrokeragesChangeStatus,

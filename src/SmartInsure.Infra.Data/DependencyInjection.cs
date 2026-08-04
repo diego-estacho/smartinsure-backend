@@ -51,6 +51,13 @@ public static class DependencyInjection
         services.AddScoped<IQuotationGroupRepository, QuotationGroupRepository>();
         services.AddScoped<IQuotationRepository, QuotationRepository>();
 
+        // RN-506: Termo da Seguradora e o registro do aceite, exigidos para emitir.
+        services.AddScoped<IInsurerTermRepository, InsurerTermRepository>();
+        services.AddScoped<ITermAcceptanceRepository, TermAcceptanceRepository>();
+
+        // RN-514: Apólice — registro da emissão solicitada.
+        services.AddScoped<IPolicyRepository, PolicyRepository>();
+
         // Mongo é opcional por host: a API valida na inicialização (MongoOptions [Required] +
         // ValidateOnStart), mas o job de importação (SmartInsure.Functions) não usa Mongo — passa
         // registerMongo:false para não exigir config de Mongo só para bootar o host.

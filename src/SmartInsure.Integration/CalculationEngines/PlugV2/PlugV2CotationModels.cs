@@ -116,6 +116,44 @@ public sealed record PlugV2CotationData
 
     [JsonPropertyName("PolicyHolderCCG")]
     public PlugV2CcgResult? PolicyHolderCcg { get; init; }
+
+    /// <summary>RN-505: opções de parcelamento oferecidas pela Seguradora nesta Cotação.</summary>
+    [JsonPropertyName("InstallmentOptions")]
+    public IReadOnlyList<PlugV2InstallmentOption>? InstallmentOptions { get; init; }
+
+    /// <summary>RN-505: dias possíveis para o vencimento da primeira parcela.</summary>
+    [JsonPropertyName("PossibleGracePeriodsInDays")]
+    public IReadOnlyList<int>? PossibleGracePeriodsInDays { get; init; }
+
+    /// <summary>RN-510: documentos que a Seguradora exige para emitir.</summary>
+    [JsonPropertyName("Documents")]
+    public IReadOnlyList<PlugV2RequiredDocument>? Documents { get; init; }
+}
+
+/// <summary>Opção de parcelamento da Cotação (InstallmentOptionResponse) — RN-505.</summary>
+public sealed record PlugV2InstallmentOption
+{
+    [JsonPropertyName("Number")]
+    public int Number { get; init; }
+
+    [JsonPropertyName("Description")]
+    public string? Description { get; init; }
+
+    [JsonPropertyName("Value")]
+    public decimal Value { get; init; }
+
+    [JsonPropertyName("HasInterest")]
+    public bool HasInterest { get; init; }
+}
+
+/// <summary>Documento exigido pela Seguradora (RequestDocumentResponse) — RN-510.</summary>
+public sealed record PlugV2RequiredDocument
+{
+    [JsonPropertyName("Name")]
+    public string? Name { get; init; }
+
+    [JsonPropertyName("Description")]
+    public string? Description { get; init; }
 }
 
 /// <summary>Status imediato + mensagem do resultado (PlugResponseStatus).</summary>

@@ -173,7 +173,22 @@ public sealed class SearchPersonsUseCase(
                 mainAddress.Complement,
                 mainAddress.Neighborhood,
                 mainAddress.City,
-                mainAddress.State));
+                mainAddress.State),
+            // RN-503: Pessoa recém-importada do Birô tem só o endereço principal — a lista já sai com ele
+            // para a tela poder pré-selecionar sem uma segunda consulta.
+            person.Addresses
+                .OrderByDescending(address => address.IsMain)
+                .Select(address => new PersonAddressItemDto(
+                    address.Id,
+                    address.IsMain,
+                    address.ZipCode,
+                    address.Street,
+                    address.Number,
+                    address.Complement,
+                    address.Neighborhood,
+                    address.City,
+                    address.State))
+                .ToList());
     }
 
     private static PersonSearchItemResponse MapItem(
@@ -200,7 +215,21 @@ public sealed class SearchPersonsUseCase(
                     item.MainAddress.City,
                     item.MainAddress.State),
             preSelectedBranchDocumentNumber,
-            preSelectedBranchId);
+            preSelectedBranchId,
+            // RN-503: a lista de endereços com Id acompanha a Pessoa — é dela que o corretor escolhe o
+            // endereço do Segurado da oferta, sem uma segunda chamada.
+            item.Addresses
+                .Select(address => new PersonAddressOptionResponse(
+                    address.Id,
+                    address.IsMain,
+                    address.ZipCode,
+                    address.Street,
+                    address.Number,
+                    address.Complement,
+                    address.Neighborhood,
+                    address.City,
+                    address.State))
+                .ToList());
 
     private static IReadOnlyList<string> EnsureRole(
         IReadOnlyList<string> roles, EPersonRole? ensuredRole)

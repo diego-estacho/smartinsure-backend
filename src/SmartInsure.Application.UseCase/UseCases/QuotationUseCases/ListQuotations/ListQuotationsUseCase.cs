@@ -46,7 +46,17 @@ public sealed class ListQuotationsUseCase(
                 quotation.RequiresCcg,
                 quotation.CcgMaxLimitWithoutNeed,
                 quotation.CcgSigned,
-                quotation.Reasons.Select(reason => reason.Text).ToList()))
+                quotation.Reasons.Select(reason => reason.Text).ToList(),
+                // RN-505/RN-510: pagamento e documentos vão na leitura — é daqui que a etapa de emissão
+                // monta as escolhas, sem acionar o provedor outra vez.
+                quotation.ReadInstallmentOptions()
+                    .Select(option => new QuotationInstallmentOptionResponse(
+                        option.Number, option.Description, option.Value, option.HasInterest))
+                    .ToList(),
+                quotation.ReadPossibleGracePeriodsInDays(),
+                quotation.ReadRequiredDocuments()
+                    .Select(document => new QuotationRequiredDocumentResponse(document.Name, document.Description))
+                    .ToList()))
             .ToList();
 
         return new ListQuotationsResponse(group.Id, group.SelectedQuotationId, items);
