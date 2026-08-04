@@ -14,9 +14,9 @@ using SmartInsure.Infra.CrossCutting.Validators;
 namespace SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry;
 
 /// <summary>
-/// RN-029..031 — Consulta de Limites de Crédito do Tomador: dispara consulta paralela ao motor
-/// de cada Habilitação Ativa da Corretora; tolerando falha isolada por seguradora (RN-030);
-/// grava histórico imutável com data/hora e resultados.
+/// RN-029..031 — Consulta de Limites de Crédito do Tomador: consulta SEQUENCIALMENTE o motor de
+/// cada Habilitação Ativa da Corretora (o gateway trava a consulta por CNPJ; paralelo colide — ver
+/// plugv2-dedup); tolerando falha isolada por seguradora (RN-030); grava histórico imutável.
 /// </summary>
 public sealed class ExecuteCreditInquiryUseCase(
     IBrokerageInsurerEnablementRepository enablementRepository,
@@ -60,25 +60,23 @@ public sealed class ExecuteCreditInquiryUseCase(
             insurerData[enablement.InsurerId] = (insurer, engine, enablement.ConnectionParameters ?? string.Empty);
         }
 
-        // RN-030: fan-out de chamadas ao motor (apenas HTTP, sem EF) com tolerância a falha isolada.
         var creditInquiry = CreditInquiry.Create(request.BrokerageId, normalizedCnpj);
 
-        var motorTasks = activeEnablements
-            .Select(enablement => ExecuteMotorCallAsync(
+        // plugv2-dedup: o gateway trava a consulta por CNPJ (guarda de concorrência liberada ao fim de
+        // CADA chamada, no finally). Consultar as Seguradoras em PARALELO para o mesmo CNPJ colide nessa
+        // trava — a mais lenta cai em "Já existe uma consulta para este CNPJ". Por isso as chamadas são
+        // SEQUENCIAIS: cada Seguradora conclui e libera a trava antes da próxima (o próprio gateway
+        // processa assim). A falha isolada (RN-030) não interrompe as demais; cada uma mede seu tempo (RN-031).
+        foreach (var enablement in activeEnablements)
+        {
+            var (result, policyHolderName) = await ExecuteMotorCallAsync(
                 creditInquiry.Id,
                 enablement.InsurerId,
                 insurerData[enablement.InsurerId],
                 brokerage.DocumentNumber,
                 normalizedCnpj,
-                cancellationToken))
-            .ToList();
+                cancellationToken);
 
-        await Task.WhenAll(motorTasks);
-
-        // Coleta resultados (sempre sucesso, mesmo com falhas isoladas — RN-030).
-        foreach (var task in motorTasks)
-        {
-            var (result, policyHolderName) = await task;
             creditInquiry.AddResult(result);
 
             // RN-029: quando a Seguradora informar a razão social do tomador, ela é registrada.
