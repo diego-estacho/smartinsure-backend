@@ -7282,6 +7282,7 @@
       "QuotationListItemResponse": {
         "required": [
           "quotationId",
+          "number",
           "insurerId",
           "insurerName",
           "insurerLogoUrl",
@@ -7304,6 +7305,12 @@
           "quotationId": {
             "type": "string",
             "format": "uuid"
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "insurerId": {
             "type": "string",
