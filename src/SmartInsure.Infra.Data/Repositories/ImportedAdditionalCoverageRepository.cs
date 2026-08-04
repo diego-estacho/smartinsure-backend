@@ -50,4 +50,62 @@ public sealed class ImportedAdditionalCoverageRepository(SmartInsureDbContext co
             select new LinkedImportedCoverageDto(
                 coverage.AdditionalCoverageId!.Value, coverage.Id, insurer.CorporateName, modality.OriginName, coverage.Name))
             .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<OfferableImportedCoverageDto>> ListForQuotationAsync(
+        Guid insurerId,
+        Guid modalityId,
+        IReadOnlyCollection<Guid> additionalCoverageIds,
+        CancellationToken cancellationToken)
+    {
+        // RN-105: Grupo sem cobertura escolhida não precisa de consulta.
+        if (additionalCoverageIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await (
+            from coverage in Set.AsNoTracking()
+            where coverage.Status == EImportedAdditionalCoverageStatus.Active
+                && !coverage.IsIgnored
+                && coverage.AdditionalCoverageId != null
+                && additionalCoverageIds.Contains(coverage.AdditionalCoverageId.Value)
+            join modality in Context.Set<ImportedModality>().AsNoTracking()
+                on coverage.ImportedModalityId equals modality.Id
+            where modality.InsurerId == insurerId
+                && modality.ModalityId == modalityId
+                && modality.Status == EImportedModalityStatus.Active
+                && !modality.IsIgnored
+            // RN-046: canônica Inativa não é oferecida nem enviada.
+            join canonical in Context.Set<AdditionalCoverage>().AsNoTracking()
+                on coverage.AdditionalCoverageId equals canonical.Id
+            where canonical.Status == EAdditionalCoverageStatus.Active
+            select new OfferableImportedCoverageDto(canonical.Id, coverage.Id, coverage.Name))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<AvailableAdditionalCoverageDto>> ListAvailableForModalityAsync(
+        Guid brokerageId,
+        Guid modalityId,
+        CancellationToken cancellationToken)
+        => await (
+            from coverage in Set.AsNoTracking()
+            where coverage.Status == EImportedAdditionalCoverageStatus.Active
+                && !coverage.IsIgnored
+                && coverage.AdditionalCoverageId != null
+            join modality in Context.Set<ImportedModality>().AsNoTracking()
+                on coverage.ImportedModalityId equals modality.Id
+            where modality.ModalityId == modalityId
+                && modality.Status == EImportedModalityStatus.Active
+                && !modality.IsIgnored
+            // RN-104/RN-103: só Seguradoras habilitadas (Ativas) da Corretora do Escopo ativo.
+            join enablement in Context.Set<BrokerageInsurerEnablement>().AsNoTracking()
+                on modality.InsurerId equals enablement.InsurerId
+            where enablement.BrokerageId == brokerageId
+                && enablement.Status == EBrokerageInsurerEnablementStatus.Active
+            join canonical in Context.Set<AdditionalCoverage>().AsNoTracking()
+                on coverage.AdditionalCoverageId equals canonical.Id
+            where canonical.Status == EAdditionalCoverageStatus.Active
+            select new AvailableAdditionalCoverageDto(canonical.Id, canonical.Name))
+            .Distinct()
+            .ToListAsync(cancellationToken);
 }

@@ -7,6 +7,7 @@ using SmartInsure.Application.UseCase.Services.PersonImports;
 using SmartInsure.Application.UseCase.Services.Quotations;
 using SmartInsure.Application.UseCase.Services.Scopes;
 using SmartInsure.Core.Abstractions;
+using SmartInsure.Core.Abstractions.Services;
 
 namespace SmartInsure.Application.UseCase.IoC;
 
@@ -63,6 +64,9 @@ public static class DependencyInjection
         // Processor do fan-out de cotação (RN-057), resolvido em escopo pelo consumidor (ADR-050);
         // fora da convenção I{Ação}UseCase, por isso registrado explicitamente.
         services.AddScoped<IQuotationRequestProcessor, QuotationRequestProcessor>();
+
+        // RN-105/RN-106 (ADR-103): resolve canônica → nome da Importada por Seguradora no fan-out.
+        services.AddScoped<IQuotationAdditionalCoverageResolver, QuotationAdditionalCoverageResolver>();
 
         return services;
     }
