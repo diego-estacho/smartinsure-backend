@@ -59,6 +59,12 @@ public sealed class SmartInsureDbContext(DbContextOptions<SmartInsureDbContext> 
 
     public DbSet<QuotationReason> QuotationReasons => Set<QuotationReason>();
 
+    public DbSet<QuotationGroupAdditionalCoverage> QuotationGroupAdditionalCoverages
+        => Set<QuotationGroupAdditionalCoverage>();
+
+    public DbSet<QuotationAdditionalCoverage> QuotationAdditionalCoverages
+        => Set<QuotationAdditionalCoverage>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartInsureDbContext).Assembly);

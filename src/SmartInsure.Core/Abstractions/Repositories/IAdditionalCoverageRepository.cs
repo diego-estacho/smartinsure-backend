@@ -10,4 +10,11 @@ public interface IAdditionalCoverageRepository : IRepository<AdditionalCoverage>
 
     /// <summary>RN-040: catálogo canônico para a curadoria (o Mapa da Cobertura Adicional).</summary>
     Task<IReadOnlyList<AdditionalCoverageListItemDto>> ListAllAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-106: nomes das canônicas por id — a leitura das Cotações apresenta a cobertura pelo nome
+    /// canônico (o que o corretor escolheu), não pelo nome de origem enviado à Seguradora.
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, string>> GetNamesByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
 }

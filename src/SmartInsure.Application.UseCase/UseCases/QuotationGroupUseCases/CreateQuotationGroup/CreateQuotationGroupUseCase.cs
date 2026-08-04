@@ -2,7 +2,9 @@ using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuot
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Requests;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Responses;
 using SmartInsure.Core.Abstractions;
+using SmartInsure.Application.UseCase.Services.Quotations;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
@@ -17,6 +19,8 @@ public sealed class CreateQuotationGroupUseCase(
     IQuotationGroupRepository quotationGroupRepository,
     IPersonRepository personRepository,
     IModalityRepository modalityRepository,
+    IImportedAdditionalCoverageRepository importedAdditionalCoverageRepository,
+    ICurrentUserAccessor currentUserAccessor,
     IUnitOfWork unitOfWork) : ICreateQuotationGroupUseCase
 {
     public async Task<CreateQuotationGroupResponse> ExecuteAsync(
@@ -56,6 +60,12 @@ public sealed class CreateQuotationGroupUseCase(
             }
         }
 
+        // RN-104: a escolha é pela Cobertura Adicional canônica e tem de estar ofertável para a
+        // Modalidade nas Seguradoras habilitadas da Corretora ativa — não basta existir no catálogo.
+        await AdditionalCoverageSelectionRules.EnsureAvailableForModalityAsync(
+            importedAdditionalCoverageRepository, currentUserAccessor,
+            request.ModalityId, request.AdditionalCoverageIds, cancellationToken);
+
         var group = QuotationGroup.Create(
             request.PolicyHolderId,
             request.BranchId,
@@ -66,8 +76,7 @@ public sealed class CreateQuotationGroupUseCase(
             request.CoverageEndDate,
             scopeMode,
             request.InsurerIds,
-            request.IncludesPenaltyCoverage,
-            request.IncludesLaborCoverage);
+            request.AdditionalCoverageIds ?? []);
 
         await quotationGroupRepository.AddAsync(group, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
@@ -82,8 +91,7 @@ public sealed class CreateQuotationGroupUseCase(
             group.CoverageEndDate,
             group.ScopeMode.ToString(),
             group.SelectedInsurers.Select(insurer => insurer.InsurerId).ToList(),
-            group.IncludesPenaltyCoverage,
-            group.IncludesLaborCoverage,
+            group.AdditionalCoverages.Select(coverage => coverage.AdditionalCoverageId).ToList(),
             group.Status.ToString());
     }
 

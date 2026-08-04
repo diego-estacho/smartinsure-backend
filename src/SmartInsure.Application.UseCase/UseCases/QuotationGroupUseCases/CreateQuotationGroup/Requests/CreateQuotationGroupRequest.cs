@@ -10,8 +10,7 @@ namespace SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.Create
 /// <param name="CoverageEndDate">Fim da vigência.</param>
 /// <param name="ScopeMode">Escopo de Seguradoras pelo nome estável: All ou Specific.</param>
 /// <param name="InsurerIds">Seguradoras escolhidas quando o escopo é Specific.</param>
-/// <param name="IncludesPenaltyCoverage">Cobertura de Multa marcada (provisório).</param>
-/// <param name="IncludesLaborCoverage">Cobertura Trabalhista/Previdenciária marcada (provisório).</param>
+/// <param name="AdditionalCoverageIds">RN-104: Coberturas Adicionais canônicas escolhidas na etapa de risco.</param>
 public sealed record CreateQuotationGroupRequest(
     Guid PolicyHolderId,
     Guid? BranchId,
@@ -22,5 +21,4 @@ public sealed record CreateQuotationGroupRequest(
     DateOnly CoverageEndDate,
     string ScopeMode,
     IReadOnlyList<Guid> InsurerIds,
-    bool IncludesPenaltyCoverage,
-    bool IncludesLaborCoverage);
+    IReadOnlyList<Guid> AdditionalCoverageIds);

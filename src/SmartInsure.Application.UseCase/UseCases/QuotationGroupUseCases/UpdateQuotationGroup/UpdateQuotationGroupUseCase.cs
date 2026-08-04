@@ -2,7 +2,9 @@ using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuot
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Requests;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Responses;
 using SmartInsure.Core.Abstractions;
+using SmartInsure.Application.UseCase.Services.Quotations;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
 
@@ -18,6 +20,8 @@ public sealed class UpdateQuotationGroupUseCase(
     IQuotationRepository quotationRepository,
     IPersonRepository personRepository,
     IModalityRepository modalityRepository,
+    IImportedAdditionalCoverageRepository importedAdditionalCoverageRepository,
+    ICurrentUserAccessor currentUserAccessor,
     IUnitOfWork unitOfWork) : IUpdateQuotationGroupUseCase
 {
     public async Task<UpdateQuotationGroupResponse> ExecuteAsync(
@@ -75,6 +79,13 @@ public sealed class UpdateQuotationGroupUseCase(
             }
         }
 
+        // RN-104: a cobertura escolhida tem de estar ofertável para a Modalidade DESTA atualização —
+        // é o que impede gravar, por chamada direta ao contrato, seleção que a nova Modalidade não
+        // oferece (o cliente limpar a seleção ao trocar de Modalidade é conveniência, não garantia).
+        await AdditionalCoverageSelectionRules.EnsureAvailableForModalityAsync(
+            importedAdditionalCoverageRepository, currentUserAccessor,
+            request.ModalityId, request.AdditionalCoverageIds, cancellationToken);
+
         group.UpdateDraft(
             request.PolicyHolderId,
             request.BranchId,
@@ -85,8 +96,7 @@ public sealed class UpdateQuotationGroupUseCase(
             request.CoverageEndDate,
             scopeMode,
             request.InsurerIds,
-            request.IncludesPenaltyCoverage,
-            request.IncludesLaborCoverage);
+            request.AdditionalCoverageIds ?? []);
 
         // Sem repository.Update: a raiz e a coleção do escopo estão rastreadas (GetByIdWithInsurersAsync),
         // então o change tracker resolve UPDATE da raiz + INSERT/DELETE dos filhos no commit.
@@ -102,8 +112,7 @@ public sealed class UpdateQuotationGroupUseCase(
             group.CoverageEndDate,
             group.ScopeMode.ToString(),
             group.SelectedInsurers.Select(insurer => insurer.InsurerId).ToList(),
-            group.IncludesPenaltyCoverage,
-            group.IncludesLaborCoverage,
+            group.AdditionalCoverages.Select(coverage => coverage.AdditionalCoverageId).ToList(),
             group.Status.ToString());
     }
 

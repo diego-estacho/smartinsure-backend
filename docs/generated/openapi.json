@@ -1571,6 +1571,36 @@
         }
       }
     },
+    "/api/v1/modalities/{id}/additional-coverages": {
+      "get": {
+        "tags": [
+          "ModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListAvailableAdditionalCoveragesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/modality-imports/run": {
       "post": {
         "tags": [
@@ -2015,8 +2045,8 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -2025,8 +2055,8 @@
               }
             }
           },
-          "201": {
-            "description": "Created",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -3361,6 +3391,22 @@
           }
         }
       },
+      "AvailableAdditionalCoverageItemResponse": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "BrokerageAddressResponse": {
         "required": [
           "zipCode",
@@ -4421,8 +4467,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage"
+          "additionalCoverageIds"
         ],
         "type": "object",
         "properties": {
@@ -4471,11 +4516,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         }
       },
@@ -4490,8 +4536,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage",
+          "additionalCoverageIds",
           "status"
         ],
         "type": "object",
@@ -4538,11 +4583,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           },
           "status": {
             "type": "string"
@@ -5329,8 +5375,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage",
+          "additionalCoverageIds",
           "status",
           "selectedQuotationId",
           "policyHolder",
@@ -5383,11 +5428,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           },
           "status": {
             "type": "string"
@@ -5925,6 +5971,20 @@
           "additionalCoverageId": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "ListAvailableAdditionalCoveragesResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailableAdditionalCoverageItemResponse"
+            }
           }
         }
       },
@@ -7023,6 +7083,33 @@
           }
         }
       },
+      "QuotationAdditionalCoverageResponse": {
+        "required": [
+          "additionalCoverageId",
+          "name",
+          "status",
+          "sentName"
+        ],
+        "type": "object",
+        "properties": {
+          "additionalCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "sentName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "QuotationBookItemResponse": {
         "required": [
           "quotationId",
@@ -7336,7 +7423,8 @@
           "requiresCcg",
           "ccgMaxLimitWithoutNeed",
           "ccgSigned",
-          "reasons"
+          "reasons",
+          "additionalCoverages"
         ],
         "type": "object",
         "properties": {
@@ -7445,6 +7533,12 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "additionalCoverages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationAdditionalCoverageResponse"
             }
           }
         }
@@ -8187,8 +8281,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage"
+          "additionalCoverageIds"
         ],
         "type": "object",
         "properties": {
@@ -8237,11 +8330,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         }
       },
@@ -8256,8 +8350,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage",
+          "additionalCoverageIds",
           "status"
         ],
         "type": "object",
@@ -8304,11 +8397,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           },
           "status": {
             "type": "string"
