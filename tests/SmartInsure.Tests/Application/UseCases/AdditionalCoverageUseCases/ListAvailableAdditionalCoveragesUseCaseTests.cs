@@ -87,14 +87,20 @@ public sealed class ListAvailableAdditionalCoveragesUseCaseTests
     }
 
     [Fact]
-    public async Task Execute_DeveRecusar_QuandoNaoHaCorretoraAtiva_RN103()
+    public async Task Execute_DeveDevolverVazio_QuandoNaoHaCorretoraAtiva_RN103()
     {
+        // ADR-065: Escopo ausente é estado legítimo, não violação de regra. A oferta é derivada das
+        // Seguradoras habilitadas da Corretora ativa, então sem Corretora ativa ela é vazia — recusar
+        // quebraria a renderização da etapa de risco. Quem recusa por falta de Escopo é o cotar.
+        SetupModality();
         _currentUser.ActiveBrokerageId.Returns((Guid?)null);
 
-        var act = () => _useCase.ExecuteAsync(
+        var response = await _useCase.ExecuteAsync(
             new ListAvailableAdditionalCoveragesRequest(ModalityId), CancellationToken.None);
 
-        await act.Should().ThrowAsync<BusinessRuleException>();
+        response.Items.Should().BeEmpty();
+        await _repository.DidNotReceiveWithAnyArgs()
+            .ListAvailableForModalityAsync(default, default, default);
     }
 
     [Fact]

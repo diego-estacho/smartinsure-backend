@@ -22,17 +22,21 @@ public sealed class ListAvailableAdditionalCoveragesUseCase(
         ListAvailableAdditionalCoveragesRequest request,
         CancellationToken cancellationToken)
     {
-        // RN-103: a Corretora é a do Escopo ativo do acesso (claim, ADR-065), resolvida pelo servidor —
-        // nunca informada pelo cliente. Sem Corretora ativa, a operação é recusada.
-        var brokerageId = currentUserAccessor.ActiveBrokerageId
-            ?? throw new BusinessRuleException(
-                "Nenhuma Corretora ativa no acesso para listar coberturas adicionais.");
-
         _ = await modalityRepository.GetByIdAsync(request.ModalityId, cancellationToken)
             ?? throw new NotFoundException("Modalidade não encontrada.");
 
-        var available = await importedAdditionalCoverageRepository.ListAvailableForModalityAsync(
-            brokerageId, request.ModalityId, cancellationToken);
+        // RN-103: a Corretora é a do Escopo ativo do acesso (claim, ADR-065), resolvida pelo servidor —
+        // nunca informada pelo cliente. Escopo ausente é estado legítimo (ADR-065), não violação de
+        // regra: a oferta é DERIVADA das Seguradoras habilitadas da Corretora ativa, então sem
+        // Corretora ativa o conjunto derivado é simplesmente vazio (RN-104). Recusar aqui quebraria a
+        // renderização da etapa de risco; quem recusa por falta de Escopo é o cotar (RN-103), que é
+        // ação e devolve mensagem própria.
+        var brokerageId = currentUserAccessor.ActiveBrokerageId;
+
+        var available = brokerageId is null
+            ? []
+            : await importedAdditionalCoverageRepository.ListAvailableForModalityAsync(
+                brokerageId.Value, request.ModalityId, cancellationToken);
 
         var items = available
             .OrderBy(coverage => coverage.Name, StringComparer.CurrentCulture)
