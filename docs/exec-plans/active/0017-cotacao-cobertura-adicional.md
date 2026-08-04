@@ -22,8 +22,8 @@ Fazer a Cotação chegar à Seguradora **com as Coberturas Adicionais que o corr
 - [x] **T8 — Fan-out (TDD).** `QuotationRequestProcessor` envia os nomes resolvidos e grava a situação **antes** de acionar o motor, para o registro sobreviver a Indisponível (RN-058) e a falha de integração (RN-057). Fecha o `TODO(probe T14)`.
 - [x] **T10 — Endpoint do corretor.** `GET /api/v1/modalities/{id}/additional-coverages`, autorização default (o `/additional-coverages/map` existente é restrito a Administrador e não serve).
 - [x] **T11 — Leitura das Cotações.** `additionalCoverages: [{ additionalCoverageId, name, status, sentName? }]` — `name` é o da canônica; `sentName` só quando `Sent`.
-- [ ] **T12 — Gates do backend + PR.**
-- [ ] **T13..T16 — Front.** Composable do endpoint novo; store com `additionalCoverageIds` e **limpeza ao trocar Modalidade**; etapa 3 dinâmica (sai o par de checkboxes fixos); marcador `NotOffered` na comparação; gates. **Bloqueado até o merge do backend** — `openapi.json` não regenera local, é publicado no CI, e `pnpm types:gen` depende dele.
+- [x] **T12 — Gates do backend.** PR **não aberto** — aguardando aprovação da PO das RNs.
+- [x] **T13..T16 — Front.** Rota no BFF (ADR-008) + composable `useAvailableAdditionalCoverages`; store com `additionalCoverageIds` e **limpeza ao trocar Modalidade**; etapa 3 dinâmica (saiu o par de checkboxes fixos), com estados de vazio/loading/erro; marcador de cobertura não contemplada na comparação (tabela e cards), filtrado por **nome estável** do status; gates verdes.
 
 ## Critérios de aceite
 
@@ -49,6 +49,10 @@ Fazer a Cotação chegar à Seguradora **com as Coberturas Adicionais que o corr
 - **Condições pré-existentes registradas (nenhuma criada por esta atividade):**
   1. `check-harness.py` já acusa, na `main`, **RN-062 e RN-063 duplicados** entre `cotacao.md` e `perfis-e-permissoes.md`. Não foi corrigido aqui — ID de RN nunca é reaproveitado, então resolver a duplicata é decisão do time/PO. Esta entrega **não adiciona violação nova**.
   2. **A cobertura global já está abaixo do gate de 80%:** `main` = **58,81%**; esta branch = **59,50%** (+0,69pp). O gate de CI, portanto, já falhava antes desta atividade. Precisa de uma frente própria de cobertura.
+- **Front (2026-08-04):** `pnpm lint` → OK; `pnpm typecheck` → OK; `pnpm test` → **344 testes, 0 falhas** (antes 339 — **+5**); `pnpm build` → OK (11,3 MB / 2,97 MB gzip).
+- **Ressalva do contrato:** `pnpm types:gen` foi rodado com `OPENAPI_CONTRACT` apontando para o documento OpenAPI servido pela **API local** desta worktree, porque `docs/generated/openapi.json` é produzido pelo CI e ainda não reflete este trabalho. Nenhum type foi editado à mão. **Antes do merge do front, regerar de `docs/generated/openapi.json` publicado pelo CI** (após o merge do backend) e conferir que o diff de `app/types/gen/api.ts` fica vazio.
 - [ ] Aprovação da PO das RN-104/105/106 (e ciência de OPEN-22) — **pendente**.
+- [ ] PRs (backend → dbmigration → front) — **não abertos**, aguardando a aprovação acima.
+- [ ] E2E da jornada e screenshot da etapa 3 / do marcador na comparação — **pendente**: exige curadoria dos vínculos (0 hoje), senão a etapa 3 lista vazio.
 - [ ] Gates do front + screenshot da etapa 3 e do marcador na comparação — **pendente (T16)**.
 - [ ] Curadoria mínima dos vínculos canônica↔importada para demonstrar a jornada ponta a ponta (hoje 0 vínculos; sem ela a etapa 3 lista vazio, que é correto por RN-046 mas indistinguível de bug) — **pendente**.
