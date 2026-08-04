@@ -93,3 +93,23 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 **Critério de aceitação.** Ao solicitar Cotações ou enviar a minuta, a plataforma usa a Corretora ativa do acesso, ignorando qualquer Corretora informada pelo cliente; o corpo da requisição não carrega Corretora. Sem Corretora ativa no acesso, a operação é recusada com aviso.
 
 **Casos limite.** Acesso sem Corretora ativa (Usuário só com vínculo de Tomador, ou nenhum): recusado. Troca de Escopo ativo no meio da jornada passa a valer para as próximas solicitações (o Grupo em Rascunho não muda de dono retroativamente). Quais Perfis podem solicitar cotação seguem em [OPEN-03](../open-decisions.md).
+
+## RN-105 — Envio das Coberturas Adicionais à Seguradora
+
+**Descrição.** Ao solicitar a Cotação, cada Cobertura Adicional canônica escolhida no Grupo é traduzida para o nome com que aquela Seguradora expõe a cobertura na Modalidade cotada, e é esse nome que vai à Seguradora. O identificador de origem da cobertura não serve para isso — a Seguradora reconhece a cobertura pelo nome.
+
+**Pré-condições.** Cotação sendo solicitada a uma Seguradora (RN-057), a partir de um Grupo de Cotação com Coberturas Adicionais escolhidas (RN-104).
+
+**Critério de aceitação.** Para cada canônica escolhida, a plataforma envia o nome da Cobertura Adicional Importada Ativa vinculada a ela, nas Modalidades Importadas Ativas e não Ignoradas daquela Seguradora vinculadas à Modalidade do Grupo. Cada cobertura contribui com um único nome e a Seguradora recebe a lista sem repetição. Grupo sem coberturas escolhidas envia lista vazia. A resolução é feita por Seguradora, no momento da solicitação, a partir dos vínculos vigentes.
+
+**Casos limite.** A mesma canônica vinculada a Importadas com nomes diferentes na mesma Seguradora (tipicamente uma por ramo): não é enviada e é tratada como não contemplada (RN-106) enquanto [OPEN-22](../open-decisions.md) estiver aberta. Nunca é enviado nome que não esteja vinculado a uma canônica escolhida: cobertura não suportada faz a Seguradora recusar a solicitação inteira, derrubando a Cotação — por isso a plataforma erra para menos, nunca para mais. Canônica Inativa não é enviada (RN-046).
+
+## RN-106 — Cobertura pedida e não contemplada pela Seguradora
+
+**Descrição.** Seguradora que não oferece uma Cobertura Adicional escolhida é cotada mesmo assim, sem aquela cobertura. A Cotação registra o que foi enviado e o que ficou de fora, e a comparação sinaliza a lacuna — para que prêmios de escopos diferentes nunca sejam comparados sem aviso.
+
+**Pré-condições.** Cotação solicitada a uma Seguradora, a partir de um Grupo com Coberturas Adicionais escolhidas (RN-104).
+
+**Critério de aceitação.** Cada Cobertura Adicional escolhida aparece na Cotação com situação estável: **Enviada**, quando o nome foi resolvido e enviado; **Não contemplada**, quando a Seguradora não oferece a cobertura na Modalidade cotada. A situação é registrada em toda Cotação, inclusive nas que resultam Indisponível (RN-058) e nas que falham na integração (RN-057). A comparação de Cotações sinaliza cada cobertura não contemplada, identificando-a pelo nome da canônica.
+
+**Casos limite.** Nenhuma das coberturas escolhidas disponível na Seguradora: a Cotação é solicitada sem cobertura alguma e todas constam como não contempladas. Canônica inativada entre a escolha e a solicitação: consta como não contemplada. Nome divergente entre ramos: não contemplada (OPEN-22). Grupo sem coberturas escolhidas: nenhuma situação é registrada. Cotação recusada por pré-condição de dados antes de resolver as coberturas (Seguradora inativa, sem identificador de origem, Modalidade sem Modalidade Global): não há situação a registrar, porque a falha não é de cobertura.

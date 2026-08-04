@@ -148,3 +148,9 @@ Parcialmente resolvida em 2026-07-28 (decisão do dono), itens (a) e (b) encerra
 A implementação de (a) chega quando as etapas de cotação e emissão saírem do mock (OPEN-07); a regra, porém, já está definida e não depende mais de decisão.
 Segue em aberto: (c) se a Nomeação passa a valer por estabelecimento — hoje a unicidade é por par Tomador×Seguradora; (d) como uma Filial é removida ou desvinculada da matriz (o cadastro nasce sem remoção, como o vínculo de papel da RN-017).
 
+
+## OPEN-22 — Nome divergente da mesma Cobertura Adicional entre ramos de uma Seguradora
+Dono: PO (gerente de projeto)
+Bloqueia: o envio da Cobertura Adicional à Seguradora (RN-105) quando a mesma Cobertura Adicional canônica está vinculada a Coberturas Adicionais Importadas com nomes diferentes na mesma Seguradora — tipicamente uma por ramo (Público e Privado)
+Status: aberta
+Contexto: levantado em 2026-08-04 (AB#0007). Cada Modalidade canônica mapeia para duas Modalidades Importadas por Seguradora, uma por ramo, e cada uma tem as suas próprias Coberturas Adicionais Importadas. Quando os nomes coincidem — o caso observado no catálogo de QA, ex.: "Multas" nos dois ramos da AXA — o envio pelo nome é inequívoco e a regra funciona. Quando divergem (ex.: "Multa" num ramo e "Multas" no outro), não há como escolher sem uma regra de ramo, que a plataforma hoje não tem: o ramo é resolvido pela Seguradora a partir da Modalidade enviada. Enviar os dois nomes não é alternativa — a Seguradora recusa a solicitação inteira se um deles não for suportado no ramo que ela resolver, derrubando a Cotação (ADR-103). Até a decisão, RN-105/RN-106 tratam o caso como não contemplado, que é o lado seguro. Decisões possíveis: definir como a plataforma determina o ramo (por exemplo derivado da natureza do Segurado) ou exigir da curadoria que o vínculo da canônica seja feito por ramo.
