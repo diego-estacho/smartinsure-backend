@@ -30,4 +30,16 @@ public sealed record QuotationListItemResponse(
     bool RequiresCcg,
     decimal? CcgMaxLimitWithoutNeed,
     bool CcgSigned,
-    IReadOnlyList<string> Reasons);
+    IReadOnlyList<string> Reasons,
+    IReadOnlyList<QuotationAdditionalCoverageResponse> AdditionalCoverages);
+
+/// <summary>
+/// RN-105/RN-106: situação de uma Cobertura Adicional escolhida nesta Cotação. <c>Name</c> é o nome da
+/// CANÔNICA (o que o corretor escolheu e o que a tela apresenta); <c>SentName</c> é o nome da Importada
+/// efetivamente enviado à Seguradora, presente só quando <c>Status</c> = Sent, para rastreio.
+/// </summary>
+public sealed record QuotationAdditionalCoverageResponse(
+    Guid AdditionalCoverageId,
+    string Name,
+    string Status,
+    string? SentName);

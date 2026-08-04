@@ -2,6 +2,9 @@ using Carter;
 using FluentValidation;
 using SmartInsure.Api.Handlers.Base;
 using SmartInsure.Application.UseCase.ModelsBase;
+using SmartInsure.Application.UseCase.UseCases.AdditionalCoverageUseCases.ListAvailableAdditionalCoverages.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.AdditionalCoverageUseCases.ListAvailableAdditionalCoverages.Requests;
+using SmartInsure.Application.UseCase.UseCases.AdditionalCoverageUseCases.ListAvailableAdditionalCoverages.Responses;
 using SmartInsure.Application.UseCase.UseCases.ModalityUseCases.ChangeModalityStatus.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.ModalityUseCases.ChangeModalityStatus.Requests;
 using SmartInsure.Application.UseCase.UseCases.ModalityUseCases.ChangeModalityStatus.Responses;
@@ -51,7 +54,20 @@ public sealed class ModalitiesEndpoint : CarterModule
 
         app.MapGet("/{id:guid}", GetAsync)
             .Produces<GetModalityResponse>(StatusCodes.Status200OK);
+
+        // RN-104/RN-046: Coberturas Adicionais ofertáveis da Modalidade para a Corretora do Escopo
+        // ativo. Autorização default (qualquer autenticado) — é leitura da jornada do corretor, e não
+        // curadoria: o /additional-coverages/map é restrito ao Administrador do Sistema.
+        app.MapGet("/{id:guid}/additional-coverages", ListAdditionalCoveragesAsync)
+            .Produces<ListAvailableAdditionalCoveragesResponse>(StatusCodes.Status200OK);
     }
+
+    private static async Task<IResult> ListAdditionalCoveragesAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        IListAvailableAdditionalCoveragesUseCase useCase,
+        Guid id)
+        => await handler.TryHandleAsync(httpContext, useCase, new ListAvailableAdditionalCoveragesRequest(id));
 
     private static async Task<IResult> CreateAsync(
         HttpContext httpContext,

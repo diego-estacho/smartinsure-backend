@@ -1,0 +1,10 @@
+using SmartInsure.Application.UseCase.Common;
+using SmartInsure.Application.UseCase.UseCases.AdditionalCoverageUseCases.ListAvailableAdditionalCoverages.Requests;
+using SmartInsure.Application.UseCase.UseCases.AdditionalCoverageUseCases.ListAvailableAdditionalCoverages.Responses;
+
+namespace SmartInsure.Application.UseCase.UseCases.AdditionalCoverageUseCases.ListAvailableAdditionalCoverages.Interfaces;
+
+public interface IListAvailableAdditionalCoveragesUseCase
+    : IUseCase<ListAvailableAdditionalCoveragesRequest, ListAvailableAdditionalCoveragesResponse>
+{
+}

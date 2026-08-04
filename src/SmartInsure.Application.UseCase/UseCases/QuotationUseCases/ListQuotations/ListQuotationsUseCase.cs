@@ -14,7 +14,8 @@ namespace SmartInsure.Application.UseCase.UseCases.QuotationUseCases.ListQuotati
 public sealed class ListQuotationsUseCase(
     IQuotationGroupRepository quotationGroupRepository,
     IQuotationRepository quotationRepository,
-    IInsurerRepository insurerRepository) : IListQuotationsUseCase
+    IInsurerRepository insurerRepository,
+    IAdditionalCoverageRepository additionalCoverageRepository) : IListQuotationsUseCase
 {
     public async Task<ListQuotationsResponse> ExecuteAsync(
         ListQuotationsRequest request, CancellationToken cancellationToken)
@@ -27,6 +28,17 @@ public sealed class ListQuotationsUseCase(
         var insurerIds = quotations.Select(quotation => quotation.InsurerId).Distinct().ToList();
         var insurerNames = await insurerRepository.GetCorporateNamesByIdsAsync(insurerIds, cancellationToken);
         var insurerLogos = await insurerRepository.GetLogoUrlsByIdsAsync(insurerIds, cancellationToken);
+
+        // RN-106: a tela apresenta a cobertura pelo nome CANÔNICO — o nome de origem enviado à
+        // Seguradora fica em SentName, para rastreio.
+        var coverageIds = quotations
+            .SelectMany(quotation => quotation.AdditionalCoverages)
+            .Select(coverage => coverage.AdditionalCoverageId)
+            .Distinct()
+            .ToList();
+
+        var coverageNames = await additionalCoverageRepository.GetNamesByIdsAsync(
+            coverageIds, cancellationToken);
 
         var items = quotations
             .Select(quotation => new QuotationListItemResponse(
@@ -46,7 +58,16 @@ public sealed class ListQuotationsUseCase(
                 quotation.RequiresCcg,
                 quotation.CcgMaxLimitWithoutNeed,
                 quotation.CcgSigned,
-                quotation.Reasons.Select(reason => reason.Text).ToList()))
+                quotation.Reasons.Select(reason => reason.Text).ToList(),
+                quotation.AdditionalCoverages
+                    .Select(coverage => new QuotationAdditionalCoverageResponse(
+                        coverage.AdditionalCoverageId,
+                        coverageNames.TryGetValue(coverage.AdditionalCoverageId, out var coverageName)
+                            ? coverageName
+                            : "Cobertura adicional",
+                        coverage.Status.ToString(),
+                        coverage.SentName))
+                    .ToList()))
             .ToList();
 
         return new ListQuotationsResponse(group.Id, group.SelectedQuotationId, items);
