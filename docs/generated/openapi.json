@@ -1702,6 +1702,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "brokerageId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -4717,6 +4725,7 @@
           "insurerName",
           "status",
           "failureReason",
+          "responseTimeMs",
           "limits"
         ],
         "type": "object",
@@ -4736,6 +4745,14 @@
               "null",
               "string"
             ]
+          },
+          "responseTimeMs": {
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           },
           "limits": {
             "type": "array",
@@ -6881,7 +6898,10 @@
           "documentNumber",
           "name",
           "socialName",
-          "isPrivateSector"
+          "isPrivateSector",
+          "city",
+          "stateCode",
+          "isAppointedToBrokerage"
         ],
         "type": "object",
         "properties": {
@@ -6902,6 +6922,24 @@
             ]
           },
           "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "stateCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isAppointedToBrokerage": {
             "type": [
               "null",
               "boolean"

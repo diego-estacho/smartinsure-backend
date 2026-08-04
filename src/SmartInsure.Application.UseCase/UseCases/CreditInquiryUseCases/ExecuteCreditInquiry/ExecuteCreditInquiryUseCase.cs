@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry.Requests;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry.Responses;
@@ -116,6 +117,9 @@ public sealed class ExecuteCreditInquiryUseCase(
                 creditInquiryId, insurerId, "Identificador externo da seguradora não configurado."), null);
         }
 
+        // RN-029/RN-031: mede o tempo de resposta da Seguradora (duração real da chamada ao motor).
+        var stopwatch = Stopwatch.StartNew();
+
         try
         {
             // RN-029: consulta limites de crédito via motor configurado na habilitação.
@@ -126,7 +130,9 @@ public sealed class ExecuteCreditInquiryUseCase(
                 insurer.ReferenceExternalId,
                 cancellationToken);
 
-            // RN-030: resposta nula (indisponibilidade no motor) → Unavailable.
+            stopwatch.Stop();
+
+            // RN-030: resposta nula (indisponibilidade no motor) → Unavailable (sem tempo de resposta).
             if (limits is null)
             {
                 return (CreditInquiryResult.Unavailable(
@@ -144,7 +150,8 @@ public sealed class ExecuteCreditInquiryUseCase(
                 .ToList();
 
             // Available() vai corrigir o ID dos limites para corresponder ao ID do resultado criado.
-            var result = CreditInquiryResult.Available(creditInquiryId, insurerId, resultLimits);
+            var result = CreditInquiryResult.Available(
+                creditInquiryId, insurerId, resultLimits, stopwatch.ElapsedMilliseconds);
 
             return (result, limits.PolicyHolderName);
         }
@@ -195,6 +202,7 @@ public sealed class ExecuteCreditInquiryUseCase(
                     insurerName,
                     result.Status.ToString(),
                     result.FailureReason,
+                    result.ResponseTimeMs,
                     result.Limits
                         .Select(l => new CreditInquiryLimitGroupResponse(
                             l.GroupName,

@@ -170,6 +170,9 @@ public class ExecuteCreditInquiryUseCaseTests
         response.Results.Should().HaveCount(2);
         response.Results.Should().ContainSingle(r => r.Status == "Unavailable" && r.FailureReason != null);
         response.Results.Should().ContainSingle(r => r.Status == "Available" && r.Limits.First(l => l.GroupName == "Tradicional").AvailableLimit == 1000m);
+        // RN-029: a Seguradora que respondeu carrega o tempo de resposta medido; a que falhou fica ausente (RN-030).
+        response.Results.Single(r => r.Status == "Available").ResponseTimeMs.Should().NotBeNull();
+        response.Results.Single(r => r.Status == "Unavailable").ResponseTimeMs.Should().BeNull();
         // RN-031: a consulta persiste com ambos os resultados.
         await _creditInquiryRepository.Received(1)
             .AddAsync(Arg.Is<CreditInquiry>(i => i.Results.Count == 2), Arg.Any<CancellationToken>());

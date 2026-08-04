@@ -15,12 +15,13 @@ public sealed record CreditInquirySummary(
     int InsurersAvailable,
     decimal ConsolidatedLimit);
 
-/// <summary>Resultado individual por Seguradora (status, limites por grupo de modalidade).</summary>
+/// <summary>Resultado individual por Seguradora (status, tempo de resposta, limites por grupo de modalidade).</summary>
 public sealed record CreditInquiryResultResponse(
     Guid InsurerId,
     string InsurerName,
     string Status,
     string? FailureReason,
+    long? ResponseTimeMs,
     IReadOnlyList<CreditInquiryLimitGroupResponse> Limits);
 
 /// <summary>Limite de crédito agrupado por grupo de modalidade (RN-029).</summary>
