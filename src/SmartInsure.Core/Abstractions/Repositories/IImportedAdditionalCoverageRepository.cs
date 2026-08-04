@@ -18,4 +18,25 @@ public interface IImportedAdditionalCoverageRepository : IRepository<ImportedAdd
 
     /// <summary>RN-043/RN-046: importadas Ativas vinculadas a uma Cobertura Adicional canônica (a matriz da curadoria).</summary>
     Task<IReadOnlyList<LinkedImportedCoverageDto>> ListLinkedAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-105: importadas Ativas vinculadas às canônicas escolhidas, nas Modalidades Importadas Ativas
+    /// e não Ignoradas de UMA Seguradora vinculadas à Modalidade cotada. O nome devolvido é o que vai
+    /// à Seguradora (ADR-103).
+    /// </summary>
+    Task<IReadOnlyList<OfferableImportedCoverageDto>> ListForQuotationAsync(
+        Guid insurerId,
+        Guid modalityId,
+        IReadOnlyCollection<Guid> additionalCoverageIds,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-104: canônicas Ativas ofertáveis para uma Modalidade, considerando só Seguradoras com
+    /// Habilitação Ativa da Corretora informada. Usa o MESMO critério de derivação de
+    /// <see cref="ListForQuotationAsync"/>, para que oferta e envio nunca divirjam.
+    /// </summary>
+    Task<IReadOnlyList<AvailableAdditionalCoverageDto>> ListAvailableForModalityAsync(
+        Guid brokerageId,
+        Guid modalityId,
+        CancellationToken cancellationToken);
 }

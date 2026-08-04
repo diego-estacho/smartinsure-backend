@@ -130,6 +130,8 @@ Mesma situação de operação das Modalidades. Nada é excluído; sai de opera�
 
 **Marcador da Cobertura Adicional Importada** (exposto por nome estável): **Ignorada** (`Ignored`) — importada que o Administrador decidiu não mapear; não aparece como pendente de mapeamento nem é oferecida, mas fica registrada (RN-043). Sem vínculo com uma Cobertura Adicional canônica e não Ignorada, a importada fica **pendente de mapeamento** (RN-043).
 
+**Situação da Cobertura Adicional na Cotação** (exposta por nome estável): **Enviada** (`Sent`) — o nome com que a Seguradora expõe a cobertura foi resolvido e enviado a ela; **Não contemplada** (`NotOffered`) — a Seguradora não oferece a cobertura na Modalidade cotada, ou o nome divergiu entre ramos ([OPEN-22](open-decisions.md)); a Cotação é feita sem ela (RN-105/RN-106).
+
 ### Grupo de Cotação (proposto em 2026-07-24 — aguardando ratificação da PO)
 
 Estado inicial do agregado montado no wizard de nova oferta. Nesta fase o backend persiste **apenas o Rascunho** (RN-050, RN-051); os estados posteriores (Cotação obtida, Proposta aceita, Apólice emitida) serão enumerados com a PO quando as etapas de cotação e emissão saírem do mock ([OPEN-07](open-decisions.md)).
