@@ -15,13 +15,13 @@ Fazer a Cotação chegar à Seguradora **com as Coberturas Adicionais que o corr
 - [x] **T1 — RNs e decisão aberta.** RN-104 (`grupo-de-cotacao.md`), RN-105/RN-106 (`cotacao.md`), OPEN-22 (`open-decisions.md`), marcador "Situação da Cobertura Adicional na Cotação" no glossário. **Gate:** aprovação da PO antes do merge.
 - [x] **T2 — ADR-103.** Envio pelo nome da Importada, com a evidência do probe (GUID recusado com erro nomeando o valor; 400 derruba a Cotação inteira; dedup ignora IS e vigência).
 - [x] **T3 — Este exec-plan.**
-- [ ] **T4 — Migrations (`smartinsure-dbmigration`).** Corrige o nome da canônica semeada com typo (`Trabalhista e Previdênciário` → `Previdenciária`); cria `QuotationGroupAdditionalCoverages` e `QuotationAdditionalCoverages`; converte os booleanos para a relação e **derruba as duas colunas** (falha alto se a canônica não existir — perder seleção afeta prêmio).
-- [ ] **T5+T9 — Domínio e contrato (atômico).** `EQuotationAdditionalCoverageStatus`, as duas entidades, `IQuotationAdditionalCoverageResolver` + records em Core; `QuotationGroup` sem booleanos e com a coleção; `Quotation.RecordAdditionalCoverages`; mappings e DbSets; e no **mesmo commit** request/response/use cases/endpoint com `additionalCoverageIds` (breaking).
-- [ ] **T6 — Consultas.** `ListForQuotationAsync` (por Seguradora/Modalidade/canônicas) e `ListAvailableForModalityAsync` (união simples por Corretora do Escopo ativo), com o **mesmo critério de derivação** para oferta e envio nunca divergirem.
-- [ ] **T7 — Resolvedor (TDD).** `|N|`=1 envia; `|N|`=0 não contempla; `|N|`>1 não contempla (OPEN-22); ramos com nome igual enviam uma vez; Grupo sem cobertura não consulta catálogo.
-- [ ] **T8 — Fan-out (TDD).** `QuotationRequestProcessor` envia os nomes resolvidos e grava a situação **antes** de acionar o motor, para o registro sobreviver a Indisponível (RN-058) e a falha de integração (RN-057). Fecha o `TODO(probe T14)`.
-- [ ] **T10 — Endpoint do corretor.** `GET /api/v1/modalities/{id}/additional-coverages`, autorização default (o `/additional-coverages/map` existente é restrito a Administrador e não serve).
-- [ ] **T11 — Leitura das Cotações.** `additionalCoverages: [{ additionalCoverageId, name, status, sentName? }]` — `name` é o da canônica; `sentName` só quando `Sent`.
+- [x] **T4 — Migrations (`smartinsure-dbmigration`).** Corrige o nome da canônica semeada com typo (`Trabalhista e Previdênciário` → `Previdenciária`); cria `QuotationGroupAdditionalCoverages` e `QuotationAdditionalCoverages`; converte os booleanos para a relação e **derruba as duas colunas** (falha alto se a canônica não existir — perder seleção afeta prêmio).
+- [x] **T5+T9 — Domínio e contrato (atômico).** `EQuotationAdditionalCoverageStatus`, as duas entidades, `IQuotationAdditionalCoverageResolver` + records em Core; `QuotationGroup` sem booleanos e com a coleção; `Quotation.RecordAdditionalCoverages`; mappings e DbSets; e no **mesmo commit** request/response/use cases/endpoint com `additionalCoverageIds` (breaking).
+- [x] **T6 — Consultas.** `ListForQuotationAsync` (por Seguradora/Modalidade/canônicas) e `ListAvailableForModalityAsync` (união simples por Corretora do Escopo ativo), com o **mesmo critério de derivação** para oferta e envio nunca divergirem.
+- [x] **T7 — Resolvedor (TDD).** `|N|`=1 envia; `|N|`=0 não contempla; `|N|`>1 não contempla (OPEN-22); ramos com nome igual enviam uma vez; Grupo sem cobertura não consulta catálogo.
+- [x] **T8 — Fan-out (TDD).** `QuotationRequestProcessor` envia os nomes resolvidos e grava a situação **antes** de acionar o motor, para o registro sobreviver a Indisponível (RN-058) e a falha de integração (RN-057). Fecha o `TODO(probe T14)`.
+- [x] **T10 — Endpoint do corretor.** `GET /api/v1/modalities/{id}/additional-coverages`, autorização default (o `/additional-coverages/map` existente é restrito a Administrador e não serve).
+- [x] **T11 — Leitura das Cotações.** `additionalCoverages: [{ additionalCoverageId, name, status, sentName? }]` — `name` é o da canônica; `sentName` só quando `Sent`.
 - [ ] **T12 — Gates do backend + PR.**
 - [ ] **T13..T16 — Front.** Composable do endpoint novo; store com `additionalCoverageIds` e **limpeza ao trocar Modalidade**; etapa 3 dinâmica (sai o par de checkboxes fixos); marcador `NotOffered` na comparação; gates. **Bloqueado até o merge do backend** — `openapi.json` não regenera local, é publicado no CI, e `pnpm types:gen` depende dele.
 
@@ -44,8 +44,11 @@ Fazer a Cotação chegar à Seguradora **com as Coberturas Adicionais que o corr
   - `["Multas"]` (nome da Importada) → **HTTP 200**, `ResponseStatus.Status = 5`
   - Cobertura não suportada **derruba a solicitação inteira**; o dedup do gateway ignora variação de IS e de vigência.
   - **Não verificado:** aplicação da cobertura via variação de prêmio — o tomador usado cai em análise de subscrição (prêmio `0,00`). Reconfirmar com tomador sem pendência em QA.
-- **Condição pré-existente registrada:** `check-harness.py` já acusa, na `main`, **RN-062 e RN-063 duplicados** entre `cotacao.md` e `perfis-e-permissoes.md`. Não é desta atividade e não foi corrigido aqui (ID de RN nunca é reaproveitado — resolver duplicata é decisão do time/PO). O critério desta entrega é **não adicionar violação nova**.
+- **Backend (2026-08-04):** `dotnet build SmartInsure.slnx` → **0 erros** (50 warnings, todos pré-existentes). `dotnet test tests/SmartInsure.Tests` → **668 testes, 0 falhas** (`main` tinha 646 — **+22** nesta atividade). Testes novos carregam o ID da RN: RN-104 (5 na entidade + 5 no endpoint), RN-105/RN-106 (7 no resolvedor + 3 no processor + 2 na leitura do leque).
+- **Cobertura das classes novas: 100%** — `QuotationAdditionalCoverageResolver`, `ListAvailableAdditionalCoveragesUseCase`, `QuotationAdditionalCoverage`, `QuotationGroupAdditionalCoverage` e os dois mappings.
+- **Condições pré-existentes registradas (nenhuma criada por esta atividade):**
+  1. `check-harness.py` já acusa, na `main`, **RN-062 e RN-063 duplicados** entre `cotacao.md` e `perfis-e-permissoes.md`. Não foi corrigido aqui — ID de RN nunca é reaproveitado, então resolver a duplicata é decisão do time/PO. Esta entrega **não adiciona violação nova**.
+  2. **A cobertura global já está abaixo do gate de 80%:** `main` = **58,81%**; esta branch = **59,50%** (+0,69pp). O gate de CI, portanto, já falhava antes desta atividade. Precisa de uma frente própria de cobertura.
 - [ ] Aprovação da PO das RN-104/105/106 (e ciência de OPEN-22) — **pendente**.
-- [ ] Saída de `dotnet build` + `dotnet test` com cobertura — **pendente (T12)**.
 - [ ] Gates do front + screenshot da etapa 3 e do marcador na comparação — **pendente (T16)**.
 - [ ] Curadoria mínima dos vínculos canônica↔importada para demonstrar a jornada ponta a ponta (hoje 0 vínculos; sem ela a etapa 3 lista vazio, que é correto por RN-046 mas indistinguível de bug) — **pendente**.
