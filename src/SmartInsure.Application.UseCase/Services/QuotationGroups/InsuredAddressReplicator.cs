@@ -50,7 +50,7 @@ internal static class InsuredAddressReplicator
                 address.City,
                 address.State);
         }
-        catch (InvalidOperationException)
+        catch (BusinessRuleException)
         {
             // Endereço cadastrado mas incompleto para emitir: a oferta não trava aqui — quem cobra é o
             // portão do emitir, que explica o que falta e manda corrigir no cadastro do Segurado.

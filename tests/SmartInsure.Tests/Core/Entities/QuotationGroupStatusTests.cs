@@ -1,6 +1,7 @@
 using FluentAssertions;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
+using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Core.Entities;
 
@@ -63,7 +64,7 @@ public class QuotationGroupStatusTests
 
         var act = group.MarkEmissionRequested;
 
-        act.Should().Throw<InvalidOperationException>().WithMessage("*Cotado*");
+        act.Should().Throw<BusinessRuleException>().WithMessage("*Cotado*");
         group.Status.Should().Be(EQuotationGroupStatus.Draft);
     }
 
@@ -76,7 +77,7 @@ public class QuotationGroupStatusTests
 
         var act = group.MarkEmissionRequested;
 
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().Throw<BusinessRuleException>();
     }
 
     [Fact]
@@ -91,7 +92,7 @@ public class QuotationGroupStatusTests
             new DateOnly(2026, 9, 1), new DateOnly(2027, 9, 1),
             EQuotationScopeMode.All, [], includesPenaltyCoverage: true, includesLaborCoverage: false);
 
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().Throw<BusinessRuleException>();
     }
 
     [Fact]
@@ -103,6 +104,6 @@ public class QuotationGroupStatusTests
 
         var act = () => group.SelectQuotation(Guid.CreateVersion7());
 
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().Throw<BusinessRuleException>();
     }
 }

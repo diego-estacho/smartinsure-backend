@@ -1,3 +1,4 @@
+using SmartInsure.Core.Exceptions;
 using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Core.Entities;
@@ -102,7 +103,7 @@ public sealed class QuotationGroup : EntityBase
     {
         if (Status == EQuotationGroupStatus.EmissionRequested)
         {
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "Grupo de Cotação com emissão já solicitada não volta a Cotado (RN-508).");
         }
 
@@ -117,7 +118,7 @@ public sealed class QuotationGroup : EntityBase
     {
         if (Status != EQuotationGroupStatus.Quoted)
         {
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "Só um Grupo de Cotação Cotado pode ter emissão solicitada (RN-508).");
         }
 
@@ -129,7 +130,7 @@ public sealed class QuotationGroup : EntityBase
     {
         if (Status == EQuotationGroupStatus.EmissionRequested)
         {
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 $"Grupo de Cotação com emissão solicitada não aceita {action} (RN-508).");
         }
     }
@@ -227,7 +228,7 @@ public sealed class QuotationGroup : EntityBase
 
         if (!InsuredAddress.IsUsableForIssuance())
         {
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "O endereço do Segurado precisa de CEP, logradouro, cidade e UF para emitir (RN-503).");
         }
     }

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Enumerators;
+using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Core.Entities;
 
@@ -238,7 +239,7 @@ public sealed class Quotation : EntityBase
     {
         if (Result != EQuotationResult.ReadyForEmission)
         {
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 "Só Cotação Pronta para emissão tem valores a recalcular (RN-058/RN-504).");
         }
 

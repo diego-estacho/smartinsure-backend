@@ -1,6 +1,7 @@
 using FluentAssertions;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
+using SmartInsure.Core.Exceptions;
 
 namespace SmartInsure.Tests.Core.Entities;
 
@@ -69,7 +70,7 @@ public class QuotationGroupInsuredAddressTests
 
         var act = () => group.ReplicateInsuredAddress("  ", "  ", null, null, null, "  ", "  ");
 
-        act.Should().Throw<InvalidOperationException>()
+        act.Should().Throw<BusinessRuleException>()
             .WithMessage("*endereço*");
     }
 
