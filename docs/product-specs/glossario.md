@@ -153,4 +153,6 @@ Classificação **estável** do resultado de uma Cotação, exposta por nome est
 
 > Um resultado desconhecido/novo da Seguradora recai **sempre** em Não-reconhecido — nunca é convertido em silêncio para Pronta para emissão nem exibe prêmio (RN-058).
 
+> **Situação apresentada da Cotação na listagem (derivada — RN-078, 2026-07-30).** Na Listagem de Cotações (RN-077), a plataforma apresenta cada Cotação por uma situação **derivada no servidor** a partir do resultado acima, para exibição, contagem e filtro: `ReadyForEmission` → **Pronta para emissão**, `Analysis` → **Em análise** (com a esteira como detalhe), `Unavailable` → **Indisponível**, `Unrecognized` → **Não reconhecida**. É rótulo de apresentação derivado do resultado — não cria status novo nem transição; a API expõe o nome estável do resultado e o rótulo pt-BR é montado na apresentação. A situação **Cancelada** (ciclo de vida da proposta) é demanda própria (Fatia 2), fora desta. Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO).
+
 **Esteira** da Cotação em Análise (exposta por nome estável): **Subscrição** (`Underwriting`), **Crédito** (`Credit`), **PEP** (`Pep`), **Resseguro** (`Reinsurance`), **Cadastro** (`Registration`). A lista cresce como dado conforme a Seguradora informa; nesta fase, apenas a esteira de **Subscrição** é seguível (RN-059).

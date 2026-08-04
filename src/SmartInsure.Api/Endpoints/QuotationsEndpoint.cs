@@ -21,7 +21,7 @@ namespace SmartInsure.Api.Endpoints;
 /// <summary>
 /// Etapa de cotações (RN-056..063): solicita as Cotações de um Grupo (fan-out, 202), acompanha o leque
 /// (polling), seleciona uma seguível e lê a minuta da selecionada. Nesta fase qualquer usuário
-/// autenticado (OPEN-03). Emissão e o envio da minuta (RN-063) seguem em demanda própria.
+/// autenticado (OPEN-03). Emissão e o envio da minuta (RN-080) seguem em demanda própria.
 /// </summary>
 public sealed class QuotationsEndpoint : CarterModule
 {
@@ -78,7 +78,7 @@ public sealed class QuotationsEndpoint : CarterModule
         Guid quotationId)
         => await handler.TryHandleAsync(httpContext, useCase, new SelectQuotationRequest(groupId, quotationId));
 
-    // RN-062: Tags + Cláusulas particulares da minuta da Cotação selecionada.
+    // RN-079: Tags + Cláusulas particulares da minuta da Cotação selecionada.
     private static async Task<IResult> GetMinutaAsync(
         HttpContext httpContext,
         RequestHandler handler,
@@ -87,7 +87,7 @@ public sealed class QuotationsEndpoint : CarterModule
         Guid quotationId)
         => await handler.TryHandleAsync(httpContext, useCase, new GetQuotationMinutaRequest(groupId, quotationId));
 
-    // RN-063: envia os termos preenchidos (Tags + Cláusulas) e devolve a minuta ("Baixar minuta").
+    // RN-080: envia os termos preenchidos (Tags + Cláusulas) e devolve a minuta ("Baixar minuta").
     private static async Task<IResult> SubmitMinutaAsync(
         HttpContext httpContext,
         RequestHandler handler,
@@ -102,7 +102,7 @@ public sealed class QuotationsEndpoint : CarterModule
 }
 
 /// <summary>
-/// Corpo do POST de "Baixar minuta" (RN-063): os termos preenchidos (Tags do objeto) e as Cláusulas
+/// Corpo do POST de "Baixar minuta" (RN-080): os termos preenchidos (Tags do objeto) e as Cláusulas
 /// particulares marcadas com suas Tags. A Corretora vem do Escopo ativo do acesso (RN-103), não do corpo.
 /// </summary>
 public sealed record SubmitQuotationMinutaBody(

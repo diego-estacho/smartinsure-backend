@@ -12,9 +12,12 @@ public sealed record ListQuotationsResponse(
 /// <summary>
 /// RN-058: uma Cotação no leque — classificação estável + esteira + motivos + prêmio/limite + CCG. Sem
 /// prêmio quando não Pronta para emissão; a esteira específica quando em Análise; os motivos quando Indisponível.
+/// <para><c>Number</c> é o nº da proposta gerado pela Seguradora (ProposalNumber) — o mesmo exibido no livro
+/// de Cotações (RN-077); nulo enquanto a Seguradora não o atribuiu. Serve de âncora para o usuário se localizar.</para>
 /// </summary>
 public sealed record QuotationListItemResponse(
     Guid QuotationId,
+    string? Number,
     Guid InsurerId,
     string InsurerName,
     string? InsurerLogoUrl,
