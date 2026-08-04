@@ -31,6 +31,7 @@ public sealed class ListQuotationsUseCase(
         var items = quotations
             .Select(quotation => new QuotationListItemResponse(
                 quotation.Id,
+                quotation.ProposalNumber,
                 quotation.InsurerId,
                 insurerNames.TryGetValue(quotation.InsurerId, out var name) ? name : "Seguradora",
                 insurerLogos.TryGetValue(quotation.InsurerId, out var logo) ? logo : null,
