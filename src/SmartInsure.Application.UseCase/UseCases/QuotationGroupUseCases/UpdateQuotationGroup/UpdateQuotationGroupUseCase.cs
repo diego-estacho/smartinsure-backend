@@ -18,6 +18,7 @@ public sealed class UpdateQuotationGroupUseCase(
     IQuotationRepository quotationRepository,
     IPersonRepository personRepository,
     IModalityRepository modalityRepository,
+    IAdditionalCoverageRepository additionalCoverageRepository,
     IUnitOfWork unitOfWork) : IUpdateQuotationGroupUseCase
 {
     public async Task<UpdateQuotationGroupResponse> ExecuteAsync(
@@ -75,6 +76,10 @@ public sealed class UpdateQuotationGroupUseCase(
             }
         }
 
+        // RN-104: mesma validação da criação — id de canônica inexistente é recusado.
+        await CreateQuotationGroup.CreateQuotationGroupUseCase.EnsureAdditionalCoveragesExistAsync(
+            additionalCoverageRepository, request.AdditionalCoverageIds, cancellationToken);
+
         group.UpdateDraft(
             request.PolicyHolderId,
             request.BranchId,
@@ -85,8 +90,7 @@ public sealed class UpdateQuotationGroupUseCase(
             request.CoverageEndDate,
             scopeMode,
             request.InsurerIds,
-            request.IncludesPenaltyCoverage,
-            request.IncludesLaborCoverage);
+            request.AdditionalCoverageIds);
 
         // Sem repository.Update: a raiz e a coleção do escopo estão rastreadas (GetByIdWithInsurersAsync),
         // então o change tracker resolve UPDATE da raiz + INSERT/DELETE dos filhos no commit.
@@ -102,8 +106,7 @@ public sealed class UpdateQuotationGroupUseCase(
             group.CoverageEndDate,
             group.ScopeMode.ToString(),
             group.SelectedInsurers.Select(insurer => insurer.InsurerId).ToList(),
-            group.IncludesPenaltyCoverage,
-            group.IncludesLaborCoverage,
+            group.AdditionalCoverages.Select(coverage => coverage.AdditionalCoverageId).ToList(),
             group.Status.ToString());
     }
 

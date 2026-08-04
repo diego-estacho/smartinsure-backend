@@ -12,6 +12,8 @@ public sealed class QuotationGroup : EntityBase
 {
     private readonly List<QuotationGroupInsurer> _selectedInsurers = [];
 
+    private readonly List<QuotationGroupAdditionalCoverage> _additionalCoverages = [];
+
     private QuotationGroup()
     {
     }
@@ -33,12 +35,6 @@ public sealed class QuotationGroup : EntityBase
 
     public EQuotationScopeMode ScopeMode { get; private set; }
 
-    /// <summary>Cobertura Adicional de Multa marcada — provisório (2 booleanos até o read de coberturas por modalidade; RN-051).</summary>
-    public bool IncludesPenaltyCoverage { get; private set; }
-
-    /// <summary>Cobertura Adicional Trabalhista/Previdenciária marcada — provisório (RN-051).</summary>
-    public bool IncludesLaborCoverage { get; private set; }
-
     public EQuotationGroupStatus Status { get; private set; }
 
     /// <summary>Cotação escolhida do Grupo para seguir (RN-059); nula enquanto nenhuma foi escolhida.</summary>
@@ -54,6 +50,10 @@ public sealed class QuotationGroup : EntityBase
     /// <summary>Seguradoras do escopo, quando o modo é Specific (vazio quando All).</summary>
     public IReadOnlyCollection<QuotationGroupInsurer> SelectedInsurers => _selectedInsurers.AsReadOnly();
 
+    /// <summary>RN-104: Coberturas Adicionais canônicas escolhidas na etapa de risco.</summary>
+    public IReadOnlyCollection<QuotationGroupAdditionalCoverage> AdditionalCoverages
+        => _additionalCoverages.AsReadOnly();
+
     /// <summary>RN-050: o Grupo de Cotação nasce em Rascunho ao concluir a etapa de risco.</summary>
     public static QuotationGroup Create(
         Guid policyHolderId,
@@ -65,8 +65,7 @@ public sealed class QuotationGroup : EntityBase
         DateOnly coverageEndDate,
         EQuotationScopeMode scopeMode,
         IEnumerable<Guid> insurerIds,
-        bool includesPenaltyCoverage,
-        bool includesLaborCoverage)
+        IEnumerable<Guid> additionalCoverageIds)
     {
         var group = new QuotationGroup
         {
@@ -78,12 +77,11 @@ public sealed class QuotationGroup : EntityBase
             CoverageStartDate = coverageStartDate,
             CoverageEndDate = coverageEndDate,
             ScopeMode = scopeMode,
-            IncludesPenaltyCoverage = includesPenaltyCoverage,
-            IncludesLaborCoverage = includesLaborCoverage,
             Status = EQuotationGroupStatus.Draft,
         };
 
         group.ReplaceSelectedInsurers(scopeMode, insurerIds);
+        group.ReplaceAdditionalCoverages(additionalCoverageIds);
 
         return group;
     }
@@ -99,8 +97,7 @@ public sealed class QuotationGroup : EntityBase
         DateOnly coverageEndDate,
         EQuotationScopeMode scopeMode,
         IEnumerable<Guid> insurerIds,
-        bool includesPenaltyCoverage,
-        bool includesLaborCoverage)
+        IEnumerable<Guid> additionalCoverageIds)
     {
         PolicyHolderId = policyHolderId;
         BranchPersonId = branchPersonId;
@@ -110,10 +107,9 @@ public sealed class QuotationGroup : EntityBase
         CoverageStartDate = coverageStartDate;
         CoverageEndDate = coverageEndDate;
         ScopeMode = scopeMode;
-        IncludesPenaltyCoverage = includesPenaltyCoverage;
-        IncludesLaborCoverage = includesLaborCoverage;
 
         ReplaceSelectedInsurers(scopeMode, insurerIds);
+        ReplaceAdditionalCoverages(additionalCoverageIds);
     }
 
     private void ReplaceSelectedInsurers(EQuotationScopeMode scopeMode, IEnumerable<Guid> insurerIds)
@@ -129,6 +125,20 @@ public sealed class QuotationGroup : EntityBase
         foreach (var insurerId in insurerIds.Distinct())
         {
             _selectedInsurers.Add(QuotationGroupInsurer.Create(Id, insurerId));
+        }
+    }
+
+    /// <summary>
+    /// RN-104: substitui as Coberturas Adicionais escolhidas. É conjunto — a mesma cobertura marcada
+    /// duas vezes é a mesma escolha.
+    /// </summary>
+    private void ReplaceAdditionalCoverages(IEnumerable<Guid> additionalCoverageIds)
+    {
+        _additionalCoverages.Clear();
+
+        foreach (var coverageId in additionalCoverageIds.Distinct())
+        {
+            _additionalCoverages.Add(QuotationGroupAdditionalCoverage.Create(Id, coverageId));
         }
     }
 

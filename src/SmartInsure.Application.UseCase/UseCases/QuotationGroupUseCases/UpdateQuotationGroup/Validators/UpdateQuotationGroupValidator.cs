@@ -36,6 +36,10 @@ public sealed class UpdateQuotationGroupValidator : AbstractValidator<UpdateQuot
         RuleForEach(request => request.InsurerIds)
             .NotEmpty().WithMessage("Seguradora inválida no escopo.");
 
+        // RN-104: id vazio na lista de Coberturas Adicionais é forma inválida (a existência é do servidor).
+        RuleForEach(request => request.AdditionalCoverageIds)
+            .NotEmpty().WithMessage("Cobertura adicional inválida.");
+
         RuleFor(request => request.InsurerIds)
             .NotEmpty().WithMessage("Selecione ao menos uma seguradora para o escopo específico.")
             .When(request => string.Equals(

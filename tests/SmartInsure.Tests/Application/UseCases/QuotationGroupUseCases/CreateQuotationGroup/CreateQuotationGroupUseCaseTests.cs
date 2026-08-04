@@ -23,19 +23,23 @@ public class CreateQuotationGroupUseCaseTests
 
     private readonly IPersonRepository _personRepository = Substitute.For<IPersonRepository>();
     private readonly IModalityRepository _modalityRepository = Substitute.For<IModalityRepository>();
+    private readonly IAdditionalCoverageRepository _additionalCoverageRepository =
+        Substitute.For<IAdditionalCoverageRepository>();
+
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly CreateQuotationGroupUseCase _useCase;
 
     public CreateQuotationGroupUseCaseTests()
         => _useCase = new CreateQuotationGroupUseCase(
-            _quotationGroupRepository, _personRepository, _modalityRepository, _unitOfWork);
+            _quotationGroupRepository, _personRepository, _modalityRepository,
+            _additionalCoverageRepository, _unitOfWork);
 
     private static CreateQuotationGroupRequest ValidRequest(
         string scopeMode = "All", IReadOnlyList<Guid>? insurerIds = null, Guid? branchId = null, Guid? policyHolderId = null)
         => new(
             policyHolderId ?? PolicyHolderId, branchId, InsuredId, ModalityId,
             1000m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
-            scopeMode, insurerIds ?? [], false, false);
+            scopeMode, insurerIds ?? [], []);
 
     /// <summary>RN-101: matriz sintética (CNPJ de ordem /0001) para os cenários de RN-102.</summary>
     private static Person CreateHeadquarters(string documentNumber = "11222333000181", string name = "Matriz LTDA")

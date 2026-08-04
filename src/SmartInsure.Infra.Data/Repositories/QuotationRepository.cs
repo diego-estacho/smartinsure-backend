@@ -30,6 +30,14 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
             dbContext.QuotationReasons.RemoveRange(entity.Reasons);
         }
 
+        // RN-105/RN-106 (AB#0007): a situação das Coberturas Adicionais é filha da Cotação e cai na
+        // mesma FK Restrict — sem removê-la antes, o recálculo passa a falhar. O chamador carrega a
+        // Cotação com a coleção (ver ListByGroupAsync).
+        if (entity.AdditionalCoverages.Count > 0)
+        {
+            dbContext.QuotationAdditionalCoverages.RemoveRange(entity.AdditionalCoverages);
+        }
+
         dbContext.Quotations.Remove(entity);
     }
 
@@ -38,6 +46,7 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
         Guid quotationGroupId, CancellationToken cancellationToken)
         => await dbContext.Quotations
             .Include(quotation => quotation.Reasons)
+            .Include(quotation => quotation.AdditionalCoverages)
             .Where(quotation => quotation.QuotationGroupId == quotationGroupId)
             .ToListAsync(cancellationToken);
 

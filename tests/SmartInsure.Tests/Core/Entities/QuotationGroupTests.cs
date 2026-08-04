@@ -18,8 +18,7 @@ public class QuotationGroupTests
             new DateOnly(2026, 2, 1),
             EQuotationScopeMode.All,
             [],
-            false,
-            false);
+            []);
 
     [Fact]
     [Trait("RuleId", "RN-102")]
@@ -58,8 +57,7 @@ public class QuotationGroupTests
             new DateOnly(2026, 4, 1),
             EQuotationScopeMode.All,
             [],
-            false,
-            false);
+            []);
 
         group.BranchPersonId.Should().BeNull();
     }
@@ -81,8 +79,7 @@ public class QuotationGroupTests
             new DateOnly(2026, 4, 1),
             EQuotationScopeMode.All,
             [],
-            false,
-            false);
+            []);
 
         group.BranchPersonId.Should().Be(branchId);
     }

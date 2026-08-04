@@ -76,6 +76,16 @@ public sealed class QuotationMapping : IEntityTypeConfiguration<Quotation>
         builder.Navigation(quotation => quotation.Reasons)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
+        // RN-105/RN-106: situação das Coberturas Adicionais escolhidas. Mesma nota da FK Restrict
+        // acima — a remoção em cascata do agregado é explícita no QuotationRepository.Remove.
+        builder.HasMany(quotation => quotation.AdditionalCoverages)
+            .WithOne()
+            .HasForeignKey(coverage => coverage.QuotationId)
+            .IsRequired();
+
+        builder.Navigation(quotation => quotation.AdditionalCoverages)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         builder.Property(quotation => quotation.CreatedAt).IsRequired();
         builder.Property(quotation => quotation.CreatedBy).HasMaxLength(100).IsRequired();
         builder.Property(quotation => quotation.UpdatedBy).HasMaxLength(100);

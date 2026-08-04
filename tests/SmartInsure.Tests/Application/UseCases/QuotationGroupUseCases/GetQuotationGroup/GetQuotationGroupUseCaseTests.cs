@@ -37,11 +37,12 @@ public class GetQuotationGroupUseCaseTests
         var insuredId = Guid.CreateVersion7();
         var modalityId = Guid.CreateVersion7();
         var insurer = Guid.CreateVersion7();
+        var multa = Guid.CreateVersion7();
 
         var group = QuotationGroup.Create(
             policyHolderId, branchPersonId: null, insuredId, modalityId,
             2000m, new DateOnly(2026, 3, 1), new DateOnly(2026, 6, 1),
-            EQuotationScopeMode.Specific, [insurer], true, false);
+            EQuotationScopeMode.Specific, [insurer], [multa]);
 
         _quotationGroupRepository.GetByIdWithInsurersAsync(group.Id, Arg.Any<CancellationToken>())
             .Returns(group);
@@ -61,7 +62,8 @@ public class GetQuotationGroupUseCaseTests
         response.InsuredAmount.Should().Be(2000m);
         response.ScopeMode.Should().Be("Specific");
         response.InsurerIds.Should().BeEquivalentTo([insurer]);
-        response.IncludesPenaltyCoverage.Should().BeTrue();
+        // RN-104: o wizard reidrata as Coberturas Adicionais escolhidas pelos ids da canônica.
+        response.AdditionalCoverageIds.Should().BeEquivalentTo(new[] { multa });
         response.Status.Should().Be("Draft");
         response.PolicyHolder.Id.Should().Be(policyHolderId);
         response.PolicyHolder.Name.Should().Be("Tomador Ltda");
@@ -88,7 +90,7 @@ public class GetQuotationGroupUseCaseTests
         var group = QuotationGroup.Create(
             Guid.CreateVersion7(), branchPersonId: null, Guid.CreateVersion7(), Guid.CreateVersion7(),
             500m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
-            EQuotationScopeMode.All, [], false, false);
+            EQuotationScopeMode.All, [], []);
         _quotationGroupRepository.GetByIdWithInsurersAsync(group.Id, Arg.Any<CancellationToken>())
             .Returns(group);
         // _personRepository sem setup → GetSummaryByIdAsync devolve null → tomador não encontrado.

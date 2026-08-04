@@ -1,3 +1,4 @@
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Enumerators;
 
 namespace SmartInsure.Core.Entities;
@@ -12,6 +13,8 @@ namespace SmartInsure.Core.Entities;
 public sealed class Quotation : EntityBase
 {
     private readonly List<QuotationReason> _reasons = [];
+
+    private readonly List<QuotationAdditionalCoverage> _additionalCoverages = [];
 
     private Quotation()
     {
@@ -69,6 +72,25 @@ public sealed class Quotation : EntityBase
 
     /// <summary>Motivos de indisponibilidade/recusa (RN-056/RN-058), do provedor ou locais.</summary>
     public IReadOnlyCollection<QuotationReason> Reasons => _reasons.AsReadOnly();
+
+    /// <summary>RN-105/RN-106: situação das Coberturas Adicionais escolhidas nesta Cotação.</summary>
+    public IReadOnlyCollection<QuotationAdditionalCoverage> AdditionalCoverages
+        => _additionalCoverages.AsReadOnly();
+
+    /// <summary>
+    /// RN-106: registra a situação de cada Cobertura Adicional escolhida. Chamado ANTES de acionar a
+    /// Seguradora, para que o registro exista mesmo quando a Cotação vira Indisponível (RN-058) ou
+    /// falha na integração (RN-057). Substitui o registro anterior (recálculo).
+    /// </summary>
+    public void RecordAdditionalCoverages(IEnumerable<ResolvedAdditionalCoverage> resolved)
+    {
+        _additionalCoverages.Clear();
+
+        foreach (var item in resolved)
+        {
+            _additionalCoverages.Add(QuotationAdditionalCoverage.Create(Id, item));
+        }
+    }
 
     /// <summary>RN-057: o fan-out materializa uma Cotação Requested por Seguradora antes de solicitar.</summary>
     public static Quotation Requested(Guid quotationGroupId, Guid insurerId)

@@ -20,25 +20,29 @@ public class UpdateQuotationGroupUseCaseTests
     private readonly IQuotationRepository _quotationRepository = Substitute.For<IQuotationRepository>();
     private readonly IPersonRepository _personRepository = Substitute.For<IPersonRepository>();
     private readonly IModalityRepository _modalityRepository = Substitute.For<IModalityRepository>();
+    private readonly IAdditionalCoverageRepository _additionalCoverageRepository =
+        Substitute.For<IAdditionalCoverageRepository>();
+
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly UpdateQuotationGroupUseCase _useCase;
 
     public UpdateQuotationGroupUseCaseTests()
         => _useCase = new UpdateQuotationGroupUseCase(
-            _quotationGroupRepository, _quotationRepository, _personRepository, _modalityRepository, _unitOfWork);
+            _quotationGroupRepository, _quotationRepository, _personRepository, _modalityRepository,
+            _additionalCoverageRepository, _unitOfWork);
 
     private static QuotationGroup ExistingDraft(Guid? branchPersonId = null)
         => QuotationGroup.Create(
             Guid.CreateVersion7(), branchPersonId, Guid.CreateVersion7(), Guid.CreateVersion7(),
             500m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
-            EQuotationScopeMode.All, [], false, false);
+            EQuotationScopeMode.All, [], []);
 
     private static UpdateQuotationGroupRequest ValidRequest(
         Guid groupId, Guid policyHolderId, Guid? branchId = null)
         => new(
             groupId, policyHolderId, branchId, Guid.CreateVersion7(), Guid.CreateVersion7(),
             1000m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
-            "All", [], false, false);
+            "All", [], []);
 
     /// <summary>RN-101: matriz sintética (CNPJ de ordem /0001) para os cenários de RN-102.</summary>
     private static Person CreateHeadquarters(string documentNumber = "11222333000181", string name = "Matriz LTDA")
@@ -74,10 +78,14 @@ public class UpdateQuotationGroupUseCaseTests
         SetupValidReferences();
 
         var insurer = Guid.CreateVersion7();
+        var multa = Guid.CreateVersion7();
+        _additionalCoverageRepository.GetByIdAsync(multa, Arg.Any<CancellationToken>())
+            .Returns(AdditionalCoverage.Create("Multas"));
+
         var request = new UpdateQuotationGroupRequest(
             group.Id, Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(),
             2000m, new DateOnly(2026, 3, 1), new DateOnly(2026, 6, 1),
-            "Specific", [insurer], true, true);
+            "Specific", [insurer], [multa]);
 
         var response = await _useCase.ExecuteAsync(request, CancellationToken.None);
 
@@ -86,7 +94,8 @@ public class UpdateQuotationGroupUseCaseTests
         response.InsuredAmount.Should().Be(2000m);
         response.ScopeMode.Should().Be("Specific");
         response.InsurerIds.Should().BeEquivalentTo([insurer]);
-        response.IncludesPenaltyCoverage.Should().BeTrue();
+        // RN-104: a resposta devolve as Coberturas Adicionais escolhidas.
+        response.AdditionalCoverageIds.Should().BeEquivalentTo(new[] { multa });
         await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
@@ -99,7 +108,7 @@ public class UpdateQuotationGroupUseCaseTests
         var request = new UpdateQuotationGroupRequest(
             Guid.CreateVersion7(), Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(),
             1000m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
-            "All", [], false, false);
+            "All", [], []);
 
         var act = () => _useCase.ExecuteAsync(request, CancellationToken.None);
 
@@ -118,7 +127,7 @@ public class UpdateQuotationGroupUseCaseTests
         var request = new UpdateQuotationGroupRequest(
             group.Id, Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(),
             1000m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
-            "All", [], false, false);
+            "All", [], []);
 
         var act = () => _useCase.ExecuteAsync(request, CancellationToken.None);
 
@@ -232,7 +241,7 @@ public class UpdateQuotationGroupUseCaseTests
         var request = new UpdateQuotationGroupRequest(
             group.Id, Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(),
             1000m, new DateOnly(2026, 1, 1), new DateOnly(2026, 2, 1),
-            "All", [], false, false);
+            "All", [], []);
 
         var act = () => _useCase.ExecuteAsync(request, CancellationToken.None);
 
