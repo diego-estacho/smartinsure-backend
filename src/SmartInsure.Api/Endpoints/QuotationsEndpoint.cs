@@ -53,12 +53,11 @@ public sealed class QuotationsEndpoint : CarterModule
         HttpContext httpContext,
         RequestHandler handler,
         IRunQuotationsUseCase useCase,
-        Guid groupId,
-        RunQuotationsBody body)
+        Guid groupId)
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
-            new RunQuotationsRequest(groupId, body.BrokerageId),
+            new RunQuotationsRequest(groupId),
             resultFactory: response => Results.Accepted(
                 $"/api/v1/quotation-groups/{groupId}/quotations", response));
 
@@ -99,17 +98,13 @@ public sealed class QuotationsEndpoint : CarterModule
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
-            new SubmitQuotationTermsRequest(groupId, quotationId, body.BrokerageId, body.Terms, body.ParticularClauses));
+            new SubmitQuotationTermsRequest(groupId, quotationId, body.Terms, body.ParticularClauses));
 }
 
-/// <summary>Corpo do POST de solicitação — a Corretora dona das Habilitações (fonte OPEN-03).</summary>
-public sealed record RunQuotationsBody(Guid BrokerageId);
-
 /// <summary>
-/// Corpo do POST de "Baixar minuta" (RN-063): a Corretora dona da Habilitação + os termos preenchidos
-/// (Tags do objeto) e as Cláusulas particulares marcadas com suas Tags.
+/// Corpo do POST de "Baixar minuta" (RN-063): os termos preenchidos (Tags do objeto) e as Cláusulas
+/// particulares marcadas com suas Tags. A Corretora vem do Escopo ativo do acesso (RN-103), não do corpo.
 /// </summary>
 public sealed record SubmitQuotationMinutaBody(
-    Guid BrokerageId,
     IReadOnlyList<QuotationTermInput> Terms,
     IReadOnlyList<QuotationClauseInput> ParticularClauses);

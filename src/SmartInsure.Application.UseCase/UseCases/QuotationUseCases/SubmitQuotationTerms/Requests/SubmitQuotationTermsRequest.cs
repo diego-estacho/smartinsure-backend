@@ -2,13 +2,15 @@ namespace SmartInsure.Application.UseCase.UseCases.QuotationUseCases.SubmitQuota
 
 /// <summary>
 /// RN-063 — "Baixar minuta": envia ao provedor os termos preenchidos (Tags do objeto + Cláusulas
-/// particulares marcadas) da Cotação e devolve a minuta gerada. BrokerageId identifica a Corretora dona
-/// da Habilitação (fonte dos parâmetros de conexão/motor — OPEN-03/RN-023). Preenchimento parcial é aceito.
+/// particulares marcadas) da Cotação e devolve a minuta gerada. Preenchimento parcial é aceito.
 /// </summary>
+/// <remarks>
+/// RN-103: a Corretora do envio (dona da Habilitação, fonte da conexão/motor — RN-023) é a do Escopo ativo
+/// do acesso (RN-064, ADR-065), resolvida pelo servidor a partir do claim — nunca informada pelo cliente.
+/// </remarks>
 public sealed record SubmitQuotationTermsRequest(
     Guid QuotationGroupId,
     Guid QuotationId,
-    Guid BrokerageId,
     IReadOnlyList<QuotationTermInput> Terms,
     IReadOnlyList<QuotationClauseInput> ParticularClauses);
 

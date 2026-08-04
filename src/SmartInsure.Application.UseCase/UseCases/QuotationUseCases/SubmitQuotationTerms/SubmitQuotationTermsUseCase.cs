@@ -22,6 +22,7 @@ public sealed class SubmitQuotationTermsUseCase(
     IQuotationRepository quotationRepository,
     IPersonRepository personRepository,
     IBrokerageInsurerEnablementRepository enablementRepository,
+    ICurrentUserAccessor currentUserAccessor,
     IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider) : ISubmitQuotationTermsUseCase
 {
@@ -31,6 +32,11 @@ public sealed class SubmitQuotationTermsUseCase(
     public async Task<SubmitQuotationTermsResponse> ExecuteAsync(
         SubmitQuotationTermsRequest request, CancellationToken cancellationToken)
     {
+        // RN-103: a Corretora do envio é a do Escopo ativo do acesso (claim, ADR-065), resolvida pelo
+        // servidor — nunca informada pelo cliente. Sem Corretora ativa, a operação é recusada.
+        var brokerageId = currentUserAccessor.ActiveBrokerageId
+            ?? throw new BusinessRuleException("Nenhuma Corretora ativa no acesso para enviar a minuta.");
+
         var quotation = await quotationRepository.GetByIdAsync(request.QuotationId, cancellationToken)
             ?? throw new NotFoundException("Cotação não encontrada.");
 
@@ -48,7 +54,7 @@ public sealed class SubmitQuotationTermsUseCase(
         }
 
         var enablement = await enablementRepository.GetByPairAsync(
-                request.BrokerageId, quotation.InsurerId, cancellationToken)
+                brokerageId, quotation.InsurerId, cancellationToken)
             ?? throw new NotFoundException("Habilitação da Seguradora não encontrada.");
 
         if (enablement.Status != EBrokerageInsurerEnablementStatus.Active)
@@ -56,7 +62,7 @@ public sealed class SubmitQuotationTermsUseCase(
             throw new BusinessRuleException("Habilitação da Seguradora está inativa.");
         }
 
-        var brokerage = await personRepository.GetByIdAsync(request.BrokerageId, cancellationToken)
+        var brokerage = await personRepository.GetByIdAsync(brokerageId, cancellationToken)
             ?? throw new NotFoundException("Corretora não encontrada.");
 
         var engine = serviceProvider.GetKeyedService<ICalculationEngine>(enablement.CalculationEngine)
