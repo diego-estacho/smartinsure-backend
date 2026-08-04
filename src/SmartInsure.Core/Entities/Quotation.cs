@@ -6,7 +6,7 @@ namespace SmartInsure.Core.Entities;
 /// Cotação (RN-057/RN-058/RN-059): o resultado de uma Seguradora dentro de um Grupo de Cotação — uma
 /// por Seguradora. Nasce Requested no fan-out e passa a Obtained/Failed conforme a Seguradora responde
 /// (RN-057). Carrega a classificação estável (Result) + esteira/motivos/prêmio/CCG (RN-058, ADR-064) e
-/// a minuta capturada quando selecionada (RN-062). A tradução do status do provedor vive na ACL, não
+/// a minuta capturada quando selecionada (RN-079). A tradução do status do provedor vive na ACL, não
 /// aqui (ADR-064); esta entidade guarda o resultado já classificado e garante os invariantes.
 /// </summary>
 public sealed class Quotation : EntityBase
@@ -51,10 +51,10 @@ public sealed class Quotation : EntityBase
 
     public bool CcgSigned { get; private set; }
 
-    /// <summary>Tags da minuta preenchidas (JSON) — capturadas na Cotação selecionada (RN-062).</summary>
+    /// <summary>Tags da minuta preenchidas (JSON) — capturadas na Cotação selecionada (RN-079).</summary>
     public string? MinutaTagsJson { get; private set; }
 
-    /// <summary>Cláusulas particulares marcadas (JSON) — capturadas na Cotação selecionada (RN-062).</summary>
+    /// <summary>Cláusulas particulares marcadas (JSON) — capturadas na Cotação selecionada (RN-079).</summary>
     public string? MinutaClausesJson { get; private set; }
 
     /// <summary>Instante em que a Seguradora respondeu (ou a falha foi registrada) — RN-057.</summary>
@@ -188,7 +188,7 @@ public sealed class Quotation : EntityBase
             EQuotationReasonSource.Local));
     }
 
-    /// <summary>RN-062: captura a minuta (Tags/Cláusulas preenchidas) da Cotação selecionada.</summary>
+    /// <summary>RN-079: captura a minuta (Tags/Cláusulas preenchidas) da Cotação selecionada.</summary>
     public void SetMinuta(string? tagsJson, string? clausesJson)
     {
         MinutaTagsJson = tagsJson;
