@@ -32,6 +32,10 @@ public class RequestPolicyIssuanceGateTests
     private readonly IInsurerRepository _insurerRepository = Substitute.For<IInsurerRepository>();
     private readonly IRegisterTermAcceptanceUseCase _registerTermAcceptance =
         Substitute.For<IRegisterTermAcceptanceUseCase>();
+    private readonly IImportedModalityRepository _importedModalityRepository =
+        Substitute.For<IImportedModalityRepository>();
+    private readonly IImportedModalityTagRepository _tagRepository =
+        Substitute.For<IImportedModalityTagRepository>();
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();
     private readonly ICurrentUserAccessor _currentUser = Substitute.For<ICurrentUserAccessor>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
@@ -83,6 +87,14 @@ public class RequestPolicyIssuanceGateTests
         _quotation.SetEnablement(_enablement.Id);
         _quotation.SetProviderOptions([new QuotationInstallmentOption { Number = 1, Value = 300m }], [0, 30], []);
 
+        var imported = ImportedModality.Create(
+            _insurerId, "src-1", "Licitante", ESuretyBranch.Public, null, null, null, null, DateTime.UtcNow);
+        _importedModalityRepository
+            .GetActiveByInsurerAndModalityAsync(_insurerId, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(imported);
+        _tagRepository.GetByImportedModalityAsync(imported.Id, Arg.Any<CancellationToken>())
+            .Returns(ImportedModalityTag.Create(imported.Id, "[{\"name\":\"objeto\"}]", "Objeto"));
+
         if (withMinuta)
         {
             _quotation.SetMinuta(
@@ -93,7 +105,8 @@ public class RequestPolicyIssuanceGateTests
         _group.MarkQuoted();
         _group.SelectQuotation(_quotation.Id);
 
-        _groupRepository.GetByIdAsync(_group.Id, Arg.Any<CancellationToken>()).Returns(_group);
+        // A emissão carrega o Grupo COM a réplica do endereço (RN-503).
+        _groupRepository.GetByIdWithInsuredAddressAsync(_group.Id, Arg.Any<CancellationToken>()).Returns(_group);
         _quotationRepository.GetByIdAsync(_quotation.Id, Arg.Any<CancellationToken>()).Returns(_quotation);
         _enablementRepository.GetByIdAsync(_enablement.Id, Arg.Any<CancellationToken>()).Returns(_enablement);
         _policyRepository.ExistsForQuotationAsync(_quotation.Id, Arg.Any<CancellationToken>()).Returns(false);
@@ -115,6 +128,7 @@ public class RequestPolicyIssuanceGateTests
         return new RequestPolicyIssuanceUseCase(
             _groupRepository, _quotationRepository, _policyRepository, _enablementRepository,
             _personRepository, _insurerRepository, _registerTermAcceptance, _userRepository,
+            _importedModalityRepository, _tagRepository,
             _currentUser, _unitOfWork, services.BuildServiceProvider());
     }
 
@@ -173,6 +187,28 @@ public class RequestPolicyIssuanceGateTests
 
         await AssertBlockedWithoutTouchingInsurer(
             () => useCase.ExecuteAsync(Request(), CancellationToken.None), "minuta");
+    }
+
+    /// <summary>
+    /// RN-502 (caso limite): "Cotação cuja Seguradora não oferece Tag alguma: nada a preencher, segue
+    /// direto". Sem catálogo importado para a Seguradora/Modalidade não há minuta a exigir — bloquear
+    /// aqui impediria emitir qualquer oferta cuja Modalidade não define Tag.
+    /// </summary>
+    [Fact]
+    [Trait("RuleId", "RN-502")]
+    public async Task Execute_ModalidadeSemTagNoCatalogo_NaoDeveExigirMinuta()
+    {
+        var useCase = BuildUseCase(withMinuta: false);
+        _importedModalityRepository
+            .GetActiveByInsurerAndModalityAsync(_insurerId, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns((ImportedModality?)null);
+        _engine.CreatePolicyAsync(Arg.Any<string?>(), Arg.Any<CreatePolicyInput>(), Arg.Any<CancellationToken>())
+            .Returns(new PolicyIssuanceResult { PolicyExternalId = "AP-1", ProposalNumber = "PROP-1" });
+
+        await useCase.ExecuteAsync(Request(), CancellationToken.None);
+
+        await _engine.Received(1).CreatePolicyAsync(
+            Arg.Any<string?>(), Arg.Any<CreatePolicyInput>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

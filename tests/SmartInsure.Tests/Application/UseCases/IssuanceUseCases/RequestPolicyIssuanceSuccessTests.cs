@@ -35,6 +35,10 @@ public class RequestPolicyIssuanceSuccessTests
     private readonly IRegisterTermAcceptanceUseCase _registerTermAcceptance =
         Substitute.For<IRegisterTermAcceptanceUseCase>();
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();
+    private readonly IImportedModalityRepository _importedModalityRepository =
+        Substitute.For<IImportedModalityRepository>();
+    private readonly IImportedModalityTagRepository _tagRepository =
+        Substitute.For<IImportedModalityTagRepository>();
     private readonly ICurrentUserAccessor _currentUser = Substitute.For<ICurrentUserAccessor>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly ICalculationEngine _engine = Substitute.For<ICalculationEngine>();
@@ -85,7 +89,8 @@ public class RequestPolicyIssuanceSuccessTests
 
         _user = User.Create("Diego", "diego@onpoint.com.br", ExternalIdentity);
 
-        _groupRepository.GetByIdAsync(_group.Id, Arg.Any<CancellationToken>()).Returns(_group);
+        // A emissão carrega o Grupo COM a réplica do endereço (RN-503).
+        _groupRepository.GetByIdWithInsuredAddressAsync(_group.Id, Arg.Any<CancellationToken>()).Returns(_group);
         _quotationRepository.GetByIdAsync(_quotation.Id, Arg.Any<CancellationToken>()).Returns(_quotation);
         _quotationRepository.ListByGroupAsync(_group.Id, Arg.Any<CancellationToken>()).Returns(siblings);
         _enablementRepository.GetByIdAsync(enablement.Id, Arg.Any<CancellationToken>()).Returns(enablement);
@@ -106,6 +111,9 @@ public class RequestPolicyIssuanceSuccessTests
         return new RequestPolicyIssuanceUseCase(
             _groupRepository, _quotationRepository, _policyRepository, _enablementRepository,
             _personRepository, _insurerRepository, _registerTermAcceptance, _userRepository,
+            // RN-502: o portão consulta o catálogo para saber se a Modalidade define Tag. Sem catálogo
+            // importado (padrão dos substitutos), não há minuta a exigir — o caminho de sucesso segue.
+            _importedModalityRepository, _tagRepository,
             _currentUser, _unitOfWork, services.BuildServiceProvider());
     }
 
@@ -204,6 +212,27 @@ public class RequestPolicyIssuanceSuccessTests
             await _engine.CreatePolicyAsync(
                 Arg.Any<string?>(), Arg.Any<CreatePolicyInput>(), Arg.Any<CancellationToken>());
         });
+    }
+
+    /// <summary>
+    /// RN-502 (caso limite): sem Tag nem Cláusula na minuta não há termo a reenviar, e o provedor recusa
+    /// um envio vazio ("Nenhum termo foi informado para atualização" — defeito visto no E2E). "Nada a
+    /// preencher" tem de significar nada a enviar, seguindo direto para o pedido de emissão.
+    /// </summary>
+    [Fact]
+    [Trait("RuleId", "RN-502")]
+    public async Task Execute_SemMinutaAEnviar_NaoDeveChamarOEnvioDeTermos()
+    {
+        var useCase = BuildUseCase();
+        _quotation.SetMinuta(null, null);
+        EngineAcceptsIssuance();
+
+        await useCase.ExecuteAsync(Request(), CancellationToken.None);
+
+        await _engine.DidNotReceive().SubmitProposalTermsAsync(
+            Arg.Any<string?>(), Arg.Any<SubmitProposalTermsInput>(), Arg.Any<CancellationToken>());
+        await _engine.Received(1).CreatePolicyAsync(
+            Arg.Any<string?>(), Arg.Any<CreatePolicyInput>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

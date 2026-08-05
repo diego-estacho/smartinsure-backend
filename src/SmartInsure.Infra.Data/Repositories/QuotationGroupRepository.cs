@@ -11,6 +11,11 @@ public sealed class QuotationGroupRepository(SmartInsureDbContext context)
 {
     // Rastreado (sem AsNoTracking): o UseCase de atualização muta a raiz e recria a coleção do escopo,
     // e o change tracker resolve inserts/deletes dos filhos antes do commit do UnitOfWork.
+    public async Task<QuotationGroup?> GetByIdWithInsuredAddressAsync(Guid id, CancellationToken cancellationToken)
+        => await Set
+            .Include(group => group.InsuredAddress)
+            .FirstOrDefaultAsync(group => group.Id == id, cancellationToken);
+
     public async Task<QuotationGroup?> GetByIdWithInsurersAsync(Guid id, CancellationToken cancellationToken)
         => await Set
             .Include(group => group.SelectedInsurers)

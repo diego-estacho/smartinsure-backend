@@ -37,6 +37,8 @@ public sealed class RequestPolicyIssuanceUseCase(
     IInsurerRepository insurerRepository,
     IRegisterTermAcceptanceUseCase registerTermAcceptanceUseCase,
     IUserRepository userRepository,
+    IImportedModalityRepository importedModalityRepository,
+    IImportedModalityTagRepository importedModalityTagRepository,
     ICurrentUserAccessor currentUserAccessor,
     IUnitOfWork unitOfWork,
     IServiceProvider serviceProvider) : IRequestPolicyIssuanceUseCase
@@ -47,7 +49,10 @@ public sealed class RequestPolicyIssuanceUseCase(
         RequestPolicyIssuanceRequest request,
         CancellationToken cancellationToken)
     {
-        var group = await quotationGroupRepository.GetByIdAsync(request.QuotationGroupId, cancellationToken)
+        // RN-503: carrega a réplica do endereço junto — é ela que vai à Seguradora, e sem o
+        // carregamento explícito o portão reprovaria uma oferta que tem endereço.
+        var group = await quotationGroupRepository.GetByIdWithInsuredAddressAsync(
+                request.QuotationGroupId, cancellationToken)
             ?? throw new NotFoundException("Grupo de cotação não encontrado.");
 
         var quotation = await LoadSelectedQuotationAsync(group, cancellationToken);
@@ -76,9 +81,16 @@ public sealed class RequestPolicyIssuanceUseCase(
         try
         {
             // RN-502: os termos que valem são os vigentes na Cotação — reenviados imediatamente antes do
-            // pedido, para a Apólice sair com o que o corretor está vendo.
-            await engine.SubmitProposalTermsAsync(
-                enablement.ConnectionParameters, BuildTermsInput(quotation, brokerCnpj), cancellationToken);
+            // pedido, para a Apólice sair com o que o corretor está vendo. Minuta vazia (Modalidade sem
+            // Tag nem Cláusula) não tem termo a reenviar, e o provedor recusa envio vazio: "nada a
+            // preencher" significa nada a enviar, então a chamada é pulada.
+            var terms = BuildTermsInput(quotation, brokerCnpj);
+
+            if (terms.Terms.Count > 0 || terms.ParticularClauses.Count > 0)
+            {
+                await engine.SubmitProposalTermsAsync(
+                    enablement.ConnectionParameters, terms, cancellationToken);
+            }
 
             await engine.SubmitPolicyAcceptanceTermAsync(
                 enablement.ConnectionParameters, brokerCnpj, quotation.ProposalExternalId!, cancellationToken);
@@ -252,7 +264,7 @@ public sealed class RequestPolicyIssuanceUseCase(
                 "A seguradora exige Contragarantia (CCG) assinada para emitir esta apólice.");
         }
 
-        if (!HasFilledMinuta(quotation))
+        if (!await HasCompleteMinutaAsync(quotation, group, cancellationToken))
         {
             throw new BusinessRuleException(
                 "A minuta precisa estar completa para emitir: preencha todas as tags antes de continuar.");
@@ -284,11 +296,33 @@ public sealed class RequestPolicyIssuanceUseCase(
     }
 
     /// <summary>
-    /// RN-502: minuta completa é toda Tag com valor. Cotação sem Tag alguma não tem o que preencher —
-    /// mas Tag registrada e vazia bloqueia, porque a apólice sairia com lacuna no objeto.
+    /// RN-502: minuta completa é toda Tag com valor. O que conta como "toda" vem do CATÁLOGO, não do
+    /// que a Cotação guardou: quando a Modalidade da Seguradora não define Tag alguma, não há o que
+    /// preencher e a emissão segue direto (caso limite da RN-502). Exigir preenchimento nesse caso
+    /// impediria emitir qualquer oferta cuja Modalidade não tem Tag — defeito encontrado no E2E.
+    /// Definida a Tag no catálogo, aí sim a Cotação precisa ter os valores, senão o objeto da apólice
+    /// sairia com lacuna.
     /// </summary>
-    private static bool HasFilledMinuta(Quotation quotation)
+    private async Task<bool> HasCompleteMinutaAsync(
+        Quotation quotation, QuotationGroup group, CancellationToken cancellationToken)
     {
+        var imported = await importedModalityRepository.GetActiveByInsurerAndModalityAsync(
+            quotation.InsurerId, group.ModalityId, cancellationToken);
+
+        if (imported is null)
+        {
+            return true;
+        }
+
+        var catalogTag = await importedModalityTagRepository.GetByImportedModalityAsync(
+            imported.Id, cancellationToken);
+
+        if (catalogTag is null || catalogTag.Status != EImportedModalityTagStatus.Active
+            || string.IsNullOrWhiteSpace(catalogTag.JsonTag))
+        {
+            return true;
+        }
+
         if (string.IsNullOrWhiteSpace(quotation.MinutaTagsJson))
         {
             return false;
