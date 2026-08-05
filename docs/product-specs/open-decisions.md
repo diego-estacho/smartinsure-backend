@@ -157,6 +157,18 @@ Bloqueia: referência sem ambiguidade a RN-062 e RN-063; não bloqueia entrega
 Status: aberta
 Contexto: levantado em 2026-08-03 (jornada Emissão). O README do catálogo determina **sequência única** de IDs, mas `RN-062` e `RN-063` existem em duas jornadas: Cotação (minuta; envio dos termos) e Perfis e Permissões (Perfil como conjunto de Permissões; catálogo fixo de Permissões) — colisão originada na integração de frentes paralelas. Por isso a RN-513 referencia o catálogo de Permissões **pelo nome da jornada**, sem ID. A faixa 1xx (RN-101, RN-102) e a faixa 5xx (Emissão, RN-500+) foram abertas para evitar novas colisões. Falta decidir se as RN duplicadas são renumeradas — o que implica ajustar docs e os identificadores de regra citados nos testes — ou se a colisão fica registrada e a numeração passa a ser por faixa de jornada, revisando o README.
 
+## OPEN-25 — Qual Modalidade Importada vale quando a Seguradora oferece mais de uma para a mesma Modalidade
+Dono: PO (gerente de projeto)
+Bloqueia: as tags do objeto e as cláusulas particulares exibidas no Passo 4 (RN-062), e o gate de minuta completa da emissão (RN-502); não bloqueia entrega — hoje a resolução é arbitrária
+Status: aberta
+Contexto: levantado em 2026-08-05 (jornada Emissão, ao carregar o catálogo importado no ambiente de dev). A mesma Seguradora pode ter **duas Modalidades Importadas ativas vinculadas à mesma Modalidade** — tipicamente as variantes de ramo Público e Privado, que a trava do mapeamento mantém separadas (RN-035). A plataforma resolve o par Seguradora×Modalidade sem critério de desempate, então pode apresentar as tags e as cláusulas da variante do ramo errado, e o gate de minuta completa (RN-502) pode exigir — ou deixar de exigir — o conjunto errado de tags. Falta decidir qual variante vale: a do ramo do risco (que exigiria a plataforma conhecer o ramo do Grupo de Cotação, hoje não capturado), a da Cotação que a Seguradora respondeu, ou se cabe ao corretor escolher. Enquanto aberta, vale a primeira encontrada.
+
+## OPEN-26 — Grupo já em "Emissão solicitada" reaberto na tela
+Dono: PO (gerente de projeto)
+Bloqueia: o que a etapa de emissão apresenta ao ser reaberta num Grupo que já solicitou emissão; não bloqueia entrega — o servidor recusa a segunda solicitação (RN-507)
+Status: aberta
+Contexto: levantado em 2026-08-05 (jornada Emissão, revisão do Passo 5). Solicitada a emissão, a tela mostra o desfecho "Emissão solicitada" e não oferece mais o formulário. Esse estado, porém, vive apenas na sessão: reaberto o Grupo pelo link (ou após recarregar a página), a etapa volta a apresentar taxa, pagamento e emitir, como se nada tivesse acontecido. Não há dano — a plataforma recusa a segunda solicitação (RN-507) e o ajuste de taxa depois da solicitação (RN-508) —, mas o corretor só descobre ao submeter. Falta decidir o que ele deve ver ao reabrir: o desfecho registrado (exigindo que a etapa leia o estado de emissão do Grupo, hoje não devolvido na reidratação), o formulário em modo leitura, ou o encaminhamento para a apólice/proposta gerada. Enquanto aberta, a etapa reabre no formulário.
+
 ## OPEN-90 — Efeito da Filial fora do Grupo de Cotação
 Dono: PO (gerente de projeto)
 Bloqueia: qual CNPJ (matriz ou Filial) é enviado à Seguradora ao cotar; Consulta de Crédito por Filial; Nomeação de Tomador por estabelecimento; remoção/desvínculo de Filial
