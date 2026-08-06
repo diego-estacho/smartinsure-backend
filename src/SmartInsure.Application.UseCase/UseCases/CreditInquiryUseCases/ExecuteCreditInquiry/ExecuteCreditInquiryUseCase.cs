@@ -191,13 +191,14 @@ public sealed class ExecuteCreditInquiryUseCase(
         var resultResponses = inquiry.Results
             .Select(result =>
             {
-                var insurerName = insurerData.TryGetValue(result.InsurerId, out var data)
-                    ? data.insurer.CorporateName
-                    : "Seguradora desconhecida";
+                var hasInsurer = insurerData.TryGetValue(result.InsurerId, out var data);
+                var insurerName = hasInsurer ? data.insurer.CorporateName : "Seguradora desconhecida";
+                var insurerLogoUrl = hasInsurer ? data.insurer.LogoUrl : null;
 
                 return new CreditInquiryResultResponse(
                     result.InsurerId,
                     insurerName,
+                    insurerLogoUrl,
                     result.Status.ToString(),
                     result.FailureReason,
                     result.ResponseTimeMs,

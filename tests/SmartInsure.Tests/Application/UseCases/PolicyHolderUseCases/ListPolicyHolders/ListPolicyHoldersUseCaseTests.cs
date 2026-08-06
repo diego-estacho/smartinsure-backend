@@ -65,7 +65,7 @@ public sealed class ListPolicyHoldersUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-104")]
+    [Trait("RuleId", "RN-200")]
     public async Task Execute_DevePropagarCorretora_EExporCidadeUfEFlagDeNomeacao_QuandoInformada()
     {
         var brokerageId = Guid.NewGuid();
@@ -86,7 +86,7 @@ public sealed class ListPolicyHoldersUseCaseTests
     }
 
     [Fact]
-    [Trait("RuleId", "RN-104")]
+    [Trait("RuleId", "RN-200")]
     public async Task Execute_DeveOmitirFlagDeNomeacao_QuandoSemCorretoraAtiva()
     {
         var request = new ListPolicyHoldersRequest { Page = 1, PageSize = 20 };

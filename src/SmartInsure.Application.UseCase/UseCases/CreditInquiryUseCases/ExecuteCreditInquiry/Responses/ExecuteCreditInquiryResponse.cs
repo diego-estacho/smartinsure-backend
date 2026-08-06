@@ -15,10 +15,11 @@ public sealed record CreditInquirySummary(
     int InsurersAvailable,
     decimal ConsolidatedLimit);
 
-/// <summary>Resultado individual por Seguradora (status, tempo de resposta, limites por grupo de modalidade).</summary>
+/// <summary>Resultado individual por Seguradora (status, logo, tempo de resposta, limites por grupo de modalidade).</summary>
 public sealed record CreditInquiryResultResponse(
     Guid InsurerId,
     string InsurerName,
+    string? InsurerLogoUrl,
     string Status,
     string? FailureReason,
     long? ResponseTimeMs,

@@ -919,6 +919,34 @@
         }
       }
     },
+    "/api/v1/credit-inquiries/{id}/export": {
+      "get": {
+        "tags": [
+          "CreditInquiriesEndpoint"
+        ],
+        "summary": "Exporta o quadro consolidado de uma consulta de crédito (.xlsx)",
+        "operationId": "ExportCreditInquiry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/v1/imported-additional-coverages/{id}/link": {
       "post": {
         "tags": [
@@ -4769,6 +4797,7 @@
         "required": [
           "insurerId",
           "insurerName",
+          "insurerLogoUrl",
           "status",
           "failureReason",
           "responseTimeMs",
@@ -4782,6 +4811,12 @@
           },
           "insurerName": {
             "type": "string"
+          },
+          "insurerLogoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "status": {
             "type": "string"

@@ -23,6 +23,7 @@ public sealed class GetCreditInquiryUseCase(
         // Carrega Insurers para montagem dos nomes (batch para evitar N+1).
         var insurerIds = inquiry.Results.Select(r => r.InsurerId).Distinct().ToList();
         var insurers = await insurerRepository.GetCorporateNamesByIdsAsync(insurerIds, cancellationToken);
+        var insurerLogos = await insurerRepository.GetLogoUrlsByIdsAsync(insurerIds, cancellationToken);
 
         var available = inquiry.Results.Where(r => r.Status == ECreditInquiryResultStatus.Available).ToList();
 
@@ -42,6 +43,7 @@ public sealed class GetCreditInquiryUseCase(
                 new CreditInquiryResultResponse(
                     result.InsurerId,
                     insurers.TryGetValue(result.InsurerId, out var name) ? name : "Seguradora desconhecida",
+                    insurerLogos.TryGetValue(result.InsurerId, out var logo) ? logo : null,
                     result.Status.ToString(),
                     result.FailureReason,
                     result.ResponseTimeMs,

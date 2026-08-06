@@ -417,7 +417,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
 
         var totalCount = await query.LongCountAsync(cancellationToken);
 
-        // RN-104: quando não há Corretora ativa, a flag de Nomeação não se aplica (Guid vazio
+        // RN-200: quando não há Corretora ativa, a flag de Nomeação não se aplica (Guid vazio
         // nunca casa uma Nomeação) — o mapeamento no use case a devolve como ausente.
         var appointmentBrokerageId = brokerageId ?? Guid.Empty;
 
@@ -431,7 +431,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                 person.Name,
                 person.SocialName,
                 person.LegalNature == null ? null : (bool?)person.LegalNature.IsPrivate,
-                // RN-104: cidade/UF do endereço principal (fallback: primeiro endereço cadastrado).
+                // RN-200: cidade/UF do endereço principal (fallback: primeiro endereço cadastrado).
                 person.Addresses
                     .OrderByDescending(address => address.IsMain)
                     .ThenBy(address => address.Id)
@@ -442,7 +442,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                     .ThenBy(address => address.Id)
                     .Select(address => address.State)
                     .FirstOrDefault(),
-                // RN-104: "já é Tomador desta Corretora" = existe Nomeação Vigente (Active) com a Corretora ativa.
+                // RN-200: "já é Tomador desta Corretora" = existe Nomeação Vigente (Active) com a Corretora ativa.
                 Context.Set<PolicyHolderAppointment>().Any(appointment =>
                     appointment.PolicyHolderId == person.Id
                     && appointment.BrokerageId == appointmentBrokerageId

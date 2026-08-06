@@ -5,6 +5,8 @@ using SmartInsure.Application.UseCase.ModelsBase;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry.Requests;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry.Responses;
+using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExportCreditInquiry.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExportCreditInquiry.Requests;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.GetCreditInquiry.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.GetCreditInquiry.Requests;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.GetCreditInquiry.Responses;
@@ -42,6 +44,13 @@ public sealed class CreditInquiriesEndpoint : CarterModule
             .Produces<GetCreditInquiryResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
+        // RN-201: exportação do quadro consolidado para .xlsx (reusa o IExcelExporter compartilhado).
+        app.MapGet("/{id:guid}/export", ExportAsync)
+            .WithName("ExportCreditInquiry")
+            .WithSummary("Exporta o quadro consolidado de uma consulta de crédito (.xlsx)")
+            .Produces(StatusCodes.Status200OK, contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .Produces(StatusCodes.Status404NotFound);
+
         app.MapGet("/", ListAsync)
             .WithName("ListCreditInquiries")
             .WithSummary("Lista histórico de consultas de crédito (paginado)")
@@ -62,6 +71,17 @@ public sealed class CreditInquiriesEndpoint : CarterModule
         IGetCreditInquiryUseCase useCase,
         Guid id)
         => await handler.TryHandleAsync(httpContext, useCase, new GetCreditInquiryRequest(id));
+
+    private static async Task<IResult> ExportAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        IExportCreditInquiryUseCase useCase,
+        Guid id)
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new ExportCreditInquiryRequest(id),
+            resultFactory: response => Results.File(response.Content, response.ContentType, response.FileName));
 
     private static async Task<IResult> ListAsync(
         HttpContext httpContext,
