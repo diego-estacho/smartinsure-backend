@@ -15,4 +15,11 @@ public interface IQuotationGroupRepository : IRepository<QuotationGroup>
     /// </summary>
     Task<IReadOnlyList<Guid>> ListAdditionalCoverageIdsAsync(
         Guid quotationGroupId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-503: o Grupo com a réplica do endereço do Segurado carregada. A emissão precisa dela — sem o
+    /// carregamento explícito a navegação vem nula e o portão reprovaria uma oferta que TEM endereço
+    /// (defeito encontrado no E2E de emissão).
+    /// </summary>
+    Task<QuotationGroup?> GetByIdWithInsuredAddressAsync(Guid id, CancellationToken cancellationToken);
 }

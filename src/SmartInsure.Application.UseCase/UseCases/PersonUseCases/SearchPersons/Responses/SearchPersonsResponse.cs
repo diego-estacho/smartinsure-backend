@@ -23,7 +23,24 @@ public sealed record PersonSearchItemResponse(
     IReadOnlyList<string> Roles,
     PersonAddressResponse? MainAddress,
     string? PreSelectedBranchDocumentNumber = null,
-    Guid? PreSelectedBranchId = null);
+    Guid? PreSelectedBranchId = null,
+    IReadOnlyList<PersonAddressOptionResponse>? Addresses = null);
+
+/// <summary>
+/// Endereço identificado da Pessoa (RN-503): o corretor escolhe um deles como endereço do Segurado da
+/// oferta, e é o <see cref="Id"/> que volta no contrato do Grupo de Cotação. <see cref="IsMain"/> marca
+/// qual a tela pré-seleciona.
+/// </summary>
+public sealed record PersonAddressOptionResponse(
+    Guid Id,
+    bool IsMain,
+    string? ZipCode,
+    string? Street,
+    string? Number,
+    string? Complement,
+    string? Neighborhood,
+    string? City,
+    string? State);
 
 public sealed record PersonAddressResponse(
     string? ZipCode,

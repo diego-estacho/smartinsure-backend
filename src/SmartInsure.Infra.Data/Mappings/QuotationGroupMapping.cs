@@ -76,6 +76,12 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
             .HasDatabaseName("IX_QuotationGroups_BranchPersonId")
             .HasFilter("[BranchPersonId] IS NOT NULL");
 
+        // RN-503: réplica do endereço do Segurado — 1:1 com a oferta, carregada junto (a emissão precisa).
+        builder.HasOne(group => group.InsuredAddress)
+            .WithOne()
+            .HasForeignKey<QuotationAddress>(address => address.QuotationGroupId)
+            .IsRequired(false);
+
         // Coleção filha das Seguradoras do escopo — acesso por field.
         builder.HasMany(group => group.SelectedInsurers)
             .WithOne()

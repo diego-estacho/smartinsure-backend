@@ -43,7 +43,7 @@ public class SearchPersonsUseCaseTests
 
     private static PersonSearchItemDto Item(
         string documentNumber, string name = "Alfa Ltda", string type = "J", bool? isPrivate = true)
-        => new(Guid.NewGuid(), documentNumber, name, null, type, isPrivate, [], null);
+        => new(Guid.NewGuid(), documentNumber, name, null, type, isPrivate, [], null, []);
 
     private static BureauPersonComplement Complement(string name = "Alfa Ltda")
         => new()

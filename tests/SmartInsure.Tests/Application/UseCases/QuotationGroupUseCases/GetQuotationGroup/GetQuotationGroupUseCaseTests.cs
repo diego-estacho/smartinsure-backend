@@ -28,7 +28,8 @@ public class GetQuotationGroupUseCaseTests
     private static PersonSearchItemDto PersonSummary(Guid id, string name, string? social = null)
         => new(
             id, "11444777000161", name, social, "J", true, ["PolicyHolder"],
-            new PersonMainAddressDto("01310-100", "Av. Paulista", "1000", null, "Bela Vista", "São Paulo", "SP"));
+            new PersonMainAddressDto("01310-100", "Av. Paulista", "1000", null, "Bela Vista", "São Paulo", "SP"),
+            []);
 
     [Fact]
     public async Task Execute_DeveResolverTomadorSeguradoEModalidade_QuandoGrupoExiste()
