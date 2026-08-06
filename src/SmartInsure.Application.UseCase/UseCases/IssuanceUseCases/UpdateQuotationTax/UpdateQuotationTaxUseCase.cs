@@ -64,6 +64,14 @@ public sealed class UpdateQuotationTaxUseCase(
             throw new BusinessRuleException("A cotação escolhida não tem proposta na seguradora.");
         }
 
+        // RN-504 (caso limite): taxa igual à vigente não é submetida — nada mudaria, e a Seguradora não
+        // recalcula o que já vale. A Cotação volta como está, para quem chamou não precisar distinguir
+        // este caso do recálculo.
+        if (quotation.Tax == request.Tax)
+        {
+            return BuildResponse(quotation);
+        }
+
         var (engine, connectionParameters) = await ResolveEngineAsync(quotation, cancellationToken);
         var brokerCnpj = await ResolveBrokerCnpjAsync(group, cancellationToken);
 
@@ -98,7 +106,12 @@ public sealed class UpdateQuotationTaxUseCase(
         quotationRepository.Update(quotation);
         await unitOfWork.CommitAsync(cancellationToken);
 
-        return new UpdateQuotationTaxResponse
+        return BuildResponse(quotation);
+    }
+
+    /// <summary>Os números que passam a valer na Cotação escolhida — a resposta é o espelho dela.</summary>
+    private static UpdateQuotationTaxResponse BuildResponse(Quotation quotation)
+        => new()
         {
             Premium = quotation.Premium,
             Tax = quotation.Tax,
@@ -110,7 +123,6 @@ public sealed class UpdateQuotationTaxUseCase(
                 .ToList(),
             PossibleGracePeriodsInDays = quotation.ReadPossibleGracePeriodsInDays(),
         };
-    }
 
     /// <summary>
     /// RN-512: a Seguradora é acionada pela Habilitação que obteve a Cotação — nunca resolvida de novo,

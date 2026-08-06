@@ -103,6 +103,24 @@ public class UpdateQuotationTaxUseCaseTests
     }
 
     [Fact]
+    public async Task Execute_TaxaIgualAVigente_NaoDeveAcionarASeguradora()
+    {
+        // RN-504 (caso limite): "Taxa igual à vigente: nada é submetido". Nada mudaria, e a Seguradora
+        // não precisa recalcular o que já vale — a Cotação volta como está.
+        var useCase = BuildUseCase();
+
+        var response = await useCase.ExecuteAsync(Request(1.5m), CancellationToken.None);
+
+        await _engine.DidNotReceive().UpdateProposalFinancialDataAsync(
+            Arg.Any<string?>(), Arg.Any<UpdateProposalFinancialDataInput>(), Arg.Any<CancellationToken>());
+        await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+        response.Tax.Should().Be(1.5m);
+        response.Premium.Should().Be(300m);
+        response.InstallmentOptions.Should().ContainSingle(option => option.Number == 1);
+        response.PossibleGracePeriodsInDays.Should().Contain(0);
+    }
+
+    [Fact]
     public async Task Execute_RecusaDaSeguradora_DevePreservarOsValoresAnteriores()
     {
         var useCase = BuildUseCase();
