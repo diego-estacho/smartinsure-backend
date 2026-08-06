@@ -257,4 +257,83 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
 
         return new QuotationBookPageDto(items, totalCount, counts, insurers, modalities);
     }
+
+    /// <summary>
+    /// RN-081: detalhe de uma Cotação, escopado pela Corretora do Grupo e restrito à mesma inclusão do
+    /// livro (RN-077: Obtained com resultado do provedor). Duas leituras baratas (uma linha): os escalares
+    /// achatados e, se houver, a situação das Coberturas Adicionais com o nome canônico (RN-106). Escopo
+    /// ou inexistência devolvem null indistinguível — o 404 do use case não revela existência.
+    /// </summary>
+    public async Task<QuotationDetailDto?> GetDetailAsync(
+        Guid quotationId, Guid brokerageId, CancellationToken cancellationToken)
+    {
+        var row = await (
+            from quotation in dbContext.Quotations.AsNoTracking()
+            where quotation.Id == quotationId
+                  && quotation.ProcessingStatus == EQuotationProcessingStatus.Obtained
+                  && (quotation.Result != EQuotationResult.Unavailable
+                      || dbContext.QuotationReasons.Any(reason =>
+                          reason.QuotationId == quotation.Id
+                          && reason.Source == EQuotationReasonSource.Provider))
+            join grp in dbContext.QuotationGroups.AsNoTracking() on quotation.QuotationGroupId equals grp.Id
+            where grp.BrokerageId == brokerageId
+            join policyHolder in dbContext.Persons.AsNoTracking() on grp.PolicyHolderId equals policyHolder.Id
+            join insured in dbContext.Persons.AsNoTracking() on grp.InsuredId equals insured.Id
+            join modality in dbContext.Modalities.AsNoTracking() on grp.ModalityId equals modality.Id
+            join insurer in dbContext.Insurers.AsNoTracking() on quotation.InsurerId equals insurer.Id
+            select new
+            {
+                Quotation = quotation,
+                Group = grp,
+                PolicyHolderName = policyHolder.Name,
+                PolicyHolderDocumentNumber = policyHolder.DocumentNumber,
+                InsuredName = insured.Name,
+                InsuredDocumentNumber = insured.DocumentNumber,
+                InsurerId = insurer.Id,
+                InsurerName = insurer.CorporateName,
+                InsurerLogoUrl = insurer.LogoUrl,
+                ModalityId = modality.Id,
+                ModalityName = modality.Name,
+            }).FirstOrDefaultAsync(cancellationToken);
+
+        if (row is null)
+        {
+            return null;
+        }
+
+        // RN-106: nome canônico (para exibir mesmo a não contemplada, que não tem SentName) + situação.
+        var additionalCoverages = await (
+            from coverage in dbContext.QuotationAdditionalCoverages.AsNoTracking()
+            join canonical in dbContext.AdditionalCoverages.AsNoTracking()
+                on coverage.AdditionalCoverageId equals canonical.Id
+            where coverage.QuotationId == quotationId
+            orderby canonical.Name
+            select new QuotationDetailCoverageDto(canonical.Name, coverage.Status, coverage.SentName))
+            .ToListAsync(cancellationToken);
+
+        return new QuotationDetailDto(
+            row.Quotation.Id,
+            row.Quotation.ProposalNumber,
+            row.PolicyHolderName,
+            row.PolicyHolderDocumentNumber,
+            row.InsuredName,
+            row.InsuredDocumentNumber,
+            row.InsurerId,
+            row.InsurerName,
+            row.InsurerLogoUrl,
+            row.ModalityId,
+            row.ModalityName,
+            row.Group.InsuredAmount,
+            row.Quotation.Premium,
+            row.Quotation.CommissionPercentage,
+            row.Quotation.CommissionValue,
+            row.Group.CoverageStartDate,
+            row.Group.CoverageEndDate,
+            row.Quotation.CreatedAt,
+            row.Quotation.ObtainedAt,
+            row.Quotation.Result!.Value,
+            row.Quotation.RequiresCcg,
+            row.Quotation.CcgSigned,
+            additionalCoverages);
+    }
 }
