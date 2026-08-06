@@ -9,12 +9,14 @@ namespace SmartInsure.Core.Entities;
 /// Cotação (RN-057/RN-058/RN-059): o resultado de uma Seguradora dentro de um Grupo de Cotação — uma
 /// por Seguradora. Nasce Requested no fan-out e passa a Obtained/Failed conforme a Seguradora responde
 /// (RN-057). Carrega a classificação estável (Result) + esteira/motivos/prêmio/CCG (RN-058, ADR-064) e
-/// a minuta capturada quando selecionada (RN-062). A tradução do status do provedor vive na ACL, não
+/// a minuta capturada quando selecionada (RN-079). A tradução do status do provedor vive na ACL, não
 /// aqui (ADR-064); esta entidade guarda o resultado já classificado e garante os invariantes.
 /// </summary>
 public sealed class Quotation : EntityBase
 {
     private readonly List<QuotationReason> _reasons = [];
+
+    private readonly List<QuotationAdditionalCoverage> _additionalCoverages = [];
 
     private Quotation()
     {
@@ -54,10 +56,10 @@ public sealed class Quotation : EntityBase
 
     public bool CcgSigned { get; private set; }
 
-    /// <summary>Tags da minuta preenchidas (JSON) — capturadas na Cotação selecionada (RN-062).</summary>
+    /// <summary>Tags da minuta preenchidas (JSON) — capturadas na Cotação selecionada (RN-079).</summary>
     public string? MinutaTagsJson { get; private set; }
 
-    /// <summary>Cláusulas particulares marcadas (JSON) — capturadas na Cotação selecionada (RN-062).</summary>
+    /// <summary>Cláusulas particulares marcadas (JSON) — capturadas na Cotação selecionada (RN-079).</summary>
     public string? MinutaClausesJson { get; private set; }
 
     /// <summary>
@@ -87,6 +89,25 @@ public sealed class Quotation : EntityBase
 
     /// <summary>Motivos de indisponibilidade/recusa (RN-056/RN-058), do provedor ou locais.</summary>
     public IReadOnlyCollection<QuotationReason> Reasons => _reasons.AsReadOnly();
+
+    /// <summary>RN-105/RN-106: situação das Coberturas Adicionais escolhidas nesta Cotação.</summary>
+    public IReadOnlyCollection<QuotationAdditionalCoverage> AdditionalCoverages
+        => _additionalCoverages.AsReadOnly();
+
+    /// <summary>
+    /// RN-106: registra a situação de cada Cobertura Adicional escolhida. Chamado ANTES de acionar a
+    /// Seguradora, para que o registro exista mesmo quando a Cotação vira Indisponível (RN-058) ou
+    /// falha na integração (RN-057). Substitui o registro anterior (recálculo).
+    /// </summary>
+    public void RecordAdditionalCoverages(IEnumerable<ResolvedAdditionalCoverage> resolved)
+    {
+        _additionalCoverages.Clear();
+
+        foreach (var item in resolved)
+        {
+            _additionalCoverages.Add(QuotationAdditionalCoverage.Create(Id, item));
+        }
+    }
 
     /// <summary>RN-057: o fan-out materializa uma Cotação Requested por Seguradora antes de solicitar.</summary>
     public static Quotation Requested(Guid quotationGroupId, Guid insurerId)
@@ -286,7 +307,7 @@ public sealed class Quotation : EntityBase
             ? []
             : JsonSerializer.Deserialize<List<T>>(json) ?? [];
 
-    /// <summary>RN-062: captura a minuta (Tags/Cláusulas preenchidas) da Cotação selecionada.</summary>
+    /// <summary>RN-079: captura a minuta (Tags/Cláusulas preenchidas) da Cotação selecionada.</summary>
     public void SetMinuta(string? tagsJson, string? clausesJson)
     {
         MinutaTagsJson = tagsJson;

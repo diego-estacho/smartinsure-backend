@@ -13,16 +13,19 @@ using SmartInsure.Core.Exceptions;
 namespace SmartInsure.Tests.Application.UseCases.QuotationUseCases.SubmitQuotationTerms;
 
 /// <summary>
-/// RN-063 — "Baixar minuta": envia os termos preenchidos (UpdateProposalTerms) e devolve a minuta
+/// RN-080 — "Baixar minuta": envia os termos preenchidos (UpdateProposalTerms) e devolve a minuta
 /// (GetProposalContractDraft). Exige proposta no provedor; id de cláusula não-numérico é dado inválido.
+/// RN-103 — a Corretora do envio vem do Escopo ativo do acesso.
 /// </summary>
-[Trait("RuleId", "RN-063")]
+[Trait("RuleId", "RN-080")]
+[Trait("RuleId", "RN-103")]
 public class SubmitQuotationTermsUseCaseTests
 {
     private readonly IQuotationRepository _quotationRepository = Substitute.For<IQuotationRepository>();
     private readonly IPersonRepository _personRepository = Substitute.For<IPersonRepository>();
     private readonly IBrokerageInsurerEnablementRepository _enablementRepository =
         Substitute.For<IBrokerageInsurerEnablementRepository>();
+    private readonly ICurrentUserAccessor _currentUser = Substitute.For<ICurrentUserAccessor>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly ICalculationEngine _engine = Substitute.For<ICalculationEngine>();
 
@@ -32,11 +35,15 @@ public class SubmitQuotationTermsUseCaseTests
 
     private SubmitQuotationTermsUseCase BuildUseCase()
     {
+        // RN-103: por padrão o acesso tem a Corretora ativa; testes específicos sobrescrevem para nula.
+        _currentUser.ActiveBrokerageId.Returns(_brokerageId);
+
         var services = new ServiceCollection();
         services.AddKeyedSingleton<ICalculationEngine>(ECalculationEngine.PlugV2, (_, _) => _engine);
 
         return new SubmitQuotationTermsUseCase(
-            _quotationRepository, _personRepository, _enablementRepository, _unitOfWork, services.BuildServiceProvider());
+            _quotationRepository, _personRepository, _enablementRepository, _currentUser, _unitOfWork,
+            services.BuildServiceProvider());
     }
 
     private Quotation ObtainedQuotation(string? proposalExternalId)
@@ -63,7 +70,6 @@ public class SubmitQuotationTermsUseCaseTests
         => new(
             quotation.QuotationGroupId,
             quotation.Id,
-            _brokerageId,
             [new QuotationTermInput("objeto", "Fornecimento de bens")],
             [new QuotationClauseInput(clauseId, [new QuotationTermInput("percentual", "5")])]);
 
@@ -87,6 +93,22 @@ public class SubmitQuotationTermsUseCaseTests
     }
 
     [Fact]
+    [Trait("RuleId", "RN-103")]
+    public async Task Execute_DeveRecusar_QuandoSemCorretoraAtivaNoAcesso()
+    {
+        // RN-103: sem Corretora ativa no acesso, o envio da minuta é recusado antes de tocar no provedor.
+        var quotation = ObtainedQuotation("3fa85f64-5717-4562-b3fc-2c963f66afa6");
+        var useCase = BuildUseCase();
+        _currentUser.ActiveBrokerageId.Returns((Guid?)null);
+
+        var act = async () => await useCase.ExecuteAsync(Request(quotation), CancellationToken.None);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
+        await _engine.DidNotReceive().SubmitProposalTermsAsync(
+            Arg.Any<string?>(), Arg.Any<SubmitProposalTermsInput>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Execute_DeveRecusar_QuandoCotacaoNaoPertenceAoGrupoDaRota()
     {
         var quotation = ObtainedQuotation("3fa85f64-5717-4562-b3fc-2c963f66afa6");
@@ -96,7 +118,6 @@ public class SubmitQuotationTermsUseCaseTests
         var request = new SubmitQuotationTermsRequest(
             Guid.CreateVersion7(),
             quotation.Id,
-            _brokerageId,
             [new QuotationTermInput("objeto", "x")],
             []);
 
@@ -119,7 +140,7 @@ public class SubmitQuotationTermsUseCaseTests
 
         await BuildUseCase().ExecuteAsync(Request(quotation), CancellationToken.None);
 
-        // RN-062: a minuta preenchida é capturada na Cotação e comitada (não some num refresh).
+        // RN-079: a minuta preenchida é capturada na Cotação e comitada (não some num refresh).
         quotation.MinutaTagsJson.Should().NotBeNull();
         quotation.MinutaClausesJson.Should().NotBeNull();
         _quotationRepository.Received().Update(quotation);

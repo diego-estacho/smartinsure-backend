@@ -12,7 +12,7 @@ evidence: []
 
 ## Status
 
-Aceito em 2026-07-28 — ratificado por Diego Estácho no lugar da PO ([OPEN-07](../product-specs/open-decisions.md)); registrar confirmação da PO. Refina a etapa de cotações (RN-056..RN-063). Estende o ACL do Motor ([ADR-045](045-motor-services-providers-acl.md)) e a distinção Domain/Integration ([ADR-028](028-domain-integration-events.md)) para o resultado da Cotação; enums como string ([ADR-031](031-enums-string.md)). O conjunto de status do eixo imediato foi **conferido na fonte** (o gateway do fornecedor, que define os status).
+Aceito em 2026-07-28 — ratificado por Diego Estácho no lugar da PO ([OPEN-07](../product-specs/open-decisions.md)); registrar confirmação da PO. Refina a etapa de cotações (RN-056..RN-080). Estende o ACL do Motor ([ADR-045](045-motor-services-providers-acl.md)) e a distinção Domain/Integration ([ADR-028](028-domain-integration-events.md)) para o resultado da Cotação; enums como string ([ADR-031](031-enums-string.md)). O conjunto de status do eixo imediato foi **conferido na fonte** (o gateway do fornecedor, que define os status).
 
 ## Contexto
 
@@ -57,7 +57,7 @@ A resposta da cotação carrega o **status imediato** do resultado. O **status d
 
 **Motivo local (fora do provedor):** no modo *escolhidas* (RN-056), as Seguradoras habilitadas não selecionadas viram `Unavailable` com motivo **local** ("não incluída na solicitação") — motivo deliberado e conhecido nosso, não status do provedor mal-classificado; não fere a invariante (o `Unrecognized` continua reservado a status do provedor não mapeados).
 
-**Cláusula particular × veredito (conhecido, PARKED — OPEN-21):** o gateway tem regra, documentada e replicada em ~11 plugins de Seguradora, em que uma cláusula particular `AllowAutomaticIssue=false` (não-fixa) encaminha a proposta para a esteira de subscrição em vez de emitir automaticamente. Nesta fase o Passo 4 **não re-avalia** o veredito por marcação de cláusula (captura a minuta — RN-062 — e mantém o resultado da cotação); Tags/texto da minuta **não** alteram o veredito. A decisão de re-avaliar aguarda a PO ([OPEN-21](../product-specs/open-decisions.md)) e, se confirmada, entra como regra (RN) sem reabrir esta ADR.
+**Cláusula particular × veredito (conhecido, PARKED — OPEN-21):** o gateway tem regra, documentada e replicada em ~11 plugins de Seguradora, em que uma cláusula particular `AllowAutomaticIssue=false` (não-fixa) encaminha a proposta para a esteira de subscrição em vez de emitir automaticamente. Nesta fase o Passo 4 **não re-avalia** o veredito por marcação de cláusula (captura a minuta — RN-079 — e mantém o resultado da cotação); Tags/texto da minuta **não** alteram o veredito. A decisão de re-avaliar aguarda a PO ([OPEN-21](../product-specs/open-decisions.md)) e, se confirmada, entra como regra (RN) sem reabrir esta ADR.
 
 ## Consequências
 

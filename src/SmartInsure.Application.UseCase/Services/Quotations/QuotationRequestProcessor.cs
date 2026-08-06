@@ -21,7 +21,8 @@ public sealed class QuotationRequestProcessor(
     IInsurerRepository insurerRepository,
     IBrokerageInsurerEnablementRepository enablementRepository,
     IUnitOfWork unitOfWork,
-    IServiceProvider serviceProvider) : IQuotationRequestProcessor
+    IServiceProvider serviceProvider,
+    IQuotationAdditionalCoverageResolver additionalCoverageResolver) : IQuotationRequestProcessor
 {
     public async Task ProcessAsync(QuotationRequestWorkItem workItem, CancellationToken cancellationToken)
     {
@@ -42,6 +43,13 @@ public sealed class QuotationRequestProcessor(
         try
         {
             var resolved = await BuildRequestAsync(workItem, cancellationToken);
+
+            // RN-106: a situação das Coberturas Adicionais é registrada assim que resolvida e ANTES de
+            // qualquer coisa que possa lançar — para existir mesmo quando a Cotação virar Indisponível
+            // (RN-058) ou falhar na integração (RN-057), cujos caminhos não voltam aqui. Fica antes do
+            // ResolveEngine de propósito: um motor indisponível não deve descartar informação já obtida.
+            quotation.RecordAdditionalCoverages(resolved.AdditionalCoverages.Items);
+
             var engine = ResolveEngine(resolved.Engine);
 
             var result = await engine.RunQuotationAsync(resolved.ConnectionParameters, resolved.Request, cancellationToken);
@@ -150,12 +158,24 @@ public sealed class QuotationRequestProcessor(
             policyHolderCnpj = branch.DocumentNumber;
         }
 
-        // TODO(probe T14): mapear as Coberturas Adicionais do Grupo (IncludesPenaltyCoverage /
-        // IncludesLaborCoverage — provisórios) para os códigos que o PLUG espera. Vazio até confirmar.
-        var additionalCoverages = new List<string>();
+        // RN-105/RN-106 (ADR-103): as canônicas escolhidas no Grupo viram os NOMES com que ESTA
+        // Seguradora expõe as coberturas. O gateway recusa identificador de origem e recusa a
+        // solicitação INTEIRA se receber cobertura não suportada — por isso nunca se envia superset.
+        // Os ids vêm de consulta projetada, NÃO de group.AdditionalCoverages: o Grupo é carregado por
+        // GetByIdAsync (FindAsync, sem Include), então a navegação chegaria vazia e a cobertura deixaria
+        // de ser enviada em silêncio.
+        var chosenCoverageIds = await quotationGroupRepository.ListAdditionalCoverageIdsAsync(
+            workItem.QuotationGroupId, cancellationToken);
+
+        var additionalCoverages = await additionalCoverageResolver.ResolveAsync(
+            workItem.InsurerId, group.ModalityId, chosenCoverageIds, cancellationToken);
 
         var request = new QuotationRequestInput
         {
+            // ADR-102: carregados só para o log de integração (QuotationIntegrationLog) gravado pelo motor.
+            QuotationId = workItem.QuotationId,
+            QuotationGroupId = workItem.QuotationGroupId,
+            InsurerId = workItem.InsurerId,
             BrokerCnpj = brokerage.DocumentNumber,
             PolicyHolderCnpj = policyHolderCnpj,
             InsuredCpfCnpj = insured.DocumentNumber,
@@ -165,11 +185,11 @@ public sealed class QuotationRequestProcessor(
             InsuredAmount = group.InsuredAmount,
             StartDate = group.CoverageStartDate,
             EndDate = group.CoverageEndDate,
-            AdditionalCoverages = additionalCoverages,
+            AdditionalCoverages = additionalCoverages.NamesToSend,
         };
 
         return new ResolvedRequest(
-            request, enablement.CalculationEngine, enablement.ConnectionParameters, enablement.Id);
+            request, enablement.CalculationEngine, enablement.ConnectionParameters, additionalCoverages, enablement.Id);
     }
 
     /// <summary>
@@ -197,6 +217,7 @@ public sealed class QuotationRequestProcessor(
         QuotationRequestInput Request,
         ECalculationEngine Engine,
         string? ConnectionParameters,
+        AdditionalCoverageResolution AdditionalCoverages,
         Guid EnablementId);
 
     /// <summary>Falha de pré-condição de dados de uma Seguradora — isolada, vira Cotação indisponível.</summary>

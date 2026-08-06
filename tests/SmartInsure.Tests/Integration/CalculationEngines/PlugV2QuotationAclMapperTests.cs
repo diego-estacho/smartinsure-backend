@@ -12,7 +12,12 @@ namespace SmartInsure.Tests.Integration.CalculationEngines;
 public class PlugV2QuotationAclMapperTests
 {
     private static PlugV2CotationData Response(
-        int status, decimal? premium = null, List<string>? erros = null, PlugV2CcgResult? ccg = null)
+        int status,
+        decimal? premium = null,
+        List<string>? erros = null,
+        PlugV2CcgResult? ccg = null,
+        string? proposalNumber = null,
+        string? proposalUniqueId = null)
         => new()
         {
             ResponseStatus = new PlugV2ResponseStatus { Status = status },
@@ -20,6 +25,8 @@ public class PlugV2QuotationAclMapperTests
             InsurancePremium = premium,
             Erros = erros,
             PolicyHolderCcg = ccg,
+            ProposalNumber = proposalNumber,
+            ProposalUniqueId = proposalUniqueId,
         };
 
     [Fact]
@@ -108,6 +115,20 @@ public class PlugV2QuotationAclMapperTests
         var result = PlugV2QuotationAclMapper.Map(Response(5, premium: 500m));
 
         result.Result.Should().Be(EQuotationResult.Analysis);
+        result.Premium.Should().BeNull();
+    }
+
+    [Fact]
+    public void Map_DeveCapturarNumeroEIdDaProposta_EmAnalysis()
+    {
+        // O provedor emite proposta (número/ID) mesmo em esteira de análise — capturamos para a Cotação
+        // ter rastreio na Listagem/acompanhamento. Diferente do prêmio, que só sai no seguível.
+        var result = PlugV2QuotationAclMapper.Map(
+            Response(5, proposalNumber: "202600000274221", proposalUniqueId: "abc-123"));
+
+        result.Result.Should().Be(EQuotationResult.Analysis);
+        result.ProposalNumber.Should().Be("202600000274221");
+        result.ProposalExternalId.Should().Be("abc-123");
         result.Premium.Should().BeNull();
     }
 

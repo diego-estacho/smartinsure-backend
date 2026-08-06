@@ -18,4 +18,17 @@ public sealed class AdditionalCoverageRepository(SmartInsureDbContext context)
             .Select(coverage => new AdditionalCoverageListItemDto(
                 coverage.Id, coverage.Name, coverage.Status.ToString()))
             .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyDictionary<Guid, string>> GetNamesByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        return await Set.AsNoTracking()
+            .Where(coverage => ids.Contains(coverage.Id))
+            .ToDictionaryAsync(coverage => coverage.Id, coverage => coverage.Name, cancellationToken);
+    }
 }

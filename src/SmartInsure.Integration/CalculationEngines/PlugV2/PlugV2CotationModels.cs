@@ -54,6 +54,15 @@ public sealed record PlugV2CotationRequest
 
     [JsonPropertyName("AdditionalCoverages")]
     public IReadOnlyList<string> AdditionalCoverages { get; init; } = [];
+
+    /// <summary>
+    /// Origem da proposta (EmissionProposalType). O gateway PlugV2 SÓ inclui o PolicyHolderCCG (veredito
+    /// de CCG) na resposta quando este valor é 2 (InsurePoint) — as demais origens não recebem o CCG
+    /// (confirmado no OnPoint-Backend, PlugBusinessRules.BuildCotationResponse). Enviamos 2 para receber
+    /// o veredito de CCG, como a plataforma legada faz.
+    /// </summary>
+    [JsonPropertyName("EmissionProposalType")]
+    public int EmissionProposalType { get; init; }
 }
 
 /// <summary>

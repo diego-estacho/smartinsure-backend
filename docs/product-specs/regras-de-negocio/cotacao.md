@@ -4,11 +4,13 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 > Escopo desta entrega (etapa de cotações — Passo 4): solicitar as Cotações às Seguradoras a partir de um Grupo de Cotação, obtê-las e apresentá-las ao corretor num leque, permitir **selecionar** uma para seguir, e preencher/enviar a **minuta** (Tags + Cláusulas particulares) da Cotação selecionada. Ficam **fora desta fase** (demanda própria): a **emissão** (etapa de emissão), o **followup** da análise de subscrição e a Página de Detalhes da Cotação, o **cancelamento** das Cotações (irmãs na emissão, saída da cotação, expiração por tempo), e quem pode solicitar cotação por Perfil ([OPEN-03](../open-decisions.md)). Refinada em 2026-07-27 e **ratificada em 2026-07-28** por Diego Estácho no lugar da PO ([OPEN-07](../open-decisions.md)); segue aberta a re-avaliação do veredito por cláusula particular ([OPEN-21](../open-decisions.md)).
 
+> **Listagem de Cotações (Fatia 1 — catalogada em 2026-07-30):** o "livro" de Cotações da Corretora — **uma linha por Cotação** (não por Grupo de Cotação), read-only, paginado e filtrável no servidor (RN-077), com a **situação apresentada** derivada do resultado classificado (RN-078). Entra como demanda própria, separada do Passo 4. O **cancelamento** das Cotações e a **Página de Detalhes** seguem como fatias/demandas seguintes; **emissão** e **followup** seguem fora.
+
 ## RN-056 — Solicitação de Cotações a partir do Grupo de Cotação
 
 **Descrição.** Ao concluir a etapa de risco, o corretor solicita as Cotações do Grupo de Cotação — uma Cotação por Seguradora. A solicitação tem dois escopos, escolhidos na tela de entrada da oferta: **todas as Seguradoras habilitadas** da Corretora (opção recomendada e padrão) ou **um subconjunto escolhido** pelo corretor a partir da lista de habilitadas.
 
-**Pré-condições.** Grupo de Cotação em Rascunho (RN-050, RN-051). Corretora com ao menos uma Habilitação de Seguradora ativa.
+**Pré-condições.** Grupo de Cotação em Rascunho (RN-050, RN-051). A Corretora da solicitação é a do Escopo ativo do acesso, resolvida pelo servidor (RN-103), com ao menos uma Habilitação de Seguradora ativa.
 
 **Critério de aceitação.** Ao entrar na etapa de cotações, a plataforma solicita Cotações conforme o escopo: no modo *todas*, a cada Seguradora habilitada ativa da Corretora; no modo *escolhidas*, exatamente às Seguradoras selecionadas, e a nenhuma outra. No modo *todas*, a solicitação inclui Seguradoras que não ofertam a Modalidade do Grupo — que retornam resultado de indisponibilidade com motivo do provedor — para que o corretor enxergue o resultado de cada Seguradora. No modo *escolhidas*, as Seguradoras habilitadas **não selecionadas** aparecem no leque como **indisponíveis com motivo local** ("não incluída na solicitação"), sem serem cotadas — pela mesma transparência, sem custo nem proposta no provedor.
 
@@ -64,7 +66,7 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 **Casos limite.** O espelhamento da expiração por tempo (apresentar a Cotação como desatualizada e oferecer re-solicitar quando a janela do provedor vence) fica para a demanda de **cancelamento** (demanda própria), junto com o cancelamento das demais Cotações. O prazo exato e o gatilho do job de inatividade do provedor serão confirmados nessa demanda.
 
-## RN-062 — Minuta da Cotação selecionada: Tags e Cláusulas particulares
+## RN-079 — Minuta da Cotação selecionada: Tags e Cláusulas particulares
 
 **Descrição.** Ao selecionar uma Cotação, a plataforma apresenta a **minuta** da Seguradora: as **Tags da minuta** (campos do objeto do contrato, que variam por Seguradora/Modalidade) e as **Cláusulas particulares** disponíveis. O corretor preenche as Tags (refletidas no texto do objeto) e marca as Cláusulas. As definições vêm do catálogo **já importado** (Tag e Cláusulas por Modalidade Importada — RN-047, RN-048). O preenchimento é **opcional na etapa de cotações** e torna-se obrigatório na etapa de emissão (fora desta fase).
 
@@ -74,12 +76,65 @@ Cada RN é uma seção com o ID no título e os quatro blocos abaixo. O ID é `R
 
 **Casos limite.** Se marcar uma Cláusula particular altera o resultado da Cotação (automática → subscrição): **não re-avaliado nesta fase** — a minuta é capturada e o veredito da Cotação é mantido; a decisão de re-avaliar aguarda a PO ([OPEN-21](../open-decisions.md)). Tags e o texto da minuta **não** alteram o veredito.
 
-## RN-063 — Envio dos termos da minuta ao provedor
+## RN-080 — Envio dos termos da minuta ao provedor
 
 **Descrição.** O corretor pode **enviar** os termos e cláusulas preenchidos da Cotação selecionada ao provedor (atualizando a proposta correspondente) e **obter a minuta** (documento) para baixar. O envio ocorre ao acionar "Baixar minuta" na etapa de cotações.
 
-**Pré-condições.** Cotação selecionada, com Tags/Cláusulas preenchidas ou não (RN-062).
+**Pré-condições.** Cotação selecionada, com Tags/Cláusulas preenchidas ou não (RN-079). A Corretora do envio é a do Escopo ativo do acesso, resolvida pelo servidor (RN-103).
 
 **Critério de aceitação.** Ao acionar "Baixar minuta", a plataforma envia ao provedor os termos e cláusulas atuais da Cotação selecionada, atualizando a proposta, e disponibiliza a minuta gerada para download refletindo esses termos. O preenchimento parcial é aceito nesta fase. O envio definitivo/obrigatório dos termos e a emissão ocorrem na etapa de emissão (fora desta fase).
 
 **Casos limite.** Falha do provedor no envio não descarta o preenchimento local do corretor; a plataforma informa o erro e mantém os dados para nova tentativa. Uma Cotação não seguível não oferece a ação (não há proposta a atualizar).
+
+## RN-077 — Listagem de Cotações
+
+> Catalogada em 2026-07-30 (Fatia 1 da Listagem de Cotações). Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO). Linha = **Cotação** (não Grupo de Cotação).
+
+**Descrição.** A plataforma lista as Cotações obtidas das Seguradoras — **uma linha por Cotação**, achatando todos os Grupos de Cotação —, formando o "livro" de Cotações da Corretora. A lista é paginada e ordenada pelo servidor por data de obtenção decrescente (as mais recentes primeiro) e combina, por E lógico, busca livre e filtros: situação apresentada (RN-078), Seguradora, Modalidade, faixa de prêmio, faixa de importância segurada, período de criação e período de início de vigência. A busca livre casa por número da Cotação, Tomador, Segurado, Seguradora e Modalidade.
+
+**Pré-condições.** Usuário autenticado com Escopo ativo de Corretora; Cotações obtidas para Grupos de Cotação daquela Corretora.
+
+**Critério de aceitação.** A lista contém **apenas** Cotações obtidas com resultado informado pela Seguradora (Pronta para emissão, Análise, Indisponível/Recusado ou Não-reconhecido — RN-058); **não** inclui Cotações ainda em obtenção, falhas técnicas de obtenção, nem indisponibilidades de origem **local** ("não incluída na solicitação" — RN-056). Traz **somente** Cotações dos Grupos de Cotação da Corretora do Escopo ativo do usuário. Sem filtros, o resultado contém Cotações em qualquer situação apresentada; cada filtro informado restringe o resultado e todos valem em conjunto. Além da página pedida, a plataforma devolve o total de resultados e a **contagem de Cotações por situação apresentada** (RN-078) considerando os demais filtros aplicados. Cada linha traz: número da Cotação, Tomador, Segurado, Seguradora, Modalidade, importância segurada, prêmio e comissão (quando aplicáveis — RN-058), situação apresentada (RN-078), um **indicador de exigência de Contragarantia (CCG)** quando a Seguradora a exige — dado **ortogonal** à situação (RN-058/RN-059), exibido junto dela sem virar aba nem alterar o eixo de resultado — e a vigência (início e fim). As opções dos filtros de Seguradora e de Modalidade contemplam apenas os valores **presentes no livro** da Corretora.
+
+**Casos limite.** Não havendo Cotações para os filtros informados, a lista retorna vazia e as contagens vêm zeradas. Página além do total retorna vazia. Cotação sem número informado pela Seguradora é apresentada sem número. Usuário não autenticado ou sem Escopo ativo de Corretora não acessa a lista.
+
+## RN-078 — Situação apresentada da Cotação na listagem
+
+> Catalogada em 2026-07-30 (Fatia 1). Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO). **Não cria status novo nem transição**: a situação apresentada deriva do resultado classificado (RN-058). A situação **Cancelada** é demanda própria (Fatia 2), fora desta.
+
+**Descrição.** Na Listagem de Cotações (RN-077) — exibição, contagem e filtro —, a plataforma apresenta cada Cotação por uma **situação derivada no servidor** a partir do resultado classificado (RN-058), com o rótulo que o corretor lê: **Pronta para emissão**, **Em análise**, **Indisponível** ou **Não reconhecida**. É rótulo de apresentação, não status novo do domínio nem transição.
+
+**Pré-condições.** Cotação obtida com resultado classificado (RN-058).
+
+**Critério de aceitação.** Resultado *Pronta para emissão* é apresentado como "Pronta para emissão"; *Análise* como "Em análise" (com a esteira específica disponível como detalhe); *Indisponível/Recusado* como "Indisponível"; *Não-reconhecido* como "Não reconhecida". A situação apresentada vale na listagem, na contagem por situação e no filtro, sempre calculada pelo servidor a partir do resultado — nunca decidida no cliente.
+
+**Casos limite.** A situação "Pronta para emissão" indica que a Cotação está **apta** a seguir para a emissão pelo corretor — não que a emissão ocorra automaticamente. A exigência de Contragarantia (CCG) **não** altera a situação apresentada (veredito ortogonal — RN-058). A situação "Cancelada" não existe nesta fase (entra com a demanda de cancelamento — Fatia 2).
+## RN-103 — Corretora da cotação é a do Escopo ativo
+
+**Descrição.** A Corretora que solicita as Cotações de um Grupo (RN-056) e que envia os termos da minuta (RN-080) é a **Corretora do Escopo ativo** do acesso (RN-064, ADR-065), resolvida pelo servidor a partir do claim — nunca informada pelo cliente. É dela que saem as Habilitações de Seguradora usadas no fan-out e a quem a proposta pertence.
+
+**Pré-condições.** Acesso autenticado com Corretora ativa no Escopo (RN-064). Grupo de Cotação em Rascunho (RN-050).
+
+**Critério de aceitação.** Ao solicitar Cotações ou enviar a minuta, a plataforma usa a Corretora ativa do acesso, ignorando qualquer Corretora informada pelo cliente; o corpo da requisição não carrega Corretora. Sem Corretora ativa no acesso, a operação é recusada com aviso.
+
+**Casos limite.** Acesso sem Corretora ativa (Usuário só com vínculo de Tomador, ou nenhum): recusado. Troca de Escopo ativo no meio da jornada passa a valer para as próximas solicitações (o Grupo em Rascunho não muda de dono retroativamente). Quais Perfis podem solicitar cotação seguem em [OPEN-03](../open-decisions.md).
+
+## RN-105 — Envio das Coberturas Adicionais à Seguradora
+
+**Descrição.** Ao solicitar a Cotação, cada Cobertura Adicional canônica escolhida no Grupo é traduzida para o nome com que aquela Seguradora expõe a cobertura na Modalidade cotada, e é esse nome que vai à Seguradora. O identificador de origem da cobertura não serve para isso — a Seguradora reconhece a cobertura pelo nome.
+
+**Pré-condições.** Cotação sendo solicitada a uma Seguradora (RN-057), a partir de um Grupo de Cotação com Coberturas Adicionais escolhidas (RN-104).
+
+**Critério de aceitação.** Para cada canônica escolhida, a plataforma envia o nome da Cobertura Adicional Importada Ativa vinculada a ela, nas Modalidades Importadas Ativas e não Ignoradas daquela Seguradora vinculadas à Modalidade do Grupo. Cada cobertura contribui com um único nome e a Seguradora recebe a lista sem repetição. Grupo sem coberturas escolhidas envia lista vazia. A resolução é feita por Seguradora, no momento da solicitação, a partir dos vínculos vigentes.
+
+**Casos limite.** A mesma canônica vinculada a Importadas com nomes diferentes na mesma Seguradora (tipicamente uma por ramo): não é enviada e é tratada como não contemplada (RN-106) enquanto [OPEN-22](../open-decisions.md) estiver aberta. Nunca é enviado nome que não esteja vinculado a uma canônica escolhida: cobertura não suportada faz a Seguradora recusar a solicitação inteira, derrubando a Cotação — por isso a plataforma erra para menos, nunca para mais. Canônica Inativa não é enviada (RN-046).
+
+## RN-106 — Cobertura pedida e não contemplada pela Seguradora
+
+**Descrição.** Seguradora que não oferece uma Cobertura Adicional escolhida é cotada mesmo assim, sem aquela cobertura. A Cotação registra o que foi enviado e o que ficou de fora, e a comparação sinaliza a lacuna — para que prêmios de escopos diferentes nunca sejam comparados sem aviso.
+
+**Pré-condições.** Cotação solicitada a uma Seguradora, a partir de um Grupo com Coberturas Adicionais escolhidas (RN-104).
+
+**Critério de aceitação.** Cada Cobertura Adicional escolhida aparece na Cotação com situação estável: **Enviada**, quando o nome foi resolvido e enviado; **Não contemplada**, quando a Seguradora não oferece a cobertura na Modalidade cotada. A situação é registrada em toda Cotação, inclusive nas que resultam Indisponível (RN-058) e nas que falham na integração (RN-057). A comparação de Cotações sinaliza cada cobertura não contemplada, identificando-a pelo nome da canônica.
+
+**Casos limite.** Nenhuma das coberturas escolhidas disponível na Seguradora: a Cotação é solicitada sem cobertura alguma e todas constam como não contempladas. Canônica inativada entre a escolha e a solicitação: consta como não contemplada. Nome divergente entre ramos: não contemplada (OPEN-22). Grupo sem coberturas escolhidas: nenhuma situação é registrada. Cotação recusada por pré-condição de dados antes de resolver as coberturas (Seguradora inativa, sem identificador de origem, Modalidade sem Modalidade Global): não há situação a registrar, porque a falha não é de cobertura. Seguradora habilitada que ficou **fora do escopo escolhido** e por isso nasce Indisponível sem ser consultada (RN-056): também não registra situação — nenhuma cobertura lhe foi pedida, e marcá-las como não contempladas sugeriria uma recusa que não houve.

@@ -2,6 +2,7 @@ namespace SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.Update
 
 /// <summary>Atualização do Grupo de Cotação em Rascunho — mesmo id (RN-051). O id vem da rota.</summary>
 /// <param name="BranchId">RN-102: estabelecimento cotado — Filial do Tomador; ausente limpa (volta a ser a matriz).</param>
+/// <param name="AdditionalCoverageIds">RN-104: Coberturas Adicionais canônicas escolhidas; lista vazia limpa a escolha.</param>
 public sealed record UpdateQuotationGroupRequest(
     Guid Id,
     Guid PolicyHolderId,
@@ -13,6 +14,5 @@ public sealed record UpdateQuotationGroupRequest(
     DateOnly CoverageEndDate,
     string ScopeMode,
     IReadOnlyList<Guid> InsurerIds,
-    bool IncludesPenaltyCoverage,
-    bool IncludesLaborCoverage,
+    IReadOnlyList<Guid> AdditionalCoverageIds,
     Guid? InsuredAddressId = null);

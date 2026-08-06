@@ -25,9 +25,12 @@ public class QuotationRequestProcessorTests
         Substitute.For<IBrokerageInsurerEnablementRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly ICalculationEngine _engine = Substitute.For<ICalculationEngine>();
+    private readonly IQuotationAdditionalCoverageResolver _coverageResolver =
+        Substitute.For<IQuotationAdditionalCoverageResolver>();
 
     private readonly Guid _brokerageId = Guid.CreateVersion7();
     private readonly Guid _insurerId = Guid.CreateVersion7();
+    private static readonly Guid MultaId = Guid.CreateVersion7();
     private QuotationGroup _group = null!;
     private Quotation _quotation = null!;
 
@@ -38,7 +41,8 @@ public class QuotationRequestProcessorTests
 
         return new QuotationRequestProcessor(
             _quotationRepository, _groupRepository, _personRepository, _modalityRepository,
-            _insurerRepository, _enablementRepository, _unitOfWork, services.BuildServiceProvider());
+            _insurerRepository, _enablementRepository, _unitOfWork, services.BuildServiceProvider(),
+            _coverageResolver);
     }
 
     /// <summary>Raiz de CNPJ compartilhada pela matriz (Tomador) e pela Filial nos cenários de RN-102.</summary>
@@ -46,16 +50,32 @@ public class QuotationRequestProcessorTests
     private const string FilialCnpj = "11444777000323";
 
     /// <summary>Monta o grafo de dados válido (grupo, habilitação ativa, seguradora ativa, modalidade global, pessoas).</summary>
-    private void SetupValidGraph(EInsurerStatus insurerStatus = EInsurerStatus.Active, Guid? branchPersonId = null)
+    private void SetupValidGraph(
+        EInsurerStatus insurerStatus = EInsurerStatus.Active,
+        Guid? branchPersonId = null,
+        IEnumerable<Guid>? additionalCoverageIds = null)
     {
         var policyHolderId = Guid.CreateVersion7();
         var insuredId = Guid.CreateVersion7();
         var modalityId = Guid.CreateVersion7();
 
+        // O Grupo nasce SEM as coberturas na navegação, de propósito: o fan-out o carrega por
+        // GetByIdAsync (FindAsync, sem Include) e é assim que o EF o entrega — navegação vazia.
+        // Povoar a navegação aqui deixaria o teste passar mesmo se o processor voltasse a lê-la,
+        // que foi o defeito que fez a cobertura deixar de ser enviada em silêncio.
         _group = QuotationGroup.Create(
             policyHolderId, branchPersonId, insuredId, modalityId, 100_000m,
             new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            EQuotationScopeMode.All, [], includesPenaltyCoverage: false, includesLaborCoverage: false);
+            EQuotationScopeMode.All, [], []);
+
+        _group.AdditionalCoverages.Should().BeEmpty("o fan-out carrega o Grupo sem Include");
+
+        // RN-105: os ids escolhidos chegam SÓ pela consulta projetada do repositório.
+        _groupRepository.ListAdditionalCoverageIdsAsync(_group.Id, Arg.Any<CancellationToken>())
+            .Returns((additionalCoverageIds ?? []).ToList());
+
+        // Por default o Grupo não escolheu cobertura — resolve para nada.
+        SetupResolution(new AdditionalCoverageResolution([], []));
 
         _quotation = Quotation.Requested(_group.Id, _insurerId);
 
@@ -77,6 +97,12 @@ public class QuotationRequestProcessorTests
         _personRepository.GetByIdAsync(insuredId, Arg.Any<CancellationToken>())
             .Returns(Person.Create("11444777000242", "Segurado", null, legalNatureId));
     }
+
+    private void SetupResolution(AdditionalCoverageResolution resolution)
+        => _coverageResolver.ResolveAsync(
+                Arg.Any<Guid>(), Arg.Any<Guid>(),
+                Arg.Any<IReadOnlyCollection<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(resolution);
 
     private QuotationRequestWorkItem WorkItem()
         => new(_quotation.Id, _group.Id, _insurerId, _brokerageId);
@@ -206,6 +232,120 @@ public class QuotationRequestProcessorTests
     }
 
     [Fact]
+    [Trait("RuleId", "RN-105")]
+    public async Task Process_DeveEnviarOsNomesResolvidos_RN105()
+    {
+        SetupValidGraph(additionalCoverageIds: [MultaId]);
+        SetupResolution(new AdditionalCoverageResolution(
+            ["Multas"],
+            [new ResolvedAdditionalCoverage(MultaId, EQuotationAdditionalCoverageStatus.Sent, "Multas", null)]));
+
+        QuotationRequestInput? captured = null;
+        _engine.RunQuotationAsync(
+                Arg.Any<string?>(),
+                Arg.Do<QuotationRequestInput>(input => captured = input),
+                Arg.Any<CancellationToken>())
+            .Returns(new QuotationResult { Result = EQuotationResult.ReadyForEmission, Premium = 300m });
+
+        await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
+
+        captured!.AdditionalCoverages.Should().BeEquivalentTo(new[] { "Multas" });
+
+        // A resolução é por Seguradora e pela Modalidade do Grupo (RN-105).
+        await _coverageResolver.Received(1).ResolveAsync(
+            _insurerId,
+            _group.ModalityId,
+            Arg.Is<IReadOnlyCollection<Guid>>(ids => ids.Contains(MultaId)),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-106")]
+    public async Task Process_DeveGravarSituacaoDasCoberturas_QuandoCotacaoObtida_RN106()
+    {
+        SetupValidGraph(additionalCoverageIds: [MultaId]);
+        SetupResolution(new AdditionalCoverageResolution(
+            ["Multas"],
+            [new ResolvedAdditionalCoverage(MultaId, EQuotationAdditionalCoverageStatus.Sent, "Multas", null)]));
+        _engine.RunQuotationAsync(Arg.Any<string?>(), Arg.Any<QuotationRequestInput>(), Arg.Any<CancellationToken>())
+            .Returns(new QuotationResult { Result = EQuotationResult.ReadyForEmission, Premium = 300m });
+
+        await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
+
+        _quotation.ProcessingStatus.Should().Be(EQuotationProcessingStatus.Obtained);
+        var recorded = _quotation.AdditionalCoverages.Should().ContainSingle().Subject;
+        recorded.AdditionalCoverageId.Should().Be(MultaId);
+        recorded.Status.Should().Be(EQuotationAdditionalCoverageStatus.Sent);
+        recorded.SentName.Should().Be("Multas");
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-106")]
+    public async Task Process_DeveGravarSituacaoDasCoberturas_QuandoResultadoIndisponivel_RN106()
+    {
+        // RN-058: Indisponível é resultado obtido (não falha) — o registro tem de estar lá do mesmo jeito.
+        SetupValidGraph(additionalCoverageIds: [MultaId]);
+        SetupResolution(new AdditionalCoverageResolution(
+            ["Multas"],
+            [new ResolvedAdditionalCoverage(MultaId, EQuotationAdditionalCoverageStatus.Sent, "Multas", null)]));
+        _engine.RunQuotationAsync(Arg.Any<string?>(), Arg.Any<QuotationRequestInput>(), Arg.Any<CancellationToken>())
+            .Returns(new QuotationResult
+            {
+                Result = EQuotationResult.Unavailable,
+                Reasons = ["Modalidade indisponível."],
+            });
+
+        await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
+
+        _quotation.Result.Should().Be(EQuotationResult.Unavailable);
+        _quotation.AdditionalCoverages.Should().ContainSingle()
+            .Which.Status.Should().Be(EQuotationAdditionalCoverageStatus.Sent);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-106")]
+    public async Task Process_DeveGravarSituacaoDasCoberturas_QuandoMotorIndisponivel_RN106()
+    {
+        // O motor não registrado lança QuotationSetupException; a resolução já aconteceu, então a
+        // informação não pode ser descartada (o RecordAdditionalCoverages vem antes do ResolveEngine).
+        SetupValidGraph(additionalCoverageIds: [MultaId]);
+        SetupResolution(new AdditionalCoverageResolution(
+            ["Multas"],
+            [new ResolvedAdditionalCoverage(MultaId, EQuotationAdditionalCoverageStatus.Sent, "Multas", null)]));
+
+        var services = new ServiceCollection();  // sem nenhum ICalculationEngine registrado
+        var processor = new QuotationRequestProcessor(
+            _quotationRepository, _groupRepository, _personRepository, _modalityRepository,
+            _insurerRepository, _enablementRepository, _unitOfWork, services.BuildServiceProvider(),
+            _coverageResolver);
+
+        await processor.ProcessAsync(WorkItem(), CancellationToken.None);
+
+        _quotation.ProcessingStatus.Should().Be(EQuotationProcessingStatus.Failed);
+        _quotation.AdditionalCoverages.Should().ContainSingle()
+            .Which.Status.Should().Be(EQuotationAdditionalCoverageStatus.Sent);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-106")]
+    public async Task Process_DeveGravarSituacaoDasCoberturas_QuandoIntegracaoFalha_RN106()
+    {
+        // A situação é gravada ANTES de acionar o motor, então sobrevive à falha isolada (RN-057).
+        SetupValidGraph(additionalCoverageIds: [MultaId]);
+        SetupResolution(new AdditionalCoverageResolution(
+            [],
+            [new ResolvedAdditionalCoverage(MultaId, EQuotationAdditionalCoverageStatus.NotOffered, null, null)]));
+        _engine.RunQuotationAsync(Arg.Any<string?>(), Arg.Any<QuotationRequestInput>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new CalculationEngineException("timeout"));
+
+        await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
+
+        _quotation.ProcessingStatus.Should().Be(EQuotationProcessingStatus.Failed);
+        _quotation.AdditionalCoverages.Should().ContainSingle()
+            .Which.Status.Should().Be(EQuotationAdditionalCoverageStatus.NotOffered);
+    }
+
+    [Fact]
     [Trait("RuleId", "RN-505")]
     public async Task Process_DeveGravarOpcoesDePagamentoEDocumentosInformadosPelaSeguradora()
     {
@@ -256,4 +396,5 @@ public class QuotationRequestProcessorTests
 
         _quotation.BrokerageInsurerEnablementId.Should().Be(enablement!.Id);
     }
+
 }

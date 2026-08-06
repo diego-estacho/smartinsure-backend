@@ -919,6 +919,34 @@
         }
       }
     },
+    "/api/v1/credit-inquiries/{id}/export": {
+      "get": {
+        "tags": [
+          "CreditInquiriesEndpoint"
+        ],
+        "summary": "Exporta o quadro consolidado de uma consulta de crédito (.xlsx)",
+        "operationId": "ExportCreditInquiry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/v1/imported-additional-coverages/{id}/link": {
       "post": {
         "tags": [
@@ -1571,6 +1599,36 @@
         }
       }
     },
+    "/api/v1/modalities/{id}/additional-coverages": {
+      "get": {
+        "tags": [
+          "ModalitiesEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListAvailableAdditionalCoveragesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/modality-imports/run": {
       "post": {
         "tags": [
@@ -1811,6 +1869,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "brokerageId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -2377,6 +2443,161 @@
         }
       }
     },
+    "/api/v1/quotations": {
+      "get": {
+        "tags": [
+          "QuotationBookEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "situation",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "insurerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "modalityId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "premiumMin",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "premiumMax",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "insuredAmountMin",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "insuredAmountMax",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "createdFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "createdTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "coverageStartFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "coverageStartTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotationBookResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/quotation-groups": {
       "post": {
         "tags": [
@@ -2490,16 +2711,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RunQuotationsBody"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "202": {
             "description": "Accepted",
@@ -3315,6 +3526,22 @@
           "expiresAtUtc": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "AvailableAdditionalCoverageItemResponse": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
@@ -4378,8 +4605,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage"
+          "additionalCoverageIds"
         ],
         "type": "object",
         "properties": {
@@ -4428,11 +4654,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           },
           "insuredAddressId": {
             "type": [
@@ -4454,8 +4681,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage",
+          "additionalCoverageIds",
           "status"
         ],
         "type": "object",
@@ -4502,11 +4728,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           },
           "status": {
             "type": "string"
@@ -4687,8 +4914,10 @@
         "required": [
           "insurerId",
           "insurerName",
+          "insurerLogoUrl",
           "status",
           "failureReason",
+          "responseTimeMs",
           "limits"
         ],
         "type": "object",
@@ -4700,6 +4929,12 @@
           "insurerName": {
             "type": "string"
           },
+          "insurerLogoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
           "status": {
             "type": "string"
           },
@@ -4708,6 +4943,15 @@
               "null",
               "string"
             ]
+          },
+          "responseTimeMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           },
           "limits": {
             "type": "array",
@@ -5300,8 +5544,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage",
+          "additionalCoverageIds",
           "status",
           "selectedQuotationId",
           "policyHolder",
@@ -5354,11 +5597,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           },
           "status": {
             "type": "string"
@@ -5932,6 +6176,20 @@
           "additionalCoverageId": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "ListAvailableAdditionalCoveragesResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailableAdditionalCoverageItemResponse"
+            }
           }
         }
       },
@@ -6979,7 +7237,10 @@
           "documentNumber",
           "name",
           "socialName",
-          "isPrivateSector"
+          "isPrivateSector",
+          "city",
+          "stateCode",
+          "isAppointedToBrokerage"
         ],
         "type": "object",
         "properties": {
@@ -7000,6 +7261,24 @@
             ]
           },
           "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "stateCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isAppointedToBrokerage": {
             "type": [
               "null",
               "boolean"
@@ -7080,6 +7359,215 @@
           },
           "isSystem": {
             "type": "boolean"
+          }
+        }
+      },
+      "QuotationAdditionalCoverageResponse": {
+        "required": [
+          "additionalCoverageId",
+          "name",
+          "status",
+          "sentName"
+        ],
+        "type": "object",
+        "properties": {
+          "additionalCoverageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "sentName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuotationBookItemResponse": {
+        "required": [
+          "quotationId",
+          "number",
+          "policyHolderName",
+          "insuredName",
+          "insurerId",
+          "insurerName",
+          "insurerLogoUrl",
+          "modalityId",
+          "modalityName",
+          "insuredAmount",
+          "premium",
+          "commissionPercentage",
+          "result",
+          "requiresCcg",
+          "coverageStartDate",
+          "coverageEndDate",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "policyHolderName": {
+            "type": "string"
+          },
+          "insuredName": {
+            "type": "string"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "insurerLogoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityName": {
+            "type": "string"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "premium": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionPercentage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "result": {
+            "type": "string"
+          },
+          "requiresCcg": {
+            "type": "boolean"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "QuotationBookOptionResponse": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "QuotationBookResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "counts",
+          "insurers",
+          "modalities"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationBookItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "counts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationSituationCountResponse"
+            }
+          },
+          "insurers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationBookOptionResponse"
+            }
+          },
+          "modalities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationBookOptionResponse"
+            }
           }
         }
       },
@@ -7234,6 +7722,7 @@
       "QuotationListItemResponse": {
         "required": [
           "quotationId",
+          "number",
           "insurerId",
           "insurerName",
           "insurerLogoUrl",
@@ -7250,6 +7739,7 @@
           "ccgMaxLimitWithoutNeed",
           "ccgSigned",
           "reasons",
+          "additionalCoverages",
           "installmentOptions",
           "possibleGracePeriodsInDays",
           "requiredDocuments"
@@ -7259,6 +7749,12 @@
           "quotationId": {
             "type": "string",
             "format": "uuid"
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "insurerId": {
             "type": "string",
@@ -7355,6 +7851,12 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "additionalCoverages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationAdditionalCoverageResponse"
             }
           },
           "installmentOptions": {
@@ -7459,6 +7961,26 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "QuotationSituationCountResponse": {
+        "required": [
+          "result",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string"
+          },
+          "count": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           }
         }
       },
@@ -7618,18 +8140,6 @@
           }
         }
       },
-      "RunQuotationsBody": {
-        "required": [
-          "brokerageId"
-        ],
-        "type": "object",
-        "properties": {
-          "brokerageId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        }
-      },
       "RunQuotationsResponse": {
         "required": [
           "quotationGroupId",
@@ -7744,16 +8254,11 @@
       },
       "SubmitQuotationMinutaBody": {
         "required": [
-          "brokerageId",
           "terms",
           "particularClauses"
         ],
         "type": "object",
         "properties": {
-          "brokerageId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "terms": {
             "type": "array",
             "items": {
@@ -8195,8 +8700,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage"
+          "additionalCoverageIds"
         ],
         "type": "object",
         "properties": {
@@ -8245,11 +8749,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         }
       },
@@ -8264,8 +8769,7 @@
           "coverageEndDate",
           "scopeMode",
           "insurerIds",
-          "includesPenaltyCoverage",
-          "includesLaborCoverage",
+          "additionalCoverageIds",
           "status"
         ],
         "type": "object",
@@ -8312,11 +8816,12 @@
               "format": "uuid"
             }
           },
-          "includesPenaltyCoverage": {
-            "type": "boolean"
-          },
-          "includesLaborCoverage": {
-            "type": "boolean"
+          "additionalCoverageIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           },
           "status": {
             "type": "string"
@@ -8583,6 +9088,9 @@
     },
     {
       "name": "ProfilesEndpoint"
+    },
+    {
+      "name": "QuotationBookEndpoint"
     },
     {
       "name": "QuotationGroupsEndpoint"

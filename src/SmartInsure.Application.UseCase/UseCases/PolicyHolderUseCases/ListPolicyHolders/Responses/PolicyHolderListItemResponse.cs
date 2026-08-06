@@ -5,4 +5,7 @@ public sealed record PolicyHolderListItemResponse(
     string DocumentNumber,
     string Name,
     string? SocialName,
-    bool? IsPrivateSector);
+    bool? IsPrivateSector,
+    string? City,
+    string? StateCode,
+    bool? IsAppointedToBrokerage);

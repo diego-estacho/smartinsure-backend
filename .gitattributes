@@ -1,0 +1,7 @@
+# Contrato de API gerado (docs/generated/openapi.json): artefato DERIVADO, republicado no CI e
+# nunca editado à mão. É grande e de alto churn — merge textual só produz conflito inútil.
+#   -merge              → o git não tenta merge linha-a-linha; num conflito mantém a versão atual
+#                         SEM marcadores. Resolva SEMPRE regenerando (CI), nunca à mão.
+#   linguist-generated  → o GitHub colapsa o diff por padrão (revisor ainda expande) e tira das stats.
+# Ver docs/generated/README.md.
+docs/generated/openapi.json -merge linguist-generated=true

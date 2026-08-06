@@ -81,8 +81,7 @@ public sealed class QuotationGroupsEndpoint : CarterModule
                 body.CoverageEndDate,
                 body.ScopeMode,
                 body.InsurerIds,
-                body.IncludesPenaltyCoverage,
-                body.IncludesLaborCoverage),
+                body.AdditionalCoverageIds),
             validator);
 }
 
@@ -97,5 +96,4 @@ public sealed record UpdateQuotationGroupBody(
     DateOnly CoverageEndDate,
     string ScopeMode,
     IReadOnlyList<Guid> InsurerIds,
-    bool IncludesPenaltyCoverage,
-    bool IncludesLaborCoverage);
+    IReadOnlyList<Guid> AdditionalCoverageIds);

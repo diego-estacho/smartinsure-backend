@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using System.Net;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -18,7 +21,8 @@ namespace SmartInsure.Integration.CalculationEngines.Services;
 public sealed class PlugV2CalculationEngine(
     IServiceProvider serviceProvider,
     IHttpClientFactory httpClientFactory,
-    IOptions<PlugV2Options> options) : ICalculationEngine
+    IOptions<PlugV2Options> options,
+    IQuotationIntegrationLogRecorder integrationLogRecorder) : ICalculationEngine
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private const string ClientName = "PlugV2";
@@ -73,10 +77,11 @@ public sealed class PlugV2CalculationEngine(
     {
         var config = PlugV2ConnectionParameters.Parse(connectionParameters);
 
-        var client = httpClientFactory.CreateClient(ClientName);
-        // Barra final preserva o caminho do gateway (ex.: /qa/garantia/plugv2) na resolução da URI relativa.
-        client.BaseAddress = new Uri(config.BaseUrl.EndsWith('/') ? config.BaseUrl : config.BaseUrl + "/");
-        client.Timeout = TimeSpan.FromSeconds(TimeoutSeconds);
+        // Embora seja leitura, o gateway trata a consulta de limites como uma "consulta" com dedup de
+        // 60s (broker+seguradora+tomador): um retry no timeout re-dispara e cai em "Já existe uma
+        // consulta para este CNPJ" (400). Por isso vai no client SEM retry (tentativa única, timeout
+        // largo), igual às chamadas mutantes — não na resiliência padrão (plugv2-dedup).
+        var client = CreateNonIdempotentClient(config);
 
         var request = new PlugV2GetPolicyHolderLimitsAndRatesRequest
         {
@@ -99,13 +104,17 @@ public sealed class PlugV2CalculationEngine(
 
             using var httpResponse = await client.SendAsync(httpRequest, cancellationToken);
 
+            var responseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+
             if (!httpResponse.IsSuccessStatusCode)
             {
+                // Inclui o motivo do gateway (Errors do envelope) — um "BadRequest" cru não diz nada ao
+                // usuário; a RN-030 apresenta este motivo por Seguradora. Consistente com as demais chamadas.
+                var reason = ExtractErrors(responseContent);
+                var suffix = string.IsNullOrEmpty(reason) ? string.Empty : $" {reason}";
                 throw new CalculationEngineException(
-                    $"PlugV2 retornou status {httpResponse.StatusCode} na consulta de limites de crédito.");
+                    $"PlugV2 retornou status {(int)httpResponse.StatusCode} ({httpResponse.StatusCode}) na consulta de limites de crédito.{suffix}");
             }
-
-            var responseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
             var response = JsonSerializer.Deserialize<PlugV2GetPolicyHolderLimitsAndRatesResponse>(
                 responseContent, JsonOptions);
@@ -189,24 +198,55 @@ public sealed class PlugV2CalculationEngine(
             StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue),
             EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue),
             AdditionalCoverages = request.AdditionalCoverages,
+            // O gateway PlugV2 só inclui o PolicyHolderCCG (veredito de CCG) quando EmissionProposalType
+            // == 2 (InsurePoint) — confirmado no OnPoint-Backend (BuildCotationResponse) e no probe ao
+            // vivo. Enviamos 2 para receber o CCG, como a plataforma legada. Trocar se o gateway passar a
+            // reconhecer um tipo próprio do SmartInsure.
+            EmissionProposalType = 2,
         };
+
+        // ADR-102: request/response gravados no QuotationIntegrationLog — só o corpo, nunca headers/segredo.
+        var requestJson = JsonSerializer.Serialize(payload, JsonOptions);
+        var stopwatch = Stopwatch.StartNew();
+        string? capturedBody = null;
+        int? capturedHttpStatus = null;
 
         try
         {
-            var body = await PostJsonAsync(client, "Cotation", config.Key, payload, cancellationToken);
+            var (status, body) = await PostJsonNoThrowAsync(client, "Cotation", config.Key, payload, cancellationToken);
+            capturedHttpStatus = (int)status;
+            capturedBody = body;
+
+            if (!IsSuccessStatusCode(status))
+            {
+                var message = BuildStatusErrorMessage("Cotation", status, body);
+                await RecordAsync(request, requestJson, body, (int)status, QuotationIntegrationOutcome.Failed,
+                    quotationStatus: null, errorMessage: message, stopwatch.ElapsedMilliseconds, cancellationToken);
+
+                throw new CalculationEngineException(message);
+            }
 
             var envelope = JsonSerializer.Deserialize<PlugV2CotationResponse>(body, JsonOptions);
 
             // Sem payload utilizável (falha de transporte/gateway sem corpo) → falha de integração (RN-057).
             if (envelope?.Response is null)
             {
-                throw new CalculationEngineException(FailureMessage("solicitar Cotação", body));
+                var message = FailureMessage("solicitar Cotação", body);
+                await RecordAsync(request, requestJson, body, (int)status, QuotationIntegrationOutcome.Failed,
+                    quotationStatus: null, errorMessage: message, stopwatch.ElapsedMilliseconds, cancellationToken);
+
+                throw new CalculationEngineException(message);
             }
 
             // ADR-064: a ACL é o ÚNICO ponto de classificação. Passamos o sinal de erro do envelope e seus
             // motivos: quando HasError, a ACL classifica Indisponível-com-motivos (nunca seguível); caso
             // contrário, classifica o payload normalmente. Nunca confia num status/prêmio de payload errado.
-            return PlugV2QuotationAclMapper.Map(envelope.Response, envelope.HasError, envelope.Errors);
+            var result = PlugV2QuotationAclMapper.Map(envelope.Response, envelope.HasError, envelope.Errors);
+
+            await RecordAsync(request, requestJson, body, (int)status, QuotationIntegrationOutcome.Completed,
+                quotationStatus: result.Result.ToString(), errorMessage: null, stopwatch.ElapsedMilliseconds, cancellationToken);
+
+            return result;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -218,12 +258,43 @@ public sealed class PlugV2CalculationEngine(
         }
         catch (Exception exception)
         {
+            await RecordAsync(request, requestJson, capturedBody, capturedHttpStatus, QuotationIntegrationOutcome.Failed,
+                quotationStatus: null, errorMessage: exception.Message, stopwatch.ElapsedMilliseconds, cancellationToken);
+
             throw new CalculationEngineException("Falha ao solicitar Cotação no motor PlugV2.", exception);
         }
     }
 
+    /// <summary>Grava o log de integração da Cotação (ADR-102) — best-effort por contrato do recorder; nunca deve subir para aqui.</summary>
+    private Task RecordAsync(
+        QuotationRequestInput request,
+        string requestJson,
+        string? responseBody,
+        int? httpStatus,
+        string outcome,
+        string? quotationStatus,
+        string? errorMessage,
+        long durationMs,
+        CancellationToken cancellationToken)
+        => integrationLogRecorder.RecordCotationAsync(
+            new QuotationIntegrationLogContext
+            {
+                QuotationId = request.QuotationId,
+                QuotationGroupId = request.QuotationGroupId,
+                InsurerId = request.InsurerId,
+                EngineType = nameof(ECalculationEngine.PlugV2),
+                Outcome = outcome,
+                QuotationStatus = quotationStatus,
+                DurationMs = durationMs,
+                RequestPayload = requestJson,
+                ResponseRaw = responseBody,
+                HttpStatus = httpStatus,
+                ErrorMessage = errorMessage,
+            },
+            cancellationToken);
+
     /// <summary>
-    /// RN-063 ("Baixar minuta", parte 1): envia os termos preenchidos (Tags do objeto + Cláusulas
+    /// RN-080 ("Baixar minuta", parte 1): envia os termos preenchidos (Tags do objeto + Cláusulas
     /// particulares marcadas) da proposta selecionada (POST /UpdateProposalTerms).
     /// </summary>
     public async Task SubmitProposalTermsAsync(
@@ -490,7 +561,7 @@ public sealed class PlugV2CalculationEngine(
         }
     }
 
-    /// <summary>RN-063 ("Baixar minuta", parte 2): obtém a minuta (documento) da proposta (POST /GetProposalContractDraft).</summary>
+    /// <summary>RN-080 ("Baixar minuta", parte 2): obtém a minuta (documento) da proposta (POST /GetProposalContractDraft).</summary>
     public async Task<ProposalContractDraftResult> GetProposalContractDraftAsync(
         string? connectionParameters, string brokerCnpj, string proposalExternalId, CancellationToken cancellationToken)
     {
@@ -540,9 +611,9 @@ public sealed class PlugV2CalculationEngine(
     }
 
     /// <summary>
-    /// Client das chamadas NÃO idempotentes (/Cotation, /UpdateProposalTerms). Registrado SEM resiliência
-    /// de retry (RN-057): repetir um POST que CRIA/muta recurso re-dispara o create e cai no dedup do
-    /// gateway ("já existe uma cotação"). Tentativa única, com timeout largo e configurável
+    /// Client das chamadas que o gateway DEDUPA — as mutantes (/Cotation, /UpdateProposalTerms) e a
+    /// consulta de limites (leitura, mas dedupada como "consulta"). Registrado SEM resiliência de retry
+    /// (RN-057): re-tentar re-dispara e cai no dedup ("já existe"). Tentativa única, com timeout largo e configurável
     /// (<see cref="PlugV2Options.NonIdempotentTimeoutSeconds"/>) para acomodar a latência real numa só ida.
     /// </summary>
     private HttpClient CreateNonIdempotentClient(PlugV2ConnectionParameters config)
@@ -557,11 +628,29 @@ public sealed class PlugV2CalculationEngine(
     private static async Task<string> PostJsonAsync(
         HttpClient client, string route, string key, object payload, CancellationToken cancellationToken)
     {
+        var (status, body) = await PostJsonNoThrowAsync(client, route, key, payload, cancellationToken);
+
+        if (!IsSuccessStatusCode(status))
+        {
+            throw new CalculationEngineException(BuildStatusErrorMessage(route, status, body));
+        }
+
+        return body;
+    }
+
+    /// <summary>
+    /// Variante de <see cref="PostJsonAsync"/> que NUNCA lança por status HTTP de erro — devolve o status e o
+    /// corpo exatos para o chamador registrar (ADR-102: RunQuotationAsync loga o status em sucesso E falha)
+    /// e classificar. Falha de transporte ainda sobe (conexão recusada, timeout, etc.).
+    /// </summary>
+    private static async Task<(HttpStatusCode Status, string Body)> PostJsonNoThrowAsync(
+        HttpClient client, string route, string key, object payload, CancellationToken cancellationToken)
+    {
         using var httpRequest = new HttpRequestMessage(HttpMethod.Post, route)
         {
             Content = new StringContent(
                 JsonSerializer.Serialize(payload, JsonOptions),
-                System.Text.Encoding.UTF8,
+                Encoding.UTF8,
                 "application/json"),
         };
 
@@ -570,15 +659,17 @@ public sealed class PlugV2CalculationEngine(
         using var httpResponse = await client.SendAsync(httpRequest, cancellationToken);
         var body = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
-        if (!httpResponse.IsSuccessStatusCode)
-        {
-            var errors = ExtractErrors(body);
-            var suffix = string.IsNullOrEmpty(errors) ? string.Empty : $" {errors}";
-            throw new CalculationEngineException(
-                $"PlugV2 retornou status {(int)httpResponse.StatusCode} ({httpResponse.StatusCode}) em {route}.{suffix}");
-        }
+        return (httpResponse.StatusCode, body);
+    }
 
-        return body;
+    /// <summary>Mesmo critério de <see cref="HttpResponseMessage.IsSuccessStatusCode"/>, sobre o HttpStatusCode isolado.</summary>
+    private static bool IsSuccessStatusCode(HttpStatusCode status) => (int)status is >= 200 and <= 299;
+
+    private static string BuildStatusErrorMessage(string route, HttpStatusCode status, string body)
+    {
+        var errors = ExtractErrors(body);
+        var suffix = string.IsNullOrEmpty(errors) ? string.Empty : $" {errors}";
+        return $"PlugV2 retornou status {(int)status} ({status}) em {route}.{suffix}";
     }
 
     /// <summary>Monta a mensagem de falha a partir do envelope de erro do gateway (Errors), quando presente.</summary>

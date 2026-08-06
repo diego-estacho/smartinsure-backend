@@ -62,7 +62,7 @@ public class RequestPolicyIssuanceSuccessTests
         _group = QuotationGroup.Create(
             Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(), 100_000m,
             new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            EQuotationScopeMode.All, [], includesPenaltyCoverage: false, includesLaborCoverage: false);
+            EQuotationScopeMode.All, [], []);
         _group.AssignBrokerage(_brokerageId);
         _group.ReplicateInsuredAddress(
             "01310930", "Avenida Paulista", "1578", "10º andar", "Bela Vista", "São Paulo", "SP");

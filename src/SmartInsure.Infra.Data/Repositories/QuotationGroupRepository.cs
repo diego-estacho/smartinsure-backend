@@ -19,5 +19,17 @@ public sealed class QuotationGroupRepository(SmartInsureDbContext context)
     public async Task<QuotationGroup?> GetByIdWithInsurersAsync(Guid id, CancellationToken cancellationToken)
         => await Set
             .Include(group => group.SelectedInsurers)
+            // RN-104: as Coberturas Adicionais escolhidas são substituídas no UpdateDraft — sem
+            // carregá-las, o EF não enxerga as linhas antigas para removê-las (AB#0007).
+            .Include(group => group.AdditionalCoverages)
             .FirstOrDefaultAsync(group => group.Id == id, cancellationToken);
+
+    /// <summary>RN-104/RN-105: projeção dos ids escolhidos — sem navegação, nada a esquecer de incluir.</summary>
+    public async Task<IReadOnlyList<Guid>> ListAdditionalCoverageIdsAsync(
+        Guid quotationGroupId, CancellationToken cancellationToken)
+        => await Context.Set<QuotationGroupAdditionalCoverage>()
+            .AsNoTracking()
+            .Where(coverage => coverage.QuotationGroupId == quotationGroupId)
+            .Select(coverage => coverage.AdditionalCoverageId)
+            .ToListAsync(cancellationToken);
 }

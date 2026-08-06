@@ -23,6 +23,12 @@ public sealed class CreditInquiryResult : EntityBase
 
     public string? FailureReason { get; private set; }
 
+    /// <summary>
+    /// RN-029/RN-031: tempo de resposta medido da Seguradora, em milissegundos. Ausente (null)
+    /// quando a Seguradora não respondeu (indisponibilidade, falha ou pré-condição não atendida).
+    /// </summary>
+    public long? ResponseTimeMs { get; private set; }
+
     /// <summary>Coleção de limites agrupados por grupo de modalidade (apenas quando Status = Available).</summary>
     public IReadOnlyCollection<CreditInquiryResultLimit> Limits => _limits.AsReadOnly();
 
@@ -30,13 +36,15 @@ public sealed class CreditInquiryResult : EntityBase
     public static CreditInquiryResult Available(
         Guid creditInquiryId,
         Guid insurerId,
-        IEnumerable<CreditInquiryResultLimit> limits)
+        IEnumerable<CreditInquiryResultLimit> limits,
+        long? responseTimeMs = null)
     {
         var result = new CreditInquiryResult
         {
             CreditInquiryId = creditInquiryId,
             InsurerId = insurerId,
             Status = ECreditInquiryResultStatus.Available,
+            ResponseTimeMs = responseTimeMs,
         };
 
         foreach (var limit in limits)
@@ -51,13 +59,15 @@ public sealed class CreditInquiryResult : EntityBase
     public static CreditInquiryResult Unavailable(
         Guid creditInquiryId,
         Guid insurerId,
-        string failureReason)
+        string failureReason,
+        long? responseTimeMs = null)
         => new()
         {
             CreditInquiryId = creditInquiryId,
             InsurerId = insurerId,
             Status = ECreditInquiryResultStatus.Unavailable,
             FailureReason = failureReason,
+            ResponseTimeMs = responseTimeMs,
         };
 
     /// <summary>RN-029: adiciona limite ao resultado, vinculando-o ao agregado.</summary>

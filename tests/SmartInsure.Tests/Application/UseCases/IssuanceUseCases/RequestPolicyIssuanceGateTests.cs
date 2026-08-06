@@ -62,7 +62,7 @@ public class RequestPolicyIssuanceGateTests
         _group = QuotationGroup.Create(
             Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(), 100_000m,
             new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            EQuotationScopeMode.All, [], includesPenaltyCoverage: false, includesLaborCoverage: false);
+            EQuotationScopeMode.All, [], []);
         _group.AssignBrokerage(_brokerageId);
 
         if (withInsuredAddress)

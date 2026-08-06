@@ -11,6 +11,5 @@ public sealed record CreateQuotationGroupResponse(
     DateOnly CoverageEndDate,
     string ScopeMode,
     IReadOnlyList<Guid> InsurerIds,
-    bool IncludesPenaltyCoverage,
-    bool IncludesLaborCoverage,
+    IReadOnlyList<Guid> AdditionalCoverageIds,
     string Status);

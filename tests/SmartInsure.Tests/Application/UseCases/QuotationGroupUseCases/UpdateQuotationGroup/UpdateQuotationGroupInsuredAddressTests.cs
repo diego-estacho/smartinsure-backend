@@ -4,6 +4,7 @@ using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuot
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Requests;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 
@@ -22,6 +23,11 @@ public class UpdateQuotationGroupInsuredAddressTests
     private readonly IQuotationRepository _quotationRepository = Substitute.For<IQuotationRepository>();
     private readonly IPersonRepository _personRepository = Substitute.For<IPersonRepository>();
     private readonly IModalityRepository _modalityRepository = Substitute.For<IModalityRepository>();
+
+    private readonly IImportedAdditionalCoverageRepository _importedAdditionalCoverageRepository =
+        Substitute.For<IImportedAdditionalCoverageRepository>();
+
+    private readonly ICurrentUserAccessor _currentUser = Substitute.For<ICurrentUserAccessor>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly UpdateQuotationGroupUseCase _useCase;
 
@@ -34,7 +40,8 @@ public class UpdateQuotationGroupInsuredAddressTests
 
     public UpdateQuotationGroupInsuredAddressTests()
         => _useCase = new UpdateQuotationGroupUseCase(
-            _groupRepository, _quotationRepository, _personRepository, _modalityRepository, _unitOfWork);
+            _groupRepository, _quotationRepository, _personRepository, _modalityRepository,
+            _importedAdditionalCoverageRepository, _currentUser, _unitOfWork);
 
     private void SetupGroupWithReplicatedAddress()
     {
@@ -49,7 +56,7 @@ public class UpdateQuotationGroupInsuredAddressTests
         _group = QuotationGroup.Create(
             _policyHolderId, null, _insuredId, _modalityId, 1_000m,
             new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            EQuotationScopeMode.All, [], includesPenaltyCoverage: false, includesLaborCoverage: false);
+            EQuotationScopeMode.All, [], []);
 
         // A oferta já foi criada com o endereço adicional escolhido pelo corretor.
         var chosen = _insured.Addresses.Single(address => !address.IsMain);
@@ -69,7 +76,7 @@ public class UpdateQuotationGroupInsuredAddressTests
         => new(
             _group.Id, _policyHolderId, null, _insuredId, _modalityId,
             2_000m, new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            "All", [], false, false, insuredAddressId);
+            "All", [], [], insuredAddressId);
 
     [Fact]
     public async Task Execute_SemInformarEndereco_DevePreservarAReplicaDaOferta()
@@ -100,7 +107,7 @@ public class UpdateQuotationGroupInsuredAddressTests
         _group = QuotationGroup.Create(
             _policyHolderId, null, _insuredId, _modalityId, 1_000m,
             new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            EQuotationScopeMode.All, [], includesPenaltyCoverage: false, includesLaborCoverage: false);
+            EQuotationScopeMode.All, [], []);
         _groupRepository.GetByIdWithInsurersAsync(_group.Id, Arg.Any<CancellationToken>()).Returns(_group);
 
         await _useCase.ExecuteAsync(Request(insuredAddressId: null), CancellationToken.None);

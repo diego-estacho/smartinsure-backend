@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Infra.Data.Context;
@@ -13,6 +14,10 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
     public async Task<Quotation?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         => await dbContext.Quotations
             .Include(quotation => quotation.Reasons)
+            // RN-105/RN-106: o processor substitui esta coleção (RecordAdditionalCoverages limpa antes
+            // de gravar) e o Remove precisa dela carregada para derrubar os filhos antes da raiz — a
+            // FK é Restrict por convenção (ADR-034). Simétrico ao Include de Reasons.
+            .Include(quotation => quotation.AdditionalCoverages)
             .FirstOrDefaultAsync(quotation => quotation.Id == id, cancellationToken);
 
     public async Task AddAsync(Quotation entity, CancellationToken cancellationToken)
@@ -30,6 +35,14 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
             dbContext.QuotationReasons.RemoveRange(entity.Reasons);
         }
 
+        // RN-105/RN-106 (AB#0007): a situação das Coberturas Adicionais é filha da Cotação e cai na
+        // mesma FK Restrict — sem removê-la antes, o recálculo passa a falhar. O chamador carrega a
+        // Cotação com a coleção (ver ListByGroupAsync).
+        if (entity.AdditionalCoverages.Count > 0)
+        {
+            dbContext.QuotationAdditionalCoverages.RemoveRange(entity.AdditionalCoverages);
+        }
+
         dbContext.Quotations.Remove(entity);
     }
 
@@ -38,6 +51,7 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
         Guid quotationGroupId, CancellationToken cancellationToken)
         => await dbContext.Quotations
             .Include(quotation => quotation.Reasons)
+            .Include(quotation => quotation.AdditionalCoverages)
             .Where(quotation => quotation.QuotationGroupId == quotationGroupId)
             .ToListAsync(cancellationToken);
 
@@ -73,4 +87,174 @@ public sealed class QuotationRepository(SmartInsureDbContext dbContext) : IQuota
                 row.quotation.InsurerId,
                 row.BrokerageId!.Value))
             .ToListAsync(cancellationToken);
+
+    /// <summary>
+    /// RN-077/RN-078: livro de Cotações da Corretora. Inclui só as Obtained com resultado do provedor
+    /// (não Unavailable, ou Unavailable com ao menos um motivo de origem Provider — exclui as locais
+    /// "não incluída"); junta Grupo/Tomador/Segurado/Modalidade/Seguradora. Pipeline: base (escopo +
+    /// inclusão) → opções (distintos no livro) → busca → filtros avançados → contagem por situação
+    /// (ignora a aba) → aba de situação → total + página (ordenada por obtenção desc).
+    /// </summary>
+    public async Task<QuotationBookPageDto> ListBookAsync(
+        QuotationBookFilter filter, CancellationToken cancellationToken)
+    {
+        var baseQuery =
+            from quotation in dbContext.Quotations.AsNoTracking()
+            where quotation.ProcessingStatus == EQuotationProcessingStatus.Obtained
+                  // Inclusão como EXISTS correlacionado no DbSet (não a navegação `quotation.Reasons.Any`):
+                  // o EF Core não traduz a navegação de coleção dentro deste `||` quando a base é depois
+                  // materializada com `Distinct()` (opções de filtro) — o EXISTS explícito traduz sempre.
+                  && (quotation.Result != EQuotationResult.Unavailable
+                      || dbContext.QuotationReasons.Any(reason =>
+                          reason.QuotationId == quotation.Id
+                          && reason.Source == EQuotationReasonSource.Provider))
+            join grp in dbContext.QuotationGroups.AsNoTracking() on quotation.QuotationGroupId equals grp.Id
+            where grp.BrokerageId == filter.BrokerageId
+            join policyHolder in dbContext.Persons.AsNoTracking() on grp.PolicyHolderId equals policyHolder.Id
+            join insured in dbContext.Persons.AsNoTracking() on grp.InsuredId equals insured.Id
+            join modality in dbContext.Modalities.AsNoTracking() on grp.ModalityId equals modality.Id
+            join insurer in dbContext.Insurers.AsNoTracking() on quotation.InsurerId equals insurer.Id
+            select new
+            {
+                Quotation = quotation,
+                Group = grp,
+                PolicyHolderName = policyHolder.Name,
+                InsuredName = insured.Name,
+                ModalityId = modality.Id,
+                ModalityName = modality.Name,
+                InsurerId = insurer.Id,
+                InsurerName = insurer.CorporateName,
+                InsurerLogoUrl = insurer.LogoUrl,
+            };
+
+        // Q10: opções de filtro = distintos presentes no livro da Corretora (independentes dos demais filtros).
+        // Distinct sobre tipo ANÔNIMO (não sobre o DTO com construtor): o EF Core não traduz `Distinct()`
+        // de uma projeção para um record/DTO com ctor — o anônimo tem igualdade estrutural e vira
+        // `SELECT DISTINCT col1, col2`; só depois projetamos para o DTO.
+        var insurers = await baseQuery
+            .Select(row => new { Id = row.InsurerId, Name = row.InsurerName })
+            .Distinct()
+            .OrderBy(option => option.Name)
+            .Select(option => new QuotationBookOptionDto(option.Id, option.Name))
+            .ToListAsync(cancellationToken);
+
+        var modalities = await baseQuery
+            .Select(row => new { Id = row.ModalityId, Name = row.ModalityName })
+            .Distinct()
+            .OrderBy(option => option.Name)
+            .Select(option => new QuotationBookOptionDto(option.Id, option.Name))
+            .ToListAsync(cancellationToken);
+
+        // Busca livre (número/Tomador/Segurado/Seguradora/Modalidade).
+        var query = baseQuery;
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var term = filter.Search.Trim();
+            query = query.Where(row =>
+                (row.Quotation.ProposalNumber != null && row.Quotation.ProposalNumber.Contains(term))
+                || row.PolicyHolderName.Contains(term)
+                || row.InsuredName.Contains(term)
+                || row.InsurerName.Contains(term)
+                || row.ModalityName.Contains(term));
+        }
+
+        // Filtros avançados (E lógico).
+        if (filter.InsurerId is { } insurerId)
+        {
+            query = query.Where(row => row.InsurerId == insurerId);
+        }
+
+        if (filter.ModalityId is { } modalityId)
+        {
+            query = query.Where(row => row.ModalityId == modalityId);
+        }
+
+        if (filter.PremiumMin is { } premiumMin)
+        {
+            query = query.Where(row => row.Quotation.Premium >= premiumMin);
+        }
+
+        if (filter.PremiumMax is { } premiumMax)
+        {
+            query = query.Where(row => row.Quotation.Premium <= premiumMax);
+        }
+
+        if (filter.InsuredAmountMin is { } insuredAmountMin)
+        {
+            query = query.Where(row => row.Group.InsuredAmount >= insuredAmountMin);
+        }
+
+        if (filter.InsuredAmountMax is { } insuredAmountMax)
+        {
+            query = query.Where(row => row.Group.InsuredAmount <= insuredAmountMax);
+        }
+
+        // Período de criação: DateOnly → limites DateTime (fim exclusivo no dia seguinte).
+        if (filter.CreatedFrom is { } createdFrom)
+        {
+            var from = createdFrom.ToDateTime(TimeOnly.MinValue);
+            query = query.Where(row => row.Quotation.CreatedAt >= from);
+        }
+
+        if (filter.CreatedTo is { } createdTo)
+        {
+            var toExclusive = createdTo.AddDays(1).ToDateTime(TimeOnly.MinValue);
+            query = query.Where(row => row.Quotation.CreatedAt < toExclusive);
+        }
+
+        if (filter.CoverageStartFrom is { } coverageFrom)
+        {
+            query = query.Where(row => row.Group.CoverageStartDate >= coverageFrom);
+        }
+
+        if (filter.CoverageStartTo is { } coverageTo)
+        {
+            query = query.Where(row => row.Group.CoverageStartDate <= coverageTo);
+        }
+
+        // RN-078: contagem por situação sobre a busca + filtros avançados, ANTES da aba (para as abas
+        // mostrarem o total de cada situação). Chaves não-nulas: incluídas são sempre Obtained com resultado.
+        var rawCounts = await query
+            .GroupBy(row => row.Quotation.Result)
+            .Select(group => new { group.Key, Count = group.LongCount() })
+            .ToListAsync(cancellationToken);
+
+        var counts = rawCounts
+            .Where(entry => entry.Key.HasValue)
+            .Select(entry => new QuotationSituationCountDto(entry.Key!.Value, entry.Count))
+            .ToList();
+
+        if (filter.Situation is { } situacao)
+        {
+            query = query.Where(row => row.Quotation.Result == situacao);
+        }
+
+        var totalCount = await query.LongCountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(row => row.Quotation.ObtainedAt ?? row.Quotation.CreatedAt)
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .Select(row => new QuotationBookItemDto(
+                row.Quotation.Id,
+                row.Quotation.ProposalNumber,
+                row.PolicyHolderName,
+                row.InsuredName,
+                row.InsurerId,
+                row.InsurerName,
+                row.InsurerLogoUrl,
+                row.ModalityId,
+                row.ModalityName,
+                row.Group.InsuredAmount,
+                row.Quotation.Premium,
+                row.Quotation.CommissionPercentage,
+                row.Quotation.Result!.Value,
+                row.Quotation.RequiresCcg,
+                row.Group.CoverageStartDate,
+                row.Group.CoverageEndDate,
+                row.Quotation.CreatedAt))
+            .ToListAsync(cancellationToken);
+
+        return new QuotationBookPageDto(items, totalCount, counts, insurers, modalities);
+    }
 }

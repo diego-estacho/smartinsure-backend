@@ -4,6 +4,7 @@ using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuot
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.CreateQuotationGroup.Requests;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
@@ -22,6 +23,11 @@ public class CreateQuotationGroupInsuredAddressTests
 
     private readonly IPersonRepository _personRepository = Substitute.For<IPersonRepository>();
     private readonly IModalityRepository _modalityRepository = Substitute.For<IModalityRepository>();
+
+    private readonly IImportedAdditionalCoverageRepository _importedAdditionalCoverageRepository =
+        Substitute.For<IImportedAdditionalCoverageRepository>();
+
+    private readonly ICurrentUserAccessor _currentUser = Substitute.For<ICurrentUserAccessor>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly CreateQuotationGroupUseCase _useCase;
 
@@ -33,7 +39,8 @@ public class CreateQuotationGroupInsuredAddressTests
 
     public CreateQuotationGroupInsuredAddressTests()
         => _useCase = new CreateQuotationGroupUseCase(
-            _quotationGroupRepository, _personRepository, _modalityRepository, _unitOfWork);
+            _quotationGroupRepository, _personRepository, _modalityRepository,
+            _importedAdditionalCoverageRepository, _currentUser, _unitOfWork);
 
     private void SetupReferences()
     {
@@ -55,7 +62,7 @@ public class CreateQuotationGroupInsuredAddressTests
         => new(
             _policyHolderId, null, _insuredId, _modalityId,
             1_000m, new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            "All", [], false, false, insuredAddressId);
+            "All", [], [], insuredAddressId);
 
     [Fact]
     public async Task Execute_DeveReplicarOEnderecoEscolhidoDoSegurado()

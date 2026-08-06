@@ -84,7 +84,8 @@ public sealed class PolicyHoldersEndpoint : CarterModule
         IListPolicyHoldersUseCase useCase,
         int? page,
         int? pageSize,
-        string? search)
+        string? search,
+        Guid? brokerageId)
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
@@ -93,6 +94,7 @@ public sealed class PolicyHoldersEndpoint : CarterModule
                 Page = page ?? 1,
                 PageSize = pageSize ?? 20,
                 Search = search,
+                BrokerageId = brokerageId,
             });
 
     private static async Task<IResult> GetAsync(

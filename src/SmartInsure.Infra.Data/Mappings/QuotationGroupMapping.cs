@@ -47,8 +47,8 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
             .HasMaxLength(20)
             .IsRequired();
 
-        builder.Property(group => group.IncludesPenaltyCoverage).IsRequired();
-        builder.Property(group => group.IncludesLaborCoverage).IsRequired();
+        // RN-104: as Coberturas Adicionais escolhidas viraram coleção filha (ver HasMany abaixo);
+        // os booleanos provisórios saíram do domínio e da tabela (AB#0007).
 
         builder.Property(group => group.Status)
             .HasMaxLength(20)
@@ -89,6 +89,15 @@ public sealed class QuotationGroupMapping : IEntityTypeConfiguration<QuotationGr
             .IsRequired();
 
         builder.Navigation(group => group.SelectedInsurers)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        // RN-104: coleção filha das Coberturas Adicionais escolhidas — acesso por field.
+        builder.HasMany(group => group.AdditionalCoverages)
+            .WithOne()
+            .HasForeignKey(coverage => coverage.QuotationGroupId)
+            .IsRequired();
+
+        builder.Navigation(group => group.AdditionalCoverages)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // Alinhado 1:1 com a migration criar-tabela-quotation-groups (evitar drift de constraint).

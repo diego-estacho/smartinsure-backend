@@ -17,7 +17,7 @@ public class QuotationGroupStatusTests
         => QuotationGroup.Create(
             Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(), 1_000m,
             new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            EQuotationScopeMode.All, [], includesPenaltyCoverage: false, includesLaborCoverage: false);
+            EQuotationScopeMode.All, [], []);
 
     [Fact]
     public void Grupo_DeveNascerEmRascunho()
@@ -90,7 +90,7 @@ public class QuotationGroupStatusTests
         var act = () => group.UpdateDraft(
             Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(), 2_000m,
             new DateOnly(2026, 9, 1), new DateOnly(2027, 9, 1),
-            EQuotationScopeMode.All, [], includesPenaltyCoverage: true, includesLaborCoverage: false);
+            EQuotationScopeMode.All, [], []);
 
         act.Should().Throw<BusinessRuleException>();
     }

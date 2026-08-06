@@ -20,6 +20,9 @@ public class ListQuotationsPaymentOptionsTests
     private readonly IQuotationRepository _quotationRepository = Substitute.For<IQuotationRepository>();
     private readonly IInsurerRepository _insurerRepository = Substitute.For<IInsurerRepository>();
 
+    private readonly IAdditionalCoverageRepository _additionalCoverageRepository =
+        Substitute.For<IAdditionalCoverageRepository>();
+
     private readonly Guid _insurerId = Guid.CreateVersion7();
 
     private ListQuotationsUseCase BuildUseCase(out QuotationGroup group)
@@ -27,7 +30,7 @@ public class ListQuotationsPaymentOptionsTests
         group = QuotationGroup.Create(
             Guid.CreateVersion7(), null, Guid.CreateVersion7(), Guid.CreateVersion7(), 100_000m,
             new DateOnly(2026, 8, 1), new DateOnly(2027, 8, 1),
-            EQuotationScopeMode.All, [], includesPenaltyCoverage: false, includesLaborCoverage: false);
+            EQuotationScopeMode.All, [], []);
 
         var quotation = Quotation.Requested(group.Id, _insurerId);
         quotation.MarkObtained(
@@ -47,8 +50,12 @@ public class ListQuotationsPaymentOptionsTests
             .Returns(new Dictionary<Guid, string> { [_insurerId] = "Seguradora X" });
         _insurerRepository.GetLogoUrlsByIdsAsync(Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(new Dictionary<Guid, string?>());
+        _additionalCoverageRepository.GetNamesByIdsAsync(
+                Arg.Any<IReadOnlyCollection<Guid>>(), Arg.Any<CancellationToken>())
+            .Returns(new Dictionary<Guid, string>());
 
-        return new ListQuotationsUseCase(_groupRepository, _quotationRepository, _insurerRepository);
+        return new ListQuotationsUseCase(
+            _groupRepository, _quotationRepository, _insurerRepository, _additionalCoverageRepository);
     }
 
     [Fact]

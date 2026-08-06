@@ -3,6 +3,7 @@ using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.RunQuotations.R
 using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.RunQuotations.Responses;
 using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
 using SmartInsure.Core.Exceptions;
@@ -21,18 +22,24 @@ public sealed class RunQuotationsUseCase(
     IBrokerageInsurerEnablementRepository enablementRepository,
     IQuotationRepository quotationRepository,
     IQuotationRequestChannel requestChannel,
+    ICurrentUserAccessor currentUserAccessor,
     IUnitOfWork unitOfWork) : IRunQuotationsUseCase
 {
     public async Task<RunQuotationsResponse> ExecuteAsync(
         RunQuotationsRequest request,
         CancellationToken cancellationToken)
     {
+        // RN-103: a Corretora da solicitação é a do Escopo ativo do acesso (claim, ADR-065), resolvida
+        // pelo servidor — nunca informada pelo cliente. Sem Corretora ativa, a operação é recusada.
+        var brokerageId = currentUserAccessor.ActiveBrokerageId
+            ?? throw new BusinessRuleException("Nenhuma Corretora ativa no acesso para solicitar cotações.");
+
         var group = await quotationGroupRepository.GetByIdWithInsurersAsync(request.QuotationGroupId, cancellationToken)
             ?? throw new NotFoundException("Grupo de Cotação não encontrado.");
 
         // RN-056: Corretora precisa de ao menos uma Habilitação de Seguradora ativa.
         var activeEnablements = await enablementRepository.ListActiveByBrokerageAsync(
-            request.BrokerageId, cancellationToken);
+            brokerageId, cancellationToken);
 
         if (activeEnablements.Count == 0)
         {
@@ -52,7 +59,7 @@ public sealed class RunQuotationsUseCase(
 
         group.ClearSelection();
         // ADR-050: guarda a Corretora da solicitação para o reconciliador reconstruir o work item no restart.
-        group.AssignBrokerage(request.BrokerageId);
+        group.AssignBrokerage(brokerageId);
         quotationGroupRepository.Update(group);
 
         // RN-057: uma Cotação Requested por Seguradora-alvo; RN-056: não selecionadas viram Indisponível local.
@@ -79,7 +86,7 @@ public sealed class RunQuotationsUseCase(
         foreach (var quotation in toEnqueue)
         {
             await requestChannel.EnqueueAsync(
-                new QuotationRequestWorkItem(quotation.Id, group.Id, quotation.InsurerId, request.BrokerageId),
+                new QuotationRequestWorkItem(quotation.Id, group.Id, quotation.InsurerId, brokerageId),
                 cancellationToken);
         }
 

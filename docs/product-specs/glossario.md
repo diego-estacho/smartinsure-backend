@@ -133,6 +133,8 @@ Mesma situação de operação das Modalidades. Nada é excluído; sai de opera�
 
 **Marcador da Cobertura Adicional Importada** (exposto por nome estável): **Ignorada** (`Ignored`) — importada que o Administrador decidiu não mapear; não aparece como pendente de mapeamento nem é oferecida, mas fica registrada (RN-043). Sem vínculo com uma Cobertura Adicional canônica e não Ignorada, a importada fica **pendente de mapeamento** (RN-043).
 
+**Situação da Cobertura Adicional na Cotação** (exposta por nome estável): **Enviada** (`Sent`) — o nome com que a Seguradora expõe a cobertura foi resolvido e enviado a ela; **Não contemplada** (`NotOffered`) — a Seguradora não oferece a cobertura na Modalidade cotada, ou o nome divergiu entre ramos ([OPEN-22](open-decisions.md)); a Cotação é feita sem ela (RN-105/RN-106).
+
 ### Grupo de Cotação (proposto em 2026-07-24, ampliado em 2026-08-03 — aguardando ratificação da PO)
 
 Situação do agregado montado no wizard de nova oferta. Nesta fase existem três situações (RN-508): Rascunho, Cotado e Emissão solicitada. A situação **Emitida** — Apólice confirmada pela Seguradora, com número e arquivo — só entra com a confirmação da emissão, demanda própria ([OPEN-07](open-decisions.md)); a plataforma não afirma emissão que não confirmou.
@@ -155,5 +157,7 @@ Classificação **estável** do resultado de uma Cotação, exposta por nome est
 | **Não-reconhecido** | `Unrecognized` | Resultado que a plataforma não classificou; exibido sem prêmio e registrado para revisão | Não |
 
 > Um resultado desconhecido/novo da Seguradora recai **sempre** em Não-reconhecido — nunca é convertido em silêncio para Pronta para emissão nem exibe prêmio (RN-058).
+
+> **Situação apresentada da Cotação na listagem (derivada — RN-078, 2026-07-30).** Na Listagem de Cotações (RN-077), a plataforma apresenta cada Cotação por uma situação **derivada no servidor** a partir do resultado acima, para exibição, contagem e filtro: `ReadyForEmission` → **Pronta para emissão**, `Analysis` → **Em análise** (com a esteira como detalhe), `Unavailable` → **Indisponível**, `Unrecognized` → **Não reconhecida**. É rótulo de apresentação derivado do resultado — não cria status novo nem transição; a API expõe o nome estável do resultado e o rótulo pt-BR é montado na apresentação. A situação **Cancelada** (ciclo de vida da proposta) é demanda própria (Fatia 2), fora desta. Ratificada por Diego Estácho no lugar da PO (registrar confirmação da PO).
 
 **Esteira** da Cotação em Análise (exposta por nome estável): **Subscrição** (`Underwriting`), **Crédito** (`Credit`), **PEP** (`Pep`), **Resseguro** (`Reinsurance`), **Cadastro** (`Registration`). A lista cresce como dado conforme a Seguradora informa; nesta fase, apenas a esteira de **Subscrição** é seguível (RN-059).
