@@ -34,6 +34,9 @@ public sealed class CreditInquiryResultMapping : IEntityTypeConfiguration<Credit
         builder.Property(result => result.FailureReason)
             .HasMaxLength(500);
 
+        // RN-029/RN-031: tempo de resposta medido da Seguradora (ms); ausente quando não respondeu.
+        builder.Property(result => result.ResponseTimeMs);
+
         // Coleção filha de limites — mapeamento com acesso por field (RN-029).
         builder.HasMany(result => result.Limits)
             .WithOne()

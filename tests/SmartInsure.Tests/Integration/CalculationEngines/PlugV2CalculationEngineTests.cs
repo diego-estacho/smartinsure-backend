@@ -546,6 +546,34 @@ public class PlugV2CalculationEngineTests
     }
 
     [Fact]
+    [Trait("RuleId", "RN-057")]
+    public async Task GetPolicyHolderLimitsAndRates_NaoReTenta_MesmoComRespostaTransitoria()
+    {
+        // plugv2-dedup: a consulta de limites é leitura, MAS o gateway a dedupa como "consulta" (60s).
+        // Um retry no timeout re-dispara e cai em "Já existe uma consulta para este CNPJ" (400). Por isso
+        // vai no client SEM retry — mesmo num 500 (transitório, que a resiliência padrão re-tentaria), só 1 ida.
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddCalculationEngines();
+        services.AddSingleton(Substitute.For<IQuotationIntegrationLogRecorder>());
+
+        var counter = new CountingHandler(HttpStatusCode.InternalServerError);
+        services.AddHttpClient(PlugV2CalculationEngine.NonIdempotentClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => counter);
+
+        using var provider = services.BuildServiceProvider();
+        var engine = provider.GetRequiredKeyedService<ICalculationEngine>(ECalculationEngine.PlugV2);
+
+        var act = () => engine.GetPolicyHolderLimitsAndRatesAsync(
+            ConnectionParameters, BrokerageCnpj, PolicyHolderCnpj, InsurerExternalId, CancellationToken.None);
+
+        await act.Should().ThrowAsync<CalculationEngineException>();
+        // Se a consulta de limites tivesse voltado ao client COM retry, o handler não idempotente
+        // receberia 0 chamadas (o retry bateria no outro client) — a asserção trava o comportamento.
+        counter.Count.Should().Be(1);
+    }
+
+    [Fact]
     [Trait("RuleId", "RN-058")]
     public async Task RunQuotationAsync_EnviaEmissionProposalType2_ParaReceberOCcgDoGateway()
     {

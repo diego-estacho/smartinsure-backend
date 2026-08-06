@@ -202,6 +202,32 @@ public class GetCreditInquiryUseCaseTests
     }
 
     [Fact]
+    [Trait("RuleId", "RN-029")]
+    public async Task Execute_DeveExporTempoDeRespostaNoHistorico_QuandoResultadoTemTempo()
+    {
+        var inquiryId = Guid.CreateVersion7();
+        var inquiry = CreditInquiry.Create(BrokerageId, ValidCnpj);
+        typeof(EntityBase).GetProperty("Id")!.SetValue(inquiry, inquiryId);
+
+        var available = CreditInquiryResult.Available(
+            inquiryId, Insurer1Id,
+            new[] { CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m) },
+            responseTimeMs: 820);
+        var unavailable = CreditInquiryResult.Unavailable(inquiryId, Insurer2Id, "Sistema indisponível");
+
+        inquiry.AddResult(available);
+        inquiry.AddResult(unavailable);
+
+        _creditInquiryRepository.GetByIdAsync(inquiryId, Arg.Any<CancellationToken>())
+            .Returns(inquiry);
+
+        var response = await _useCase.ExecuteAsync(new GetCreditInquiryRequest(inquiryId), CancellationToken.None);
+
+        response.Results.Single(r => r.Status == "Available").ResponseTimeMs.Should().Be(820);
+        response.Results.Single(r => r.Status == "Unavailable").ResponseTimeMs.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Execute_DeveLancarNotFoundException_QuandoConsultaNaoEncontrada()
     {
         var inquiryId = Guid.CreateVersion7();

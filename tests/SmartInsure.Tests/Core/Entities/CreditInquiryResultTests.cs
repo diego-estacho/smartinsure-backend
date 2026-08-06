@@ -91,4 +91,24 @@ public class CreditInquiryResultTests
         result.Limits.Should().BeEmpty();
     }
 
+    [Fact]
+    [Trait("RuleId", "RN-029")]
+    public void Available_DeveGuardarTempoDeResposta_QuandoInformado()
+    {
+        var result = CreditInquiryResult.Available(
+            CreditInquiryId, InsurerId,
+            new[] { CreditInquiryResultLimit.Create("Tradicional", "GARANTIA_TRADICIONAL", 1000m, 1000m, 0.05m) },
+            responseTimeMs: 820);
+
+        result.ResponseTimeMs.Should().Be(820);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-029")]
+    public void Unavailable_DeveTerTempoDeRespostaAusente_PorPadrao()
+    {
+        var result = CreditInquiryResult.Unavailable(CreditInquiryId, InsurerId, "Seguradora indisponível");
+
+        result.ResponseTimeMs.Should().BeNull();
+    }
 }

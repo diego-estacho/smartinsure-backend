@@ -399,6 +399,7 @@ public sealed class PersonRepository(SmartInsureDbContext context)
         int page,
         int pageSize,
         string? search,
+        Guid? brokerageId,
         CancellationToken cancellationToken)
     {
         var query = Set.AsNoTracking()
@@ -416,6 +417,10 @@ public sealed class PersonRepository(SmartInsureDbContext context)
 
         var totalCount = await query.LongCountAsync(cancellationToken);
 
+        // RN-200: quando não há Corretora ativa, a flag de Nomeação não se aplica (Guid vazio
+        // nunca casa uma Nomeação) — o mapeamento no use case a devolve como ausente.
+        var appointmentBrokerageId = brokerageId ?? Guid.Empty;
+
         var items = await query
             .OrderBy(person => person.Name)
             .Skip((page - 1) * pageSize)
@@ -425,7 +430,23 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                 person.DocumentNumber,
                 person.Name,
                 person.SocialName,
-                person.LegalNature == null ? null : (bool?)person.LegalNature.IsPrivate))
+                person.LegalNature == null ? null : (bool?)person.LegalNature.IsPrivate,
+                // RN-200: cidade/UF do endereço principal (fallback: primeiro endereço cadastrado).
+                person.Addresses
+                    .OrderByDescending(address => address.IsMain)
+                    .ThenBy(address => address.Id)
+                    .Select(address => address.City)
+                    .FirstOrDefault(),
+                person.Addresses
+                    .OrderByDescending(address => address.IsMain)
+                    .ThenBy(address => address.Id)
+                    .Select(address => address.State)
+                    .FirstOrDefault(),
+                // RN-200: "já é Tomador desta Corretora" = existe Nomeação Vigente (Active) com a Corretora ativa.
+                Context.Set<PolicyHolderAppointment>().Any(appointment =>
+                    appointment.PolicyHolderId == person.Id
+                    && appointment.BrokerageId == appointmentBrokerageId
+                    && appointment.Status == EPolicyHolderAppointmentStatus.Active)))
             .ToListAsync(cancellationToken);
 
         return (items, totalCount);
