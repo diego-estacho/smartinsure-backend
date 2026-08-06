@@ -17,7 +17,7 @@ public sealed class ListPolicyHoldersUseCase(IPersonRepository personRepository)
         var pageSize = Math.Clamp(request.PageSize, 1, 100);
 
         var (items, totalCount) = await personRepository.ListPolicyHoldersAsync(
-            page, pageSize, request.Search, cancellationToken);
+            page, pageSize, request.Search, request.BrokerageId, cancellationToken);
 
         var responses = items
             .Select(item => new PolicyHolderListItemResponse(
@@ -25,7 +25,11 @@ public sealed class ListPolicyHoldersUseCase(IPersonRepository personRepository)
                 item.DocumentNumber,
                 item.Name,
                 item.SocialName,
-                item.IsPrivateSector))
+                item.IsPrivateSector,
+                item.City,
+                item.StateCode,
+                // RN-104: a flag só faz sentido com Corretora ativa; sem ela, é ausente.
+                request.BrokerageId.HasValue ? item.IsAppointedToBrokerage : null))
             .ToList();
 
         return new PagedResponse<PolicyHolderListItemResponse>(

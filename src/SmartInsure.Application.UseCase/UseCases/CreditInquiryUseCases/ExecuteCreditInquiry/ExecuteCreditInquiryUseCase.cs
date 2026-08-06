@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry.Requests;
 using SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry.Responses;
@@ -13,9 +14,9 @@ using SmartInsure.Infra.CrossCutting.Validators;
 namespace SmartInsure.Application.UseCase.UseCases.CreditInquiryUseCases.ExecuteCreditInquiry;
 
 /// <summary>
-/// RN-029..031 — Consulta de Limites de Crédito do Tomador: dispara consulta paralela ao motor
-/// de cada Habilitação Ativa da Corretora; tolerando falha isolada por seguradora (RN-030);
-/// grava histórico imutável com data/hora e resultados.
+/// RN-029..031 — Consulta de Limites de Crédito do Tomador: consulta SEQUENCIALMENTE o motor de
+/// cada Habilitação Ativa da Corretora (o gateway trava a consulta por CNPJ; paralelo colide — ver
+/// plugv2-dedup); tolerando falha isolada por seguradora (RN-030); grava histórico imutável.
 /// </summary>
 public sealed class ExecuteCreditInquiryUseCase(
     IBrokerageInsurerEnablementRepository enablementRepository,
@@ -59,25 +60,23 @@ public sealed class ExecuteCreditInquiryUseCase(
             insurerData[enablement.InsurerId] = (insurer, engine, enablement.ConnectionParameters ?? string.Empty);
         }
 
-        // RN-030: fan-out de chamadas ao motor (apenas HTTP, sem EF) com tolerância a falha isolada.
         var creditInquiry = CreditInquiry.Create(request.BrokerageId, normalizedCnpj);
 
-        var motorTasks = activeEnablements
-            .Select(enablement => ExecuteMotorCallAsync(
+        // plugv2-dedup: o gateway trava a consulta por CNPJ (guarda de concorrência liberada ao fim de
+        // CADA chamada, no finally). Consultar as Seguradoras em PARALELO para o mesmo CNPJ colide nessa
+        // trava — a mais lenta cai em "Já existe uma consulta para este CNPJ". Por isso as chamadas são
+        // SEQUENCIAIS: cada Seguradora conclui e libera a trava antes da próxima (o próprio gateway
+        // processa assim). A falha isolada (RN-030) não interrompe as demais; cada uma mede seu tempo (RN-031).
+        foreach (var enablement in activeEnablements)
+        {
+            var (result, policyHolderName) = await ExecuteMotorCallAsync(
                 creditInquiry.Id,
                 enablement.InsurerId,
                 insurerData[enablement.InsurerId],
                 brokerage.DocumentNumber,
                 normalizedCnpj,
-                cancellationToken))
-            .ToList();
+                cancellationToken);
 
-        await Task.WhenAll(motorTasks);
-
-        // Coleta resultados (sempre sucesso, mesmo com falhas isoladas — RN-030).
-        foreach (var task in motorTasks)
-        {
-            var (result, policyHolderName) = await task;
             creditInquiry.AddResult(result);
 
             // RN-029: quando a Seguradora informar a razão social do tomador, ela é registrada.
@@ -116,6 +115,9 @@ public sealed class ExecuteCreditInquiryUseCase(
                 creditInquiryId, insurerId, "Identificador externo da seguradora não configurado."), null);
         }
 
+        // RN-029/RN-031: mede o tempo de resposta da Seguradora (duração real da chamada ao motor).
+        var stopwatch = Stopwatch.StartNew();
+
         try
         {
             // RN-029: consulta limites de crédito via motor configurado na habilitação.
@@ -126,7 +128,9 @@ public sealed class ExecuteCreditInquiryUseCase(
                 insurer.ReferenceExternalId,
                 cancellationToken);
 
-            // RN-030: resposta nula (indisponibilidade no motor) → Unavailable.
+            stopwatch.Stop();
+
+            // RN-030: resposta nula (indisponibilidade no motor) → Unavailable (sem tempo de resposta).
             if (limits is null)
             {
                 return (CreditInquiryResult.Unavailable(
@@ -144,7 +148,8 @@ public sealed class ExecuteCreditInquiryUseCase(
                 .ToList();
 
             // Available() vai corrigir o ID dos limites para corresponder ao ID do resultado criado.
-            var result = CreditInquiryResult.Available(creditInquiryId, insurerId, resultLimits);
+            var result = CreditInquiryResult.Available(
+                creditInquiryId, insurerId, resultLimits, stopwatch.ElapsedMilliseconds);
 
             return (result, limits.PolicyHolderName);
         }
@@ -186,15 +191,17 @@ public sealed class ExecuteCreditInquiryUseCase(
         var resultResponses = inquiry.Results
             .Select(result =>
             {
-                var insurerName = insurerData.TryGetValue(result.InsurerId, out var data)
-                    ? data.insurer.CorporateName
-                    : "Seguradora desconhecida";
+                var hasInsurer = insurerData.TryGetValue(result.InsurerId, out var data);
+                var insurerName = hasInsurer ? data.insurer.CorporateName : "Seguradora desconhecida";
+                var insurerLogoUrl = hasInsurer ? data.insurer.LogoUrl : null;
 
                 return new CreditInquiryResultResponse(
                     result.InsurerId,
                     insurerName,
+                    insurerLogoUrl,
                     result.Status.ToString(),
                     result.FailureReason,
+                    result.ResponseTimeMs,
                     result.Limits
                         .Select(l => new CreditInquiryLimitGroupResponse(
                             l.GroupName,

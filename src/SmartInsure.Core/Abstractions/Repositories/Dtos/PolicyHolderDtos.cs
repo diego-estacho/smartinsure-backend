@@ -5,7 +5,10 @@ public sealed record PolicyHolderListItemDto(
     string DocumentNumber,
     string Name,
     string? SocialName,
-    bool? IsPrivateSector);
+    bool? IsPrivateSector,
+    string? City,
+    string? StateCode,
+    bool? IsAppointedToBrokerage);
 
 public sealed record PolicyHolderDetailsDto(
     Guid Id,

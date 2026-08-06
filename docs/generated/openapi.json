@@ -919,6 +919,34 @@
         }
       }
     },
+    "/api/v1/credit-inquiries/{id}/export": {
+      "get": {
+        "tags": [
+          "CreditInquiriesEndpoint"
+        ],
+        "summary": "Exporta o quadro consolidado de uma consulta de crédito (.xlsx)",
+        "operationId": "ExportCreditInquiry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/v1/imported-additional-coverages/{id}/link": {
       "post": {
         "tags": [
@@ -1731,6 +1759,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "brokerageId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -4761,8 +4797,10 @@
         "required": [
           "insurerId",
           "insurerName",
+          "insurerLogoUrl",
           "status",
           "failureReason",
+          "responseTimeMs",
           "limits"
         ],
         "type": "object",
@@ -4774,6 +4812,12 @@
           "insurerName": {
             "type": "string"
           },
+          "insurerLogoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
           "status": {
             "type": "string"
           },
@@ -4782,6 +4826,14 @@
               "null",
               "string"
             ]
+          },
+          "responseTimeMs": {
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           },
           "limits": {
             "type": "array",
@@ -6941,7 +6993,10 @@
           "documentNumber",
           "name",
           "socialName",
-          "isPrivateSector"
+          "isPrivateSector",
+          "city",
+          "stateCode",
+          "isAppointedToBrokerage"
         ],
         "type": "object",
         "properties": {
@@ -6962,6 +7017,24 @@
             ]
           },
           "isPrivateSector": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "stateCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isAppointedToBrokerage": {
             "type": [
               "null",
               "boolean"

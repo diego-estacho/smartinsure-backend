@@ -59,11 +59,16 @@ public interface IPersonRepository : IRepository<Person>
         Guid personId,
         CancellationToken cancellationToken);
 
-    /// <summary>RN-025: lista Pessoas jurídicas com papel Tomador, filtradas por search opcional.</summary>
+    /// <summary>
+    /// RN-025/RN-200: lista Pessoas jurídicas com papel Tomador, filtradas por search opcional.
+    /// Quando <paramref name="brokerageId"/> é informado, cada item indica se o Tomador já tem
+    /// Nomeação Vigente com a Corretora ativa (RN-200).
+    /// </summary>
     Task<(IReadOnlyList<PolicyHolderListItemDto> Items, long TotalCount)> ListPolicyHoldersAsync(
         int page,
         int pageSize,
         string? search,
+        Guid? brokerageId,
         CancellationToken cancellationToken);
 
     /// <summary>RN-025: detalhes do Tomador a partir da Pessoa jurídica com papel PolicyHolder, incluindo endereços e nomeações.</summary>
