@@ -63,3 +63,45 @@ public sealed record QuotationBookPageDto(
     IReadOnlyList<QuotationSituationCountDto> Counts,
     IReadOnlyList<QuotationBookOptionDto> Insurers,
     IReadOnlyList<QuotationBookOptionDto> Modalities);
+
+/// <summary>
+/// RN-081: projeção achatada (ADR-038) do detalhe de UMA Cotação — a Cotação com o Grupo (Tomador/Segurado
+/// com documento, Modalidade, IS, vigência, criação), a Seguradora (nome/logo), o resultado classificado
+/// (RN-058) e as flags de CCG (ortogonais). Só as obtidas com resultado do provedor (mesma inclusão do
+/// livro, RN-077); o escopo pela Corretora do Grupo é aplicado na consulta. A cronologia é composta no use
+/// case a partir de <see cref="CreatedAt"/>/<see cref="ObtainedAt"/>/<see cref="RequiresCcg"/>.
+/// </summary>
+public sealed record QuotationDetailDto(
+    Guid QuotationId,
+    string? Number,
+    string PolicyHolderName,
+    string PolicyHolderDocumentNumber,
+    string InsuredName,
+    string InsuredDocumentNumber,
+    Guid InsurerId,
+    string InsurerName,
+    string? InsurerLogoUrl,
+    Guid ModalityId,
+    string ModalityName,
+    decimal InsuredAmount,
+    decimal? Premium,
+    decimal? CommissionPercentage,
+    decimal? CommissionValue,
+    DateOnly CoverageStartDate,
+    DateOnly CoverageEndDate,
+    DateTime CreatedAt,
+    DateTime? ObtainedAt,
+    EQuotationResult Result,
+    bool RequiresCcg,
+    bool CcgSigned,
+    IReadOnlyList<QuotationDetailCoverageDto> AdditionalCoverages);
+
+/// <summary>
+/// RN-106: uma Cobertura Adicional escolhida, na visão do detalhe — o nome canônico (para exibir mesmo
+/// quando não contemplada, sem <see cref="SentName"/>), a situação por nome estável e o nome enviado à
+/// Seguradora quando houve.
+/// </summary>
+public sealed record QuotationDetailCoverageDto(
+    string Name,
+    EQuotationAdditionalCoverageStatus Status,
+    string? SentName);

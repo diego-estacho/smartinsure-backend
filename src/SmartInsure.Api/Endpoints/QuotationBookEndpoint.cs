@@ -1,5 +1,8 @@
 using Carter;
 using SmartInsure.Api.Handlers.Base;
+using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.GetQuotationDetail.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.GetQuotationDetail.Requests;
+using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.GetQuotationDetail.Responses;
 using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.ListQuotationBook.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.ListQuotationBook.Requests;
 using SmartInsure.Application.UseCase.UseCases.QuotationUseCases.ListQuotationBook.Responses;
@@ -24,6 +27,11 @@ public sealed class QuotationBookEndpoint : CarterModule
         app.MapGet("/", ListAsync)
             .RequireAuthorization()
             .Produces<QuotationBookResponse>(StatusCodes.Status200OK);
+
+        app.MapGet("/{id:guid}", GetAsync)
+            .RequireAuthorization()
+            .Produces<QuotationDetailResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
     }
 
     // RN-077: página do livro com busca + situação + filtros avançados; a Corretora ativa vem do acesso (RN-064).
@@ -67,4 +75,17 @@ public sealed class QuotationBookEndpoint : CarterModule
                 CoverageStartFrom = coverageStartFrom,
                 CoverageStartTo = coverageStartTo,
             });
+
+    // RN-081: detalhe read-only por identidade (guid), nunca por número; a Corretora ativa vem do acesso
+    // (RN-064). Cotação de outra Corretora (ou id inexistente) → 404 idêntico (não revela existência).
+    private static async Task<IResult> GetAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        IGetQuotationDetailUseCase useCase,
+        ICurrentUserAccessor currentUser,
+        Guid id)
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new GetQuotationDetailRequest(id, currentUser.ActiveBrokerageId));
 }

@@ -36,4 +36,14 @@ public interface IQuotationRepository : IRepository<Quotation>
     /// pela Corretora do Grupo (RN-064). A contagem respeita a busca mas ignora a situação filtrada.
     /// </summary>
     Task<QuotationBookPageDto> ListBookAsync(QuotationBookFilter filter, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-081: detalhe read-only de UMA Cotação pela identidade, **escopado pela Corretora do Escopo
+    /// ativo** (<paramref name="brokerageId"/> = Corretora do Grupo). Mesma inclusão do livro (RN-077):
+    /// só as obtidas com resultado do provedor. Retorna <c>null</c> quando a Cotação não existe, está
+    /// fora da inclusão, ou pertence a outra Corretora — o use case traduz todos em 404 (não revela
+    /// existência). Projeção achatada, <c>AsNoTracking</c>.
+    /// </summary>
+    Task<QuotationDetailDto?> GetDetailAsync(
+        Guid quotationId, Guid brokerageId, CancellationToken cancellationToken);
 }
