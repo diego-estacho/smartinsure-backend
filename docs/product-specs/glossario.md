@@ -13,7 +13,10 @@ Este arquivo é o item nº 1 da fonte de verdade do harness. Nenhum nome de enti
 | **Grupo de Cotação** | `QuotationGroup` | O pedido/estudo que o corretor cria no wizard (tomador, segurado, modalidade, valores, vigência), agrupando as Cotações das seguradoras; exibido na UI como "oferta" (rótulo provisório) — decisão do dono em 2026-07-24 | 1 por jornada | o retorno de uma seguradora; uma Cotação |
 | **Cotação** | `Quotation` | O retorno de UMA seguradora para um Grupo de Cotação: prêmio, condições, prazo | N por Grupo de Cotação (uma por seguradora) | o pedido do corretor |
 | **Proposta** | `Proposal` | A cotação aceita pelo corretor, em processamento na seguradora até a emissão | 0..1 por Grupo de Cotação | qualquer coisa antes do aceite |
-| **Apólice** | `Policy` | O documento emitido pela seguradora | 0..1 por proposta | — |
+| **Apólice** | `Policy` | O registro da emissão de uma Cotação: referência devolvida pela Seguradora, valores emitidos, forma de pagamento, endereço do Segurado enviado e aceite do Termo. Nasce quando a emissão é **solicitada** (RN-514); número da apólice, arquivo e boletos vêm da confirmação junto à Seguradora, fora desta fase (proposto em 2026-08-03 — aguardando ratificação da PO) | 0..1 por Cotação | a Cotação escolhida; a Proposta |
+| **Endereço do Segurado da oferta** | `QuotationAddress` | Réplica, feita no Grupo de Cotação quando ele é criado, do endereço do Segurado escolhido pelo corretor; abastece a emissão e é independente de alterações posteriores no cadastro da Pessoa (RN-503; proposto em 2026-08-03 — aguardando ratificação da PO) | 1 por Grupo de Cotação | o endereço cadastrado da Pessoa (que é a fonte); o endereço do Tomador |
+| **Termo da Seguradora** | `InsurerTerm` | Texto do Termo e declaração que a Seguradora exige que o corretor aceite para emitir; tem versão vigente por Seguradora (RN-506; proposto em 2026-08-03 — aguardando ratificação da PO) | 1 vigente por Seguradora | o aceite (que é o ato); a minuta do contrato |
+| **Aceite do Termo** | `TermAcceptance` | Registro do ato de aceitar o Termo da Seguradora: quem aceitou, quando, o conteúdo exato aceito e o agente de acesso (RN-506; proposto em 2026-08-03 — aguardando ratificação da PO) | N por Usuário; 1..N por emissão solicitada | o Termo da Seguradora (que é o texto) |
 | **Contragarantia (CCG)** | `CounterGuarantee` | Garantia adicional que a Seguradora pode exigir para emitir; na Cotação vem como veredito (exige ou não) + dados informativos (limite máximo sem CCG, se já assinada), capturado como atributo da Cotação. A assinatura/contrato da CCG é da emissão (proposto em 2026-07-27 — aguardando ratificação da PO) | 0..1 por Cotação | uma esteira de análise; uma classificação de resultado |
 | **Seguradora** | `Insurer` | Quem precifica e emite. A OnPoint é um *hub* de seguradoras, não uma seguradora | — | — |
 | **Corretora / Corretor** | `Brokerage` / `Broker` | A empresa cliente da plataforma / o usuário dela | — | — |
@@ -132,13 +135,15 @@ Mesma situação de operação das Modalidades. Nada é excluído; sai de opera�
 
 **Situação da Cobertura Adicional na Cotação** (exposta por nome estável): **Enviada** (`Sent`) — o nome com que a Seguradora expõe a cobertura foi resolvido e enviado a ela; **Não contemplada** (`NotOffered`) — a Seguradora não oferece a cobertura na Modalidade cotada, ou o nome divergiu entre ramos ([OPEN-22](open-decisions.md)); a Cotação é feita sem ela (RN-105/RN-106).
 
-### Grupo de Cotação (proposto em 2026-07-24 — aguardando ratificação da PO)
+### Grupo de Cotação (proposto em 2026-07-24, ampliado em 2026-08-03 — aguardando ratificação da PO)
 
-Estado inicial do agregado montado no wizard de nova oferta. Nesta fase o backend persiste **apenas o Rascunho** (RN-050, RN-051); os estados posteriores (Cotação obtida, Proposta aceita, Apólice emitida) serão enumerados com a PO quando as etapas de cotação e emissão saírem do mock ([OPEN-07](open-decisions.md)).
+Situação do agregado montado no wizard de nova oferta. Nesta fase existem três situações (RN-508): Rascunho, Cotado e Emissão solicitada. A situação **Emitida** — Apólice confirmada pela Seguradora, com número e arquivo — só entra com a confirmação da emissão, demanda própria ([OPEN-07](open-decisions.md)); a plataforma não afirma emissão que não confirmou.
 
 | Status | Nome estável (API) | Significado | Transições permitidas |
 |---|---|---|---|
-| **Rascunho** | `Draft` | Grupo de Cotação criado/atualizado no wizard (tomador, segurado, escopo, modalidade, valor segurado, vigência, coberturas), ainda sem Cotações solicitadas às Seguradoras | Rascunho → (estados de cotação/emissão, a definir com a PO — OPEN-07) |
+| **Rascunho** | `Draft` | Grupo de Cotação criado/atualizado no wizard (tomador, segurado, escopo, modalidade, valor segurado, vigência, coberturas), ainda sem Cotações solicitadas às Seguradoras | Rascunho → Cotado |
+| **Cotado** | `Quoted` | Cotações obtidas das Seguradoras (RN-057); dados-base imutáveis (RN-060), leque disponível para escolha (RN-059) | Cotado → Emissão solicitada |
+| **Emissão solicitada** | `EmissionRequested` | Emissão da Cotação escolhida solicitada à Seguradora e registrada como Apólice (RN-514); não aceita troca de escolha, alteração de taxa nem de dado-base | Emissão solicitada → (Emitida, a definir com a PO — OPEN-07) |
 
 ### Cotação — resultado (proposto em 2026-07-27 — aguardando ratificação da PO)
 

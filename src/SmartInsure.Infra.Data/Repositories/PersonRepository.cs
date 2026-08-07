@@ -62,9 +62,12 @@ public sealed class PersonRepository(SmartInsureDbContext context)
             .FirstOrDefaultAsync(
                 person => person.DocumentNumber == documentNumber, cancellationToken);
 
+    // RN-503: os endereços vêm junto porque o Grupo de Cotação replica o endereço do Segurado escolhido
+    // na criação/atualização — sem eles a réplica não teria de onde copiar.
     public async Task<Person?> GetByIdWithRolesAsync(Guid id, CancellationToken cancellationToken)
         => await Set.AsNoTracking()
             .Include(person => person.Roles)
+            .Include(person => person.Addresses)
             .FirstOrDefaultAsync(person => person.Id == id, cancellationToken);
 
     public async Task<PersonSearchItemDto?> GetSummaryByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -568,5 +571,20 @@ public sealed class PersonRepository(SmartInsureDbContext context)
                     address.Neighborhood,
                     address.City,
                     address.State))
-                .FirstOrDefault()));
+                .FirstOrDefault(),
+            // RN-503: todos os endereços, com Id e marcação do principal — é desta lista que o corretor
+            // escolhe o endereço do Segurado da oferta. Principal primeiro, para a tela pré-selecionar.
+            person.Addresses
+                .OrderByDescending(address => address.IsMain)
+                .Select(address => new PersonAddressItemDto(
+                    address.Id,
+                    address.IsMain,
+                    address.ZipCode,
+                    address.Street,
+                    address.Number,
+                    address.Complement,
+                    address.Neighborhood,
+                    address.City,
+                    address.State))
+                .ToList()));
 }

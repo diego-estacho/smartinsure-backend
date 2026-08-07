@@ -344,4 +344,57 @@ public class QuotationRequestProcessorTests
         _quotation.AdditionalCoverages.Should().ContainSingle()
             .Which.Status.Should().Be(EQuotationAdditionalCoverageStatus.NotOffered);
     }
+
+    [Fact]
+    [Trait("RuleId", "RN-505")]
+    public async Task Process_DeveGravarOpcoesDePagamentoEDocumentosInformadosPelaSeguradora()
+    {
+        SetupValidGraph();
+        _engine.RunQuotationAsync(Arg.Any<string?>(), Arg.Any<QuotationRequestInput>(), Arg.Any<CancellationToken>())
+            .Returns(new QuotationResult
+            {
+                Result = EQuotationResult.ReadyForEmission,
+                Premium = 300m,
+                InstallmentOptions = [new QuotationInstallmentOption { Number = 3, Value = 100m }],
+                PossibleGracePeriodsInDays = [0, 30],
+                RequiredDocuments = [new QuotationRequiredDocument { Name = "Contrato social" }],
+            });
+
+        await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
+
+        _quotation.HasInstallmentOption(3).Should().BeTrue();
+        _quotation.HasGracePeriodOption(30).Should().BeTrue();
+        _quotation.ReadRequiredDocuments().Should().ContainSingle()
+            .Which.Name.Should().Be("Contrato social");
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-508")]
+    public async Task Process_DevePromoverOGrupoParaCotado_QuandoACotacaoEObtida()
+    {
+        SetupValidGraph();
+        _engine.RunQuotationAsync(Arg.Any<string?>(), Arg.Any<QuotationRequestInput>(), Arg.Any<CancellationToken>())
+            .Returns(new QuotationResult { Result = EQuotationResult.ReadyForEmission, Premium = 300m });
+
+        await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
+
+        _group.Status.Should().Be(EQuotationGroupStatus.Quoted);
+        _groupRepository.Received().Update(_group);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-512")]
+    public async Task Process_DeveRegistrarNaCotacaoAHabilitacaoQueAOriginou()
+    {
+        SetupValidGraph();
+        _engine.RunQuotationAsync(Arg.Any<string?>(), Arg.Any<QuotationRequestInput>(), Arg.Any<CancellationToken>())
+            .Returns(new QuotationResult { Result = EQuotationResult.ReadyForEmission, Premium = 300m });
+
+        var enablement = await _enablementRepository.GetByPairAsync(_brokerageId, _insurerId, CancellationToken.None);
+
+        await BuildProcessor().ProcessAsync(WorkItem(), CancellationToken.None);
+
+        _quotation.BrokerageInsurerEnablementId.Should().Be(enablement!.Id);
+    }
+
 }

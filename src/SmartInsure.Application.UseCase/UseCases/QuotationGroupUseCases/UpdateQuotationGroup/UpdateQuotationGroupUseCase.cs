@@ -1,3 +1,4 @@
+using SmartInsure.Application.UseCase.Services.QuotationGroups;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Requests;
 using SmartInsure.Application.UseCase.UseCases.QuotationGroupUseCases.UpdateQuotationGroup.Responses;
@@ -97,6 +98,10 @@ public sealed class UpdateQuotationGroupUseCase(
             scopeMode,
             request.InsurerIds,
             request.AdditionalCoverageIds ?? []);
+
+        // RN-503: reconfirmar o endereço re-replica os valores atuais do cadastro do Segurado — é o
+        // caminho de correção depois que o cadastro foi ajustado.
+        InsuredAddressReplicator.Replicate(group, insured, request.InsuredAddressId);
 
         // Sem repository.Update: a raiz e a coleção do escopo estão rastreadas (GetByIdWithInsurersAsync),
         // então o change tracker resolve UPDATE da raiz + INSERT/DELETE dos filhos no commit.

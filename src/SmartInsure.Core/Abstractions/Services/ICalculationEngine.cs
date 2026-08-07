@@ -85,6 +85,128 @@ public interface ICalculationEngine
     /// </summary>
     Task<ProposalContractDraftResult> GetProposalContractDraftAsync(
         string? connectionParameters, string brokerCnpj, string proposalExternalId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-504: submete a taxa nova à Seguradora (POST /UpdateProposalFinancialData), que devolve prêmio,
+    /// comissão e opções de parcelamento recalculados. Chamada **mutante** de proposta → cliente sem nova
+    /// tentativa automática (mesma razão da RN-057). Recusa da Seguradora e falha de transporte sobem como
+    /// CalculationEngineException, e o caso de uso preserva os valores anteriores.
+    /// </summary>
+    Task<ProposalFinancialDataResult> UpdateProposalFinancialDataAsync(
+        string? connectionParameters, UpdateProposalFinancialDataInput request, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-506: comunica à Seguradora que o corretor aceitou o Termo e declaração
+    /// (POST /UpdatePolicyAcceptanceTerm), antes de solicitar a emissão. Mutação → sem retry (RN-057).
+    /// </summary>
+    Task SubmitPolicyAcceptanceTermAsync(
+        string? connectionParameters, string brokerCnpj, string proposalExternalId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-500/RN-514: solicita a emissão da Apólice (POST /CreatePolicy). Devolve a referência da apólice
+    /// e o número da proposta — número da apólice, arquivo e boletos só na confirmação (fora desta fase).
+    /// Mutação não repetível → cliente sem retry (RN-057). Recusa da Seguradora sobe como
+    /// CalculationEngineException com a mensagem dela (RN-511).
+    /// </summary>
+    Task<PolicyIssuanceResult> CreatePolicyAsync(
+        string? connectionParameters, CreatePolicyInput request, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-509: cancela a proposta de uma Cotação irmã na Seguradora (POST /CancelCotation), depois que
+    /// outra Cotação do Grupo teve a emissão solicitada — proposta aberta tende a reter Limite de Crédito
+    /// do Tomador. Mutação → sem retry (RN-057).
+    /// </summary>
+    Task CancelProposalAsync(
+        string? connectionParameters, CancelProposalInput request, CancellationToken cancellationToken);
+}
+
+/// <summary>Dados do pedido de emissão enviado à Seguradora (RN-500/RN-503/RN-505).</summary>
+public sealed record CreatePolicyInput
+{
+    public required string BrokerCnpj { get; init; }
+
+    public required string ProposalExternalId { get; init; }
+
+    /// <summary>Identificador da Seguradora no provedor.</summary>
+    public required string InsuranceUniqueId { get; init; }
+
+    /// <summary>RN-505: parcelamento escolhido entre os informados pela Seguradora.</summary>
+    public required int InstallmentNumber { get; init; }
+
+    /// <summary>RN-505: dias para o vencimento da primeira parcela.</summary>
+    public required int GracePeriodInDays { get; init; }
+
+    /// <summary>RN-503: endereço do Segurado da oferta — a Seguradora exige para emitir.</summary>
+    public required IssuanceAddressInput InsuredAddress { get; init; }
+}
+
+/// <summary>Endereço enviado no pedido de emissão (RN-503).</summary>
+public sealed record IssuanceAddressInput
+{
+    public string? ZipCode { get; init; }
+
+    public string? Street { get; init; }
+
+    public string? Number { get; init; }
+
+    public string? Complement { get; init; }
+
+    public string? Neighborhood { get; init; }
+
+    public string? City { get; init; }
+
+    public string? State { get; init; }
+}
+
+/// <summary>
+/// Retorno do pedido de emissão (RN-514): a Seguradora devolve a referência da apólice e o número da
+/// proposta. Número da apólice, arquivo e boletos vêm da confirmação — fora desta fase.
+/// </summary>
+public sealed record PolicyIssuanceResult
+{
+    public required string PolicyExternalId { get; init; }
+
+    public string? ProposalNumber { get; init; }
+}
+
+/// <summary>Dados do cancelamento de proposta de uma Cotação irmã (RN-509).</summary>
+public sealed record CancelProposalInput
+{
+    public required string BrokerCnpj { get; init; }
+
+    public required string ProposalExternalId { get; init; }
+
+    public required string Reason { get; init; }
+}
+
+/// <summary>Dados para submeter a taxa nova de uma proposta à Seguradora (RN-504).</summary>
+public sealed record UpdateProposalFinancialDataInput
+{
+    public required string BrokerCnpj { get; init; }
+
+    public required string ProposalExternalId { get; init; }
+
+    /// <summary>Taxa pretendida; o limite aceitável é veredito da Seguradora, não da plataforma.</summary>
+    public required decimal Tax { get; init; }
+}
+
+/// <summary>
+/// Valores recalculados pela Seguradora após o ajuste da taxa (RN-504). Substituem os da Cotação
+/// escolhida — a plataforma não recalcula dinheiro por conta própria (ADR-004).
+/// </summary>
+public sealed record ProposalFinancialDataResult
+{
+    public decimal? Premium { get; init; }
+
+    public decimal? Tax { get; init; }
+
+    public decimal? CommissionPercentage { get; init; }
+
+    public decimal? CommissionValue { get; init; }
+
+    public IReadOnlyList<QuotationInstallmentOption> InstallmentOptions { get; init; } = [];
+
+    public IReadOnlyList<int> PossibleGracePeriodsInDays { get; init; } = [];
 }
 
 /// <summary>
@@ -195,6 +317,42 @@ public sealed record QuotationResult
     public bool CcgSigned { get; init; }
 
     public IReadOnlyList<string> Reasons { get; init; } = [];
+
+    /// <summary>
+    /// RN-505: opções de parcelamento informadas pela Seguradora nesta Cotação. É delas que a etapa de
+    /// emissão tira a forma de pagamento — a plataforma não calcula parcela nem oferece opção própria.
+    /// </summary>
+    public IReadOnlyList<QuotationInstallmentOption> InstallmentOptions { get; init; } = [];
+
+    /// <summary>RN-505: dias possíveis para o vencimento da primeira parcela, informados pela Seguradora.</summary>
+    public IReadOnlyList<int> PossibleGracePeriodsInDays { get; init; } = [];
+
+    /// <summary>RN-510: documentos que a Seguradora exige para emitir; informativos ao corretor.</summary>
+    public IReadOnlyList<QuotationRequiredDocument> RequiredDocuments { get; init; } = [];
+}
+
+/// <summary>Opção de parcelamento oferecida pela Seguradora numa Cotação (RN-505).</summary>
+public sealed record QuotationInstallmentOption
+{
+    /// <summary>Número de parcelas.</summary>
+    public required int Number { get; init; }
+
+    /// <summary>Descrição da opção, como a Seguradora a apresenta.</summary>
+    public string? Description { get; init; }
+
+    /// <summary>Valor de cada parcela.</summary>
+    public decimal Value { get; init; }
+
+    /// <summary>Se a opção embute juros, conforme informado pela Seguradora.</summary>
+    public bool HasInterest { get; init; }
+}
+
+/// <summary>Documento exigido pela Seguradora para emitir (RN-510).</summary>
+public sealed record QuotationRequiredDocument
+{
+    public required string Name { get; init; }
+
+    public string? Description { get; init; }
 }
 
 /// <summary>

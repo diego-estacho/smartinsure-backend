@@ -69,6 +69,17 @@ public sealed class QuotationRequestProcessor(
                 result.CcgSigned,
                 result.Reasons,
                 DateTime.UtcNow);
+
+            // RN-512: a emissão aciona a Seguradora pela MESMA Habilitação que obteve esta Cotação.
+            quotation.SetEnablement(resolved.EnablementId);
+
+            // RN-505/RN-510: o que a Seguradora informou sobre pagamento e documentos fica na Cotação —
+            // a etapa de emissão escolhe dentro dessas listas, sem acionar o provedor de novo.
+            quotation.SetProviderOptions(
+                result.InstallmentOptions, result.PossibleGracePeriodsInDays, result.RequiredDocuments);
+
+            // RN-508: obtida a primeira Cotação, a oferta deixa de ser Rascunho e passa a Cotado.
+            await PromoteGroupToQuotedAsync(workItem.QuotationGroupId, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -178,7 +189,24 @@ public sealed class QuotationRequestProcessor(
         };
 
         return new ResolvedRequest(
-            request, enablement.CalculationEngine, enablement.ConnectionParameters, additionalCoverages);
+            request, enablement.CalculationEngine, enablement.ConnectionParameters, additionalCoverages, enablement.Id);
+    }
+
+    /// <summary>
+    /// RN-508: promove a oferta a Cotado. Grupo já com emissão solicitada não regride (a entidade recusa),
+    /// e uma Cotação que chega atrasada nesse cenário não desfaz a situação — apenas não a altera.
+    /// </summary>
+    private async Task PromoteGroupToQuotedAsync(Guid quotationGroupId, CancellationToken cancellationToken)
+    {
+        var group = await quotationGroupRepository.GetByIdAsync(quotationGroupId, cancellationToken);
+
+        if (group is null || group.Status is EQuotationGroupStatus.Quoted or EQuotationGroupStatus.EmissionRequested)
+        {
+            return;
+        }
+
+        group.MarkQuoted();
+        quotationGroupRepository.Update(group);
     }
 
     private ICalculationEngine ResolveEngine(ECalculationEngine engineType)
@@ -189,7 +217,8 @@ public sealed class QuotationRequestProcessor(
         QuotationRequestInput Request,
         ECalculationEngine Engine,
         string? ConnectionParameters,
-        AdditionalCoverageResolution AdditionalCoverages);
+        AdditionalCoverageResolution AdditionalCoverages,
+        Guid EnablementId);
 
     /// <summary>Falha de pré-condição de dados de uma Seguradora — isolada, vira Cotação indisponível.</summary>
     private sealed class QuotationSetupException(string message) : Exception(message);

@@ -14,4 +14,5 @@ public sealed record UpdateQuotationGroupRequest(
     DateOnly CoverageEndDate,
     string ScopeMode,
     IReadOnlyList<Guid> InsurerIds,
-    IReadOnlyList<Guid> AdditionalCoverageIds);
+    IReadOnlyList<Guid> AdditionalCoverageIds,
+    Guid? InsuredAddressId = null);
