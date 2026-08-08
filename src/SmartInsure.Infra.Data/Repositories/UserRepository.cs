@@ -271,6 +271,26 @@ public sealed class UserRepository(SmartInsureDbContext context)
             query = query.Where(user => user.CreatedAt <= registeredTo);
         }
 
+        if (filters.LastAccess is { } lastAccess)
+        {
+            if (lastAccess == EUserLastAccessFilter.Never)
+            {
+                query = query.Where(user => user.LastAccessAtUtc == null);
+            }
+            else
+            {
+                // Corte calculado fora da expressão (vira parâmetro no SQL, não GETUTCDATE + AddDays).
+                var days = lastAccess switch
+                {
+                    EUserLastAccessFilter.Within7 => 7,
+                    EUserLastAccessFilter.Within30 => 30,
+                    _ => 90,
+                };
+                var cutoff = DateTime.UtcNow.AddDays(-days);
+                query = query.Where(user => user.LastAccessAtUtc != null && user.LastAccessAtUtc >= cutoff);
+            }
+        }
+
         return query;
     }
 

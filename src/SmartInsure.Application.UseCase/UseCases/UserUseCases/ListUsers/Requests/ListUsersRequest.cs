@@ -34,4 +34,7 @@ public sealed record ListUsersRequest
 
     /// <summary>Filtro avançado (§4): data de cadastro até.</summary>
     public DateTime? RegisteredTo { get; set; }
+
+    /// <summary>Filtro avançado (§4/RN-204): último acesso — "7"/"30"/"90" (dias) ou "never".</summary>
+    public string? LastAccess { get; set; }
 }

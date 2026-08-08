@@ -40,6 +40,7 @@ public sealed class ListUsersUseCase(
             LinkId = request.LinkId,
             RegisteredFrom = request.RegisteredFrom,
             RegisteredTo = request.RegisteredTo,
+            LastAccess = ParseLastAccessFilter(request.LastAccess),
         };
 
         var (items, totalCount, counts) = await userRepository.ListAsync(
@@ -129,6 +130,27 @@ public sealed class ListUsersUseCase(
             "pending" or "pendente" => EUserListStatusFilter.PendingNotExpired,
             "expired" or "expirado" => EUserListStatusFilter.Expired,
             _ => throw new BusinessRuleException($"Situação de usuário inválida: {status}."),
+        };
+    }
+
+    /// <summary>
+    /// Filtro de último acesso (§4/RN-204): "7"/"30"/"90" (últimos N dias) ou "never"/"nunca"
+    /// (nunca acessou). Vazio = qualquer.
+    /// </summary>
+    private static EUserLastAccessFilter? ParseLastAccessFilter(string? lastAccess)
+    {
+        if (string.IsNullOrWhiteSpace(lastAccess))
+        {
+            return null;
+        }
+
+        return lastAccess.Trim().ToLowerInvariant() switch
+        {
+            "7" => EUserLastAccessFilter.Within7,
+            "30" => EUserLastAccessFilter.Within30,
+            "90" => EUserLastAccessFilter.Within90,
+            "never" or "nunca" => EUserLastAccessFilter.Never,
+            _ => throw new BusinessRuleException($"Filtro de último acesso inválido: {lastAccess}."),
         };
     }
 

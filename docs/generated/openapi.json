@@ -3022,6 +3022,13 @@
               "type": "string",
               "format": "date-time"
             }
+          },
+          {
+            "name": "lastAccess",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {

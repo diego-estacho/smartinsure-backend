@@ -87,4 +87,7 @@ public sealed record UserListFilters
 
     /// <summary>Filtro avançado (§4): data de cadastro (createdAt) até.</summary>
     public DateTime? RegisteredTo { get; init; }
+
+    /// <summary>Filtro avançado (§4/RN-204): último acesso — últimos 7/30/90 dias ou nunca acessou.</summary>
+    public EUserLastAccessFilter? LastAccess { get; init; }
 }

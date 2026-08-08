@@ -208,7 +208,8 @@ public sealed class UsersEndpoint : CarterModule
         string? scope,
         Guid? linkId,
         DateTime? registeredFrom,
-        DateTime? registeredTo)
+        DateTime? registeredTo,
+        string? lastAccess)
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
@@ -226,6 +227,7 @@ public sealed class UsersEndpoint : CarterModule
                 LinkId = linkId,
                 RegisteredFrom = registeredFrom,
                 RegisteredTo = registeredTo,
+                LastAccess = lastAccess,
             });
 
     /// <summary>Detalhe do Usuário: Perfil (RN-012) e Vínculos de Corretora/Tomador (RN-064).</summary>
