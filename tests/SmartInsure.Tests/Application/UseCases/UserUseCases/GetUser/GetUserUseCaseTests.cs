@@ -28,7 +28,7 @@ public sealed class GetUserUseCaseTests
         _userRepository.GetDetailsByIdAsync(userId, CancellationToken.None)
             .Returns(new UserDetailsDto(
                 userId, "Ana", "ana@exemplo.com", "52998224725", "Active", null, null, null, false, DateTime.UtcNow,
-                null, null, false, [brokerageMembership], [policyHolderMembership]));
+                null, null, false, null, [brokerageMembership], [policyHolderMembership]));
 
         var useCase = new GetUserUseCase(_userRepository);
         var result = await useCase.ExecuteAsync(new GetUserRequest(userId), CancellationToken.None);
@@ -50,7 +50,7 @@ public sealed class GetUserUseCaseTests
         _userRepository.GetDetailsByIdAsync(userId, CancellationToken.None)
             .Returns(new UserDetailsDto(
                 userId, "Bruno", "bruno@exemplo.com", null, "Pending", null, null, null, false, DateTime.UtcNow,
-                null, null, false, [], []));
+                null, null, false, null, [], []));
 
         var useCase = new GetUserUseCase(_userRepository);
         var result = await useCase.ExecuteAsync(new GetUserRequest(userId), CancellationToken.None);
@@ -68,7 +68,7 @@ public sealed class GetUserUseCaseTests
         _userRepository.GetDetailsByIdAsync(userId, CancellationToken.None)
             .Returns(new UserDetailsDto(
                 userId, "Bruno", "bruno@exemplo.com", null, "Pending", null, null, null, false, DateTime.UtcNow,
-                DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(-3), true, [], []));
+                DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(-3), true, null, [], []));
 
         var useCase = new GetUserUseCase(_userRepository);
         var result = await useCase.ExecuteAsync(new GetUserRequest(userId), CancellationToken.None);

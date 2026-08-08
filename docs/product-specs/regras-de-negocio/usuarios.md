@@ -93,3 +93,15 @@
 **Critério de aceitação.** Ao acionar a redefinição de um Usuário Ativo, gera-se um link de redefinição válido e envia-se um e-mail ao endereço do Usuário; um pedido de redefinição anterior ainda válido deixa de valer (um link ativo por Usuário, como no Convite). O Usuário continua Ativo. Ao concluir pelo link, a senha é atualizada no provedor de identidade; os acessos autenticados já concedidos seguem válidos até expirar ou serem encerrados (RN-005/RN-006). O link de redefinição segue as regras de senha do primeiro acesso (mínimo de 8 caracteres).
 
 **Casos limite.** Usuário **Pendente**: recusado — ele ainda não definiu senha; o caminho é reenviar o Convite de primeiro acesso (RN-065). Usuário **Inativo**: recusado — não acessa a plataforma; reative antes (RN-076). Falha no envio do e-mail: o link foi gerado e a operação pode ser repetida (o pedido anterior deixa de valer). Link de redefinição expirado ou já usado: recusado ao concluir, orientando solicitar novo.
+
+## RN-204 — Último acesso do Usuário
+
+> Proposta em 2026-08-08 (redesenho da tela de Usuários, decisão do dono do produto; faixa 200). Autorizado a ajustar; aguardando ratificação da PO.
+
+**Descrição.** A plataforma registra o instante do **último acesso** de cada Usuário — o momento de um login concluído com sucesso (RN-005). Serve para a gestão de acessos identificar quem está ativo de fato e quem nunca entrou. Usuário que nunca concluiu um acesso não tem último acesso registrado ("Nunca").
+
+**Pré-condições.** Login concluído com sucesso (credenciais válidas e Usuário Ativo, RN-005).
+
+**Critério de aceitação.** A cada login bem-sucedido, o último acesso do Usuário passa a ser aquele instante. A validade de 8 horas da sessão (RN-005) não renova o carimbo — só um novo login o atualiza. A listagem e o detalhe de Usuários exibem o último acesso (e "Nunca" quando não houver). Recusas de login (credencial inválida, Usuário Pendente ou Inativo) não registram acesso.
+
+**Casos limite.** Usuário que nunca acessou (Pendente, ou Ativo que ainda não logou): último acesso vazio ("Nunca"). Reenvio de convite, edição ou redefinição de senha **não** contam como acesso — só o login efetivo (RN-005). Encerramento de sessão (RN-006) não altera o último acesso registrado.

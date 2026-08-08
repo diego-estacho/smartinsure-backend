@@ -3,6 +3,7 @@ using NSubstitute;
 using SmartInsure.Application.UseCase.Services.Scopes;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser.Requests;
+using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Entities;
@@ -23,6 +24,7 @@ public class AuthenticateUserUseCaseTests
     private readonly IIdentityProvider _identityProvider = Substitute.For<IIdentityProvider>();
     private readonly IAccessTokenIssuer _tokenIssuer = Substitute.For<IAccessTokenIssuer>();
     private readonly IActiveScopeResolver _activeScopeResolver = Substitute.For<IActiveScopeResolver>();
+    private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly AuthenticateUserUseCase _useCase;
 
     public AuthenticateUserUseCaseTests()
@@ -31,7 +33,7 @@ public class AuthenticateUserUseCaseTests
         _activeScopeResolver.ResolveDefaultAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(ActiveScope.None);
         _useCase = new AuthenticateUserUseCase(
-            _repository, _identityProvider, _tokenIssuer, _activeScopeResolver);
+            _repository, _identityProvider, _tokenIssuer, _activeScopeResolver, _unitOfWork);
     }
 
     private User ActiveUser()
@@ -55,6 +57,39 @@ public class AuthenticateUserUseCaseTests
 
         response.AccessToken.Should().Be("token-plataforma");
         response.ExpiresAtUtc.Should().Be(ExpiresAtUtc);
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-204")]
+    public async Task Execute_DeveRegistrarUltimoAcesso_QuandoLoginConcluido()
+    {
+        var user = ActiveUser();
+        user.LastAccessAtUtc.Should().BeNull();
+        _identityProvider.ValidateCredentialsAsync(Email, Password, Arg.Any<CancellationToken>())
+            .Returns(true);
+        _tokenIssuer.IssueFor(user, Arg.Any<ActiveScope>()).Returns(new AccessToken("t", ExpiresAtUtc));
+
+        await _useCase.ExecuteAsync(new AuthenticateUserRequest(Email, Password), CancellationToken.None);
+
+        user.LastAccessAtUtc.Should().NotBeNull();
+        _repository.Received(1).Update(user);
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-204")]
+    public async Task Execute_NaoDeveRegistrarUltimoAcesso_QuandoCredencialInvalida()
+    {
+        var user = ActiveUser();
+        _identityProvider.ValidateCredentialsAsync(Email, Password, Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        var act = () => _useCase.ExecuteAsync(
+            new AuthenticateUserRequest(Email, Password), CancellationToken.None);
+
+        await act.Should().ThrowAsync<UnauthorizedException>();
+        user.LastAccessAtUtc.Should().BeNull();
+        await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

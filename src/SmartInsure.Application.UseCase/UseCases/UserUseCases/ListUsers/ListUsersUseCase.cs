@@ -56,7 +56,8 @@ public sealed class ListUsersUseCase(
                 item.ProfileIsFixed,
                 item.Link,
                 item.CreatedAt,
-                item.InviteExpired))
+                item.InviteExpired,
+                item.LastAccessAtUtc))
             .ToList();
 
         return new ListUsersResponse(

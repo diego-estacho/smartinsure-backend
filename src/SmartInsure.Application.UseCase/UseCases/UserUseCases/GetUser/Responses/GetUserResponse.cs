@@ -19,6 +19,7 @@ public sealed record GetUserResponse(
     DateTime? InvitedAt,
     DateTime? InviteExpiresAt,
     bool InviteExpired,
+    DateTime? LastAccessAtUtc,
     IReadOnlyList<UserMembershipResponse> BrokerageMemberships,
     IReadOnlyList<UserMembershipResponse> PolicyHolderMemberships);
 

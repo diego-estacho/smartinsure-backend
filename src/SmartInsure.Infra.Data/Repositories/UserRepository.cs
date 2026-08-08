@@ -87,6 +87,7 @@ public sealed class UserRepository(SmartInsureDbContext context)
                 SystemProfileScope = user.Profile == null ? (EProfileScope?)null : user.Profile.Scope,
                 SystemProfileIsFixed = user.Profile != null && user.Profile.IsFixed,
                 user.CreatedAt,
+                user.LastAccessAtUtc,
             })
             .ToListAsync(cancellationToken);
 
@@ -125,7 +126,8 @@ public sealed class UserRepository(SmartInsureDbContext context)
                     ProfileIsFixed: hasSystemProfile ? row.SystemProfileIsFixed : representative?.IsFixed ?? false,
                     Link: hasSystemProfile ? null : representative?.Link,
                     row.CreatedAt,
-                    InviteExpired: row.Status == EUserStatus.Pending && expiredSet.Contains(row.Id));
+                    InviteExpired: row.Status == EUserStatus.Pending && expiredSet.Contains(row.Id),
+                    row.LastAccessAtUtc);
             })
             .ToList();
 
@@ -152,6 +154,7 @@ public sealed class UserRepository(SmartInsureDbContext context)
                 ProfileScope = candidate.Profile == null ? (EProfileScope?)null : candidate.Profile.Scope,
                 ProfileIsFixed = candidate.Profile != null && candidate.Profile.IsFixed,
                 candidate.CreatedAt,
+                candidate.LastAccessAtUtc,
             })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -191,6 +194,7 @@ public sealed class UserRepository(SmartInsureDbContext context)
             invitation?.CreatedAt,
             invitation?.ExpiresAtUtc,
             inviteExpired,
+            user.LastAccessAtUtc,
             brokerageMemberships,
             policyHolderMemberships);
     }

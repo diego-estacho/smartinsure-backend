@@ -56,6 +56,7 @@ public sealed class GetCurrentUserContextUseCaseTests
                 null,
                 null,
                 false,
+                null,
                 brokerages,
                 policyHolders));
     }

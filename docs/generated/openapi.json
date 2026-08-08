@@ -5902,6 +5902,7 @@
           "invitedAt",
           "inviteExpiresAt",
           "inviteExpired",
+          "lastAccessAtUtc",
           "brokerageMemberships",
           "policyHolderMemberships"
         ],
@@ -5968,6 +5969,13 @@
           },
           "inviteExpired": {
             "type": "boolean"
+          },
+          "lastAccessAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           },
           "brokerageMemberships": {
             "type": "array",
@@ -9447,7 +9455,8 @@
           "profileIsFixed",
           "link",
           "createdAt",
-          "inviteExpired"
+          "inviteExpired",
+          "lastAccessAtUtc"
         ],
         "type": "object",
         "properties": {
@@ -9491,6 +9500,13 @@
           },
           "inviteExpired": {
             "type": "boolean"
+          },
+          "lastAccessAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },

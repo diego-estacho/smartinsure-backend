@@ -2,6 +2,7 @@ using SmartInsure.Application.UseCase.Services.Scopes;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser.Requests;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AuthenticateUser.Responses;
+using SmartInsure.Core.Abstractions;
 using SmartInsure.Core.Abstractions.Repositories;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Enumerators;
@@ -19,7 +20,8 @@ public sealed class AuthenticateUserUseCase(
     IUserRepository userRepository,
     IIdentityProvider identityProvider,
     IAccessTokenIssuer accessTokenIssuer,
-    IActiveScopeResolver activeScopeResolver) : IAuthenticateUserUseCase
+    IActiveScopeResolver activeScopeResolver,
+    IUnitOfWork unitOfWork) : IAuthenticateUserUseCase
 {
     internal const string InvalidCredentialsMessage = "E-mail ou senha inválidos.";
 
@@ -52,6 +54,12 @@ public sealed class AuthenticateUserUseCase(
             throw new BusinessRuleException(
                 "Usuário pendente do primeiro acesso. Conclua o primeiro acesso para entrar na plataforma.");
         }
+
+        // RN-204: registra o acesso concluído (o Usuário provou a credencial e é Ativo). É o único
+        // ponto que grava último acesso — a validade de 8h da sessão (RN-005) não renova o carimbo.
+        user.RecordAccess();
+        userRepository.Update(user);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         // RN-064/ADR-065: o acesso já sai com o Escopo ativo padrão — vínculo único vira ativo;
         // com mais de um, o Usuário escolhe depois (a claim nasce ausente).

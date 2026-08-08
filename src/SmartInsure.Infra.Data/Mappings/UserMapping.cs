@@ -39,6 +39,9 @@ public sealed class UserMapping : IEntityTypeConfiguration<User>
             .HasMaxLength(20)
             .IsRequired();
 
+        // RN-204: último acesso (login concluído). Nulo = nunca acessou. Migration V20260808120000.
+        builder.Property(user => user.LastAccessAtUtc);
+
         // RN-012/RN-062: Perfil (Escopo System) opcional, referenciado por FK (nullable).
         builder.Property(user => user.ProfileId);
         builder.HasOne(user => user.Profile)

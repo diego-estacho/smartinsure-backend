@@ -15,4 +15,5 @@ public sealed record UserListItemResponse(
     bool ProfileIsFixed,
     string? Link,
     DateTime CreatedAt,
-    bool InviteExpired);
+    bool InviteExpired,
+    DateTime? LastAccessAtUtc);

@@ -65,10 +65,10 @@ public sealed class ListUsersUseCaseTests
         ArrangeSystemAdministrator();
         var comPerfil = new UserListItemDto(
             Guid.NewGuid(), "Ana", "ana@exemplo.com", "Active",
-            "SystemAdministrator", "System", true, null, DateTime.UtcNow, false);
+            "SystemAdministrator", "System", true, null, DateTime.UtcNow, false, null);
         var semPerfil = new UserListItemDto(
             Guid.NewGuid(), "Bruno", "bruno@exemplo.com", "Pending",
-            null, null, false, null, DateTime.UtcNow, false);
+            null, null, false, null, DateTime.UtcNow, false, null);
         _userRepository.ListAsync(1, 20, Arg.Any<UserListFilters>(), CancellationToken.None)
             .Returns((new[] { comPerfil, semPerfil }, 2L, new UserStatusCountsDto(2, 1, 1, 0, 0)));
 

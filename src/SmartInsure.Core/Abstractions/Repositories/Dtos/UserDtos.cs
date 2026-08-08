@@ -12,7 +12,8 @@ public sealed record UserListItemDto(
     bool ProfileIsFixed,
     string? Link,
     DateTime CreatedAt,
-    bool InviteExpired);
+    bool InviteExpired,
+    DateTime? LastAccessAtUtc);
 
 public sealed record UserDetailsDto(
     Guid Id,
@@ -28,6 +29,7 @@ public sealed record UserDetailsDto(
     DateTime? InvitedAt,
     DateTime? InviteExpiresAt,
     bool InviteExpired,
+    DateTime? LastAccessAtUtc,
     IReadOnlyList<UserMembershipDto> BrokerageMemberships,
     IReadOnlyList<UserMembershipDto> PolicyHolderMemberships);
 

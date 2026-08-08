@@ -33,6 +33,7 @@ public sealed class GetUserUseCase(IUserRepository userRepository) : IGetUserUse
             user.InvitedAt,
             user.InviteExpiresAt,
             user.InviteExpired,
+            user.LastAccessAtUtc,
             user.BrokerageMemberships
                 .Select(membership => new UserMembershipResponse(
                     membership.Id,

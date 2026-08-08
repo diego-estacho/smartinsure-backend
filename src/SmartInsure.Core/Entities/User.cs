@@ -28,6 +28,9 @@ public sealed class User : EntityBase
 
     public EUserStatus Status { get; private set; }
 
+    /// <summary>RN-204: instante do último acesso concluído (login bem-sucedido, RN-005); nulo = nunca acessou.</summary>
+    public DateTime? LastAccessAtUtc { get; private set; }
+
     /// <summary>RN-012: Perfil de Escopo System do Usuário (ex.: Administrador do Sistema); nulo = usuário comum.</summary>
     public Guid? ProfileId { get; private set; }
 
@@ -73,6 +76,12 @@ public sealed class User : EntityBase
     public void Activate()
     {
         Status = EUserStatus.Active;
+    }
+
+    /// <summary>RN-204: registra o instante de um acesso concluído (login bem-sucedido, RN-005).</summary>
+    public void RecordAccess()
+    {
+        LastAccessAtUtc = DateTime.UtcNow;
     }
 
     /// <summary>RN-076: inativa o Usuário Ativo (Usuário Inativo não acessa a plataforma).</summary>
