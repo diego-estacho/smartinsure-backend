@@ -3420,6 +3420,36 @@
           }
         }
       }
+    },
+    "/api/v1/users/{id}/password-reset": {
+      "post": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestPasswordResetResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8487,6 +8517,22 @@
             "format": "uuid"
           },
           "linkSource": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestPasswordResetResponse": {
+        "required": [
+          "userId",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
             "type": "string"
           }
         }

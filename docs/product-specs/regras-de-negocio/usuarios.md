@@ -81,3 +81,15 @@
 **Critério de aceitação.** Ao salvar, o nome é atualizado. Informando um novo e-mail para um Usuário Pendente: verifica-se a unicidade (plataforma e provedor de identidade), a identidade tem o e-mail atualizado, o Usuário permanece Pendente e recebe um novo Convite no novo endereço (o link anterior deixa de valer). Corrigir o e-mail de um Usuário Ativo ou Inativo é recusado.
 
 **Casos limite.** E-mail igual ao atual: só o nome muda. Novo e-mail já usado por outro Usuário ou identidade: recusado. Alterar o e-mail de Usuário não-Pendente: recusado, orientando inativar e convidar o novo endereço. CPF não é alterável (RN-082).
+
+## RN-203 — Redefinição de senha do Usuário Ativo
+
+> Proposta em 2026-08-08 (redesenho da tela de Usuários, decisão do dono do produto; faixa 200). Autorizado a ajustar; aguardando ratificação da PO.
+
+**Descrição.** Um administrador pode disparar a redefinição de senha de um Usuário **Ativo** — o caso "o usuário esqueceu a senha" ou "precisa trocar". O sistema gera um link de redefinição de **uso único e com validade** (mesma mecânica do Convite, RN-065) e o envia por e-mail ao endereço do Usuário. Ao abrir o link e definir a nova senha, ela é atualizada no provedor de identidade (RN-005); o Usuário **permanece Ativo** e o histórico é preservado. A plataforma não guarda nem transmite a senha (nunca envia senha por e-mail — só o link para o próprio Usuário definir a sua).
+
+**Pré-condições.** Solicitante autorizado a gerenciar o Usuário; Usuário na situação **Ativo**.
+
+**Critério de aceitação.** Ao acionar a redefinição de um Usuário Ativo, gera-se um link de redefinição válido e envia-se um e-mail ao endereço do Usuário; um pedido de redefinição anterior ainda válido deixa de valer (um link ativo por Usuário, como no Convite). O Usuário continua Ativo. Ao concluir pelo link, a senha é atualizada no provedor de identidade; os acessos autenticados já concedidos seguem válidos até expirar ou serem encerrados (RN-005/RN-006). O link de redefinição segue as regras de senha do primeiro acesso (mínimo de 8 caracteres).
+
+**Casos limite.** Usuário **Pendente**: recusado — ele ainda não definiu senha; o caminho é reenviar o Convite de primeiro acesso (RN-065). Usuário **Inativo**: recusado — não acessa a plataforma; reative antes (RN-076). Falha no envio do e-mail: o link foi gerado e a operação pode ser repetida (o pedido anterior deixa de valer). Link de redefinição expirado ou já usado: recusado ao concluir, orientando solicitar novo.

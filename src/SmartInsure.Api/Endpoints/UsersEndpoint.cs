@@ -40,6 +40,9 @@ using SmartInsure.Application.UseCase.UseCases.UserUseCases.EditUser.Responses;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.ChangeUserScopeProfile.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.ChangeUserScopeProfile.Requests;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.ChangeUserScopeProfile.Responses;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.RequestPasswordReset.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.RequestPasswordReset.Requests;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.RequestPasswordReset.Responses;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Constants;
 
@@ -118,6 +121,11 @@ public sealed class UsersEndpoint : CarterModule
         app.MapPost("/{id:guid}/reactivate", ReactivateAsync)
             .RequireAuthorization(Policies.SystemAdministrator)
             .Produces<ChangeUserActivationResponse>(StatusCodes.Status200OK);
+
+        // RN-203: redefinição de senha do Usuário Ativo (envia link por e-mail).
+        app.MapPost("/{id:guid}/password-reset", RequestPasswordResetAsync)
+            .RequireAuthorization(Policies.SystemAdministrator)
+            .Produces<RequestPasswordResetResponse>(StatusCodes.Status200OK);
     }
 
     /// <summary>
@@ -296,6 +304,17 @@ public sealed class UsersEndpoint : CarterModule
             httpContext,
             useCase,
             new ResendInvitationRequest(id));
+
+    /// <summary>RN-203: dispara a redefinição de senha de um Usuário Ativo (Administrador do Sistema).</summary>
+    private static async Task<IResult> RequestPasswordResetAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        IRequestPasswordResetUseCase useCase,
+        Guid id)
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new RequestPasswordResetRequest(id));
 
     /// <summary>RN-012: somente Administrador do Sistema concede/revoga Perfil.</summary>
     private static async Task<IResult> SetProfileAsync(
