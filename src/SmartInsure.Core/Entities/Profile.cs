@@ -19,6 +19,9 @@ public sealed class Profile : EntityBase
 
     public string Name { get; private set; } = string.Empty;
 
+    /// <summary>RN-082: descrição livre e opcional; não participa de autorização nem de unicidade.</summary>
+    public string? Description { get; private set; }
+
     public EProfileScope Scope { get; private set; }
 
     public bool IsFixed { get; private set; }
@@ -31,7 +34,7 @@ public sealed class Profile : EntityBase
 
     public IReadOnlyCollection<ProfilePermission> Permissions => _permissions.AsReadOnly();
 
-    public static Profile Create(string name, EProfileScope scope, bool isFixed)
+    public static Profile Create(string name, EProfileScope scope, bool isFixed, string? description = null)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -41,6 +44,7 @@ public sealed class Profile : EntityBase
         return new Profile
         {
             Name = name.Trim(),
+            Description = Normalize(description),
             Scope = scope,
             IsFixed = isFixed,
         };
@@ -49,18 +53,18 @@ public sealed class Profile : EntityBase
     /// <summary>
     /// RN-069: Perfil customizado de uma Corretora — nasce vinculado a ela e só vale ali.
     /// </summary>
-    public static Profile CreateForBrokerage(string name, Guid brokerageId)
+    public static Profile CreateForBrokerage(string name, Guid brokerageId, string? description = null)
     {
-        var profile = Create(name, EProfileScope.Brokerage, isFixed: false);
+        var profile = Create(name, EProfileScope.Brokerage, isFixed: false, description);
         profile.BrokerageId = brokerageId;
 
         return profile;
     }
 
     /// <summary>RN-070: Perfil customizado de um Tomador — nasce vinculado a ele e só vale ali.</summary>
-    public static Profile CreateForPolicyHolder(string name, Guid policyHolderId)
+    public static Profile CreateForPolicyHolder(string name, Guid policyHolderId, string? description = null)
     {
-        var profile = Create(name, EProfileScope.PolicyHolder, isFixed: false);
+        var profile = Create(name, EProfileScope.PolicyHolder, isFixed: false, description);
         profile.PolicyHolderId = policyHolderId;
 
         return profile;
@@ -84,6 +88,23 @@ public sealed class Profile : EntityBase
 
         Name = name.Trim();
     }
+
+    /// <summary>
+    /// RN-082: ajusta a Descrição do Perfil customizado. Perfil fixo não muda por tela (RN-073).
+    /// Vazio ou só espaços = sem descrição.
+    /// </summary>
+    public void SetDescription(string? description)
+    {
+        if (IsFixed)
+        {
+            throw new BusinessRuleException("Perfil fixo da plataforma não tem a descrição editada por tela.");
+        }
+
+        Description = Normalize(description);
+    }
+
+    private static string? Normalize(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     /// <summary>
     /// RN-063/RN-073/RN-074: substitui as Permissões marcadas pelo conjunto informado — o que

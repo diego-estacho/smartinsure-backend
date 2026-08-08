@@ -155,7 +155,8 @@ public sealed class ProfilesEndpoint : CarterModule
                 currentUser.ActiveBrokerageId,
                 currentUser.ActivePolicyHolderId,
                 body.Name,
-                body.PermissionCodes ?? []),
+                body.PermissionCodes ?? [],
+                body.Description),
             validator,
             response => Results.Created($"/api/v1/profiles/{response.Id}", response));
 
@@ -176,7 +177,8 @@ public sealed class ProfilesEndpoint : CarterModule
                 currentUser.ActivePolicyHolderId,
                 id,
                 body.Name,
-                body.PermissionCodes ?? []),
+                body.PermissionCodes ?? [],
+                body.Description),
             validator);
 
     private static async Task<IResult> DeleteAsync(
@@ -184,7 +186,8 @@ public sealed class ProfilesEndpoint : CarterModule
         RequestHandler handler,
         IDeleteScopedProfileUseCase useCase,
         ICurrentUserAccessor currentUser,
-        Guid id)
+        Guid id,
+        Guid? migrateToProfileId)
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
@@ -192,7 +195,8 @@ public sealed class ProfilesEndpoint : CarterModule
                 currentUser.UserIdentifier ?? string.Empty,
                 currentUser.ActiveBrokerageId,
                 currentUser.ActivePolicyHolderId,
-                id),
+                id,
+                migrateToProfileId),
             resultFactory: _ => Results.NoContent());
 }
 
@@ -200,7 +204,10 @@ public sealed class ProfilesEndpoint : CarterModule
 /// RN-069/RN-070/RN-074: corpo de criação e edição de Perfil customizado. O Escopo não vem daqui —
 /// é o Escopo ativo do solicitante, lido do acesso (SECURITY.md).
 /// </summary>
-public sealed record ScopedProfileBody(string Name, IReadOnlyCollection<string>? PermissionCodes);
+public sealed record ScopedProfileBody(
+    string Name,
+    IReadOnlyCollection<string>? PermissionCodes,
+    string? Description = null);
 
 /// <summary>
 /// RN-073: corpo da edição de Permissões de Perfil fixo. Só as Permissões — nome e Escopo do
