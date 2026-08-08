@@ -4,6 +4,7 @@ using SmartInsure.Application.UseCase.UseCases.ProfileUseCases.ListProfiles.Inte
 using SmartInsure.Application.UseCase.UseCases.ProfileUseCases.ListProfiles.Requests;
 using SmartInsure.Application.UseCase.UseCases.ProfileUseCases.ListProfiles.Responses;
 using SmartInsure.Core.Abstractions.Repositories;
+using SmartInsure.Core.Abstractions.Repositories.Dtos;
 using SmartInsure.Core.Constants;
 using SmartInsure.Core.Entities;
 using SmartInsure.Core.Enumerators;
@@ -61,17 +62,34 @@ public sealed class ListProfilesUseCase(
             .OrderBy(profile => profile.Name)
             .ToList();
 
-        var paged = visible
+        var pagedProfiles = visible
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(profile => new ProfileListItemResponse(
-                profile.Id,
-                profile.Name,
-                profile.Scope.ToString(),
-                profile.IsFixed,
-                profile.BrokerageId,
-                profile.PolicyHolderId,
-                profile.Permissions.Count))
+            .ToList();
+
+        // RN-074: usuários e áreas por Perfil (mesma fonte que a visão do Administrador do Sistema).
+        var usage = await profileRepository.GetUsageAsync(
+            pagedProfiles.Select(profile => profile.Id).ToList(), cancellationToken);
+
+        var paged = pagedProfiles
+            .Select(profile =>
+            {
+                var use = usage is not null && usage.TryGetValue(profile.Id, out var value)
+                    ? value
+                    : new ProfileUsageDto(0, 0);
+                return new ProfileListItemResponse(
+                    profile.Id,
+                    profile.Name,
+                    profile.Scope.ToString(),
+                    profile.IsFixed,
+                    profile.BrokerageId,
+                    profile.PolicyHolderId,
+                    profile.Permissions.Count,
+                    profile.Description,
+                    profile.CreatedAt,
+                    use.UserCount,
+                    use.AreaCount);
+            })
             .ToList();
 
         return new PagedResponse<ProfileListItemResponse>(paged, page, pageSize, visible.Count);
@@ -81,7 +99,7 @@ public sealed class ListProfilesUseCase(
         => string.IsNullOrWhiteSpace(search)
             || profile.Name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase);
 
-    private static ProfileListItemResponse Map(Core.Abstractions.Repositories.Dtos.ProfileListItemDto item)
+    private static ProfileListItemResponse Map(ProfileListItemDto item)
         => new(
             item.Id,
             item.Name,
@@ -89,7 +107,11 @@ public sealed class ListProfilesUseCase(
             item.IsFixed,
             item.BrokerageId,
             item.PolicyHolderId,
-            item.PermissionCount);
+            item.PermissionCount,
+            item.Description,
+            item.CreatedAt,
+            item.UserCount,
+            item.AreaCount);
 
     /// <summary>Filtro pelo nome estável do Escopo (ADR-031); valor fora do enum é recusado.</summary>
     private static EProfileScope? ParseScope(string? scope)

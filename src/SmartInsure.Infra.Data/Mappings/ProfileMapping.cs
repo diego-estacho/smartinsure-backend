@@ -16,6 +16,9 @@ public sealed class ProfileMapping : IEntityTypeConfiguration<Profile>
             .HasMaxLength(100)
             .IsRequired();
 
+        // RN-082: descrição opcional — alinhado 1:1 com a migration V20260807100000 (coluna nullable).
+        builder.Property(profile => profile.Description).HasMaxLength(500);
+
         // RN-069/RN-070 (TD-008): nome de Perfil único **por Escopo** — alinhado 1:1 com a migration
         // V20260730060026 (índices únicos filtrados por Scope).
         builder.HasIndex(profile => profile.Name)

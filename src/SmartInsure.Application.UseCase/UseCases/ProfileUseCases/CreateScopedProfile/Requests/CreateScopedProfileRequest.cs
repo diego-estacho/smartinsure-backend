@@ -9,4 +9,5 @@ public sealed record CreateScopedProfileRequest(
     Guid? ActiveBrokerageId,
     Guid? ActivePolicyHolderId,
     string Name,
-    IReadOnlyCollection<string> PermissionCodes);
+    IReadOnlyCollection<string> PermissionCodes,
+    string? Description = null);

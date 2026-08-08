@@ -24,6 +24,9 @@ public sealed class UserPolicyHolderMembership : EntityBase
             ProfileId = profileId,
         };
 
-    /// <summary>RN-075: troca o Perfil do Usuário neste Tomador (por outro do mesmo Escopo).</summary>
-    public void ChangeProfile(Guid profileId) => ProfileId = profileId;
+    /// <summary>RN-074/RN-075: migra o Vínculo para outro Perfil do mesmo Escopo (Tomador inalterado).</summary>
+    public void Reassign(Guid newProfileId) => ProfileId = newProfileId;
+
+    /// <summary>RN-075: alias de <see cref="Reassign"/> usado pela troca de Perfil na tela de Usuários.</summary>
+    public void ChangeProfile(Guid profileId) => Reassign(profileId);
 }

@@ -56,6 +56,7 @@ public sealed class UpdateScopedProfileUseCase(
         var permissions = await ResolvePermissionsAsync(request.PermissionCodes, cancellationToken);
 
         profile.Rename(request.Name);
+        profile.SetDescription(request.Description);
         profile.ReplacePermissions(permissions);
 
         profileRepository.Update(profile);

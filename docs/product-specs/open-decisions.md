@@ -186,3 +186,21 @@ Dono: PO (gerente de projeto)
 Bloqueia: o envio da Cobertura Adicional à Seguradora (RN-105) quando a mesma Cobertura Adicional canônica está vinculada a Coberturas Adicionais Importadas com nomes diferentes na mesma Seguradora — tipicamente uma por ramo (Público e Privado)
 Status: aberta
 Contexto: levantado em 2026-08-04 (AB#0007). Cada Modalidade canônica mapeia para duas Modalidades Importadas por Seguradora, uma por ramo, e cada uma tem as suas próprias Coberturas Adicionais Importadas. Quando os nomes coincidem — o caso observado no catálogo de QA, ex.: "Multas" nos dois ramos da AXA — o envio pelo nome é inequívoco e a regra funciona. Quando divergem (ex.: "Multa" num ramo e "Multas" no outro), não há como escolher sem uma regra de ramo, que a plataforma hoje não tem: o ramo é resolvido pela Seguradora a partir da Modalidade enviada. Enviar os dois nomes não é alternativa — a Seguradora recusa a solicitação inteira se um deles não for suportado no ramo que ela resolver, derrubando a Cotação (ADR-103). Até a decisão, RN-105/RN-106 tratam o caso como não contemplado, que é o lado seguro. Decisões possíveis: definir como a plataforma determina o ramo (por exemplo derivado da natureza do Segurado) ou exigir da curadoria que o vínculo da canônica seja feito por ramo.
+
+## OPEN-27 — Escopo Tomador nos Perfis de acesso vs. sua remoção da tela de Usuários
+Dono: PO (gerente de projeto)
+Bloqueia: o que a tela de Perfis de acesso faz com os Perfis de Escopo Tomador (aba Tomador, Perfis fixos `PolicyHolderAdministrator`/`PolicyHolderUser` e customizados de Tomador); não bloqueia a listagem em si
+Status: aberta
+Contexto: levantado em 2026-08-07 (jornada Perfis de acesso, handoff §"Pontos abertos" 1). Os Perfis de Escopo Tomador continuam existindo no modelo (RN-062, RN-070) e apareceriam na tela de Perfis, mas o handoff de Usuários removeu o Escopo Tomador daquela tela. Ou os Perfis Tomador saem também daqui (a aba Tomador some), ou o acesso do Tomador vira outro caminho de produto (portal próprio) — decisão de direção de produto. Até decidir, a tela de Perfis mantém a aba Tomador visível (não remover por conta própria). Relaciona-se com OPEN-03/OPEN-19 (mecânica de Escopo ativo).
+
+## OPEN-28 — Teto de quem pode conceder `profiles.manage` (elevação de privilégio)
+Dono: PO (gerente de projeto)
+Bloqueia: qualquer limite próprio sobre quais Permissões um administrador pode conceder ao criar/editar Perfis (RN-074); não bloqueia a entrega — hoje vale a regra ingênua
+Status: aberta
+Contexto: levantado em 2026-08-07 (jornada Perfis de acesso, handoff §"Pontos abertos" 2). Quem tem `profiles.manage` pode conceder qualquer Permissão a qualquer pessoa, inclusive a si mesmo — incluindo Permissões de Escopo Sistema (ex.: `brokerages.*`, `imports.run`) se o modelo não impuser teto. Falta decidir se há um teto (ex.: só Escopo Sistema cria Perfis com Permissões de `platform`/Sistema; um administrador não concede Permissão que ele próprio não tem) ou se vale a regra ingênua. Adjacente a OPEN-18 (remoção de Permissão essencial à administração). Enquanto aberta, o servidor aplica apenas as regras de Escopo já catalogadas (RN-069/RN-070/RN-072), sem teto adicional.
+
+## OPEN-29 — Auditoria/versionamento da edição de Perfil
+Dono: PO (gerente de projeto)
+Bloqueia: qualquer histórico de "quem mudou quais Permissões de um Perfil e quando"; não bloqueia a entrega
+Status: aberta
+Contexto: levantado em 2026-08-07 (jornada Perfis de acesso, handoff §"Pontos abertos" 4). Editar um Perfil (RN-073 para fixos, RN-074 para customizados) muda imediatamente o que os Usuários vinculados podem fazer, sem trilha de histórico além do `UpdatedAt`/`UpdatedBy` de auditoria da entidade. Se a auditoria exigir rastrear a mudança de Permissões (diff, autor, data) para fins de conformidade, é preciso um registro dedicado — não previsto no design atual. Falta a PO/segurança decidir se o versionamento é requisito e com que granularidade. (Nota do handoff §"Pontos abertos" 3 — "Perfil sem nenhuma Permissão" — **não** entra aqui: já está decidido como válido, com aviso, em RN-062.)

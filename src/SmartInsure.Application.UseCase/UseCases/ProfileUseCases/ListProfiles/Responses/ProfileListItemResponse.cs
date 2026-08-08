@@ -7,4 +7,8 @@ public sealed record ProfileListItemResponse(
     bool IsFixed,
     Guid? BrokerageId,
     Guid? PolicyHolderId,
-    int PermissionCount);
+    int PermissionCount,
+    string? Description,
+    DateTime CreatedAt,
+    int UserCount,
+    int AreaCount);
