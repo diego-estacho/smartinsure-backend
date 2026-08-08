@@ -21,14 +21,14 @@ public sealed class GetUserUseCaseTests
         var userId = Guid.NewGuid();
         var brokerageMembership = new UserMembershipDto(
             Guid.NewGuid(), Guid.NewGuid(), "11222333000181", "Corretora Alfa",
-            Guid.NewGuid(), "BrokerageAdministrator");
+            Guid.NewGuid(), "BrokerageAdministrator", "Brokerage", true);
         var policyHolderMembership = new UserMembershipDto(
             Guid.NewGuid(), Guid.NewGuid(), "99888777000166", "Tomador Beta",
-            Guid.NewGuid(), "PolicyHolderAdministrator");
+            Guid.NewGuid(), "PolicyHolderAdministrator", "PolicyHolder", true);
         _userRepository.GetDetailsByIdAsync(userId, CancellationToken.None)
             .Returns(new UserDetailsDto(
-                userId, "Ana", "ana@exemplo.com", "Active", null, null, DateTime.UtcNow,
-                [brokerageMembership], [policyHolderMembership]));
+                userId, "Ana", "ana@exemplo.com", "Active", null, null, null, false, DateTime.UtcNow,
+                null, null, false, [brokerageMembership], [policyHolderMembership]));
 
         var useCase = new GetUserUseCase(_userRepository);
         var result = await useCase.ExecuteAsync(new GetUserRequest(userId), CancellationToken.None);
@@ -36,6 +36,7 @@ public sealed class GetUserUseCaseTests
         result.BrokerageMemberships.Should().HaveCount(1);
         result.BrokerageMemberships[0].ScopeName.Should().Be("Corretora Alfa");
         result.BrokerageMemberships[0].ProfileName.Should().Be("BrokerageAdministrator");
+        result.BrokerageMemberships[0].ProfileScope.Should().Be("Brokerage");
         result.PolicyHolderMemberships.Should().HaveCount(1);
         result.PolicyHolderMemberships[0].ScopeName.Should().Be("Tomador Beta");
     }
@@ -47,7 +48,8 @@ public sealed class GetUserUseCaseTests
         var userId = Guid.NewGuid();
         _userRepository.GetDetailsByIdAsync(userId, CancellationToken.None)
             .Returns(new UserDetailsDto(
-                userId, "Bruno", "bruno@exemplo.com", "Pending", null, null, DateTime.UtcNow, [], []));
+                userId, "Bruno", "bruno@exemplo.com", "Pending", null, null, null, false, DateTime.UtcNow,
+                null, null, false, [], []));
 
         var useCase = new GetUserUseCase(_userRepository);
         var result = await useCase.ExecuteAsync(new GetUserRequest(userId), CancellationToken.None);
@@ -55,6 +57,24 @@ public sealed class GetUserUseCaseTests
         result.ProfileId.Should().BeNull();
         result.ProfileName.Should().BeNull();
         result.Status.Should().Be("Pending");
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-065")]
+    public async Task Execute_DeveTrazerDadosDoConvite_QuandoPendenteComConviteVencido()
+    {
+        var userId = Guid.NewGuid();
+        _userRepository.GetDetailsByIdAsync(userId, CancellationToken.None)
+            .Returns(new UserDetailsDto(
+                userId, "Bruno", "bruno@exemplo.com", "Pending", null, null, null, false, DateTime.UtcNow,
+                DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(-3), true, [], []));
+
+        var useCase = new GetUserUseCase(_userRepository);
+        var result = await useCase.ExecuteAsync(new GetUserRequest(userId), CancellationToken.None);
+
+        result.InviteExpired.Should().BeTrue();
+        result.InvitedAt.Should().NotBeNull();
+        result.InviteExpiresAt.Should().NotBeNull();
     }
 
     [Fact]

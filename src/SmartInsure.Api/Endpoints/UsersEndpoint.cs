@@ -1,7 +1,6 @@
 using Carter;
 using FluentValidation;
 using SmartInsure.Api.Handlers.Base;
-using SmartInsure.Application.UseCase.ModelsBase;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AcceptInvitation.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AcceptInvitation.Requests;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.AcceptInvitation.Responses;
@@ -57,7 +56,7 @@ public sealed class UsersEndpoint : CarterModule
         // de Escopo veem o próprio. A decisão é do use case, não de policy de rota.
         app.MapGet("/", ListAsync)
             .RequireAuthorization()
-            .Produces<PagedResponse<UserListItemResponse>>(StatusCodes.Status200OK);
+            .Produces<ListUsersResponse>(StatusCodes.Status200OK);
 
         app.MapGet("/{id:guid}", GetAsync)
             .RequireAuthorization(Policies.SystemAdministrator)
@@ -177,7 +176,12 @@ public sealed class UsersEndpoint : CarterModule
         int? page,
         int? pageSize,
         string? search,
-        string? status)
+        string? status,
+        Guid? profileId,
+        string? scope,
+        Guid? linkId,
+        DateTime? registeredFrom,
+        DateTime? registeredTo)
         => await handler.TryHandleAsync(
             httpContext,
             useCase,
@@ -190,6 +194,11 @@ public sealed class UsersEndpoint : CarterModule
                 PageSize = pageSize ?? 20,
                 Search = search,
                 Status = status,
+                ProfileId = profileId,
+                Scope = scope,
+                LinkId = linkId,
+                RegisteredFrom = registeredFrom,
+                RegisteredTo = registeredTo,
             });
 
     /// <summary>Detalhe do Usuário: Perfil (RN-012) e Vínculos de Corretora/Tomador (RN-064).</summary>

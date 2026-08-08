@@ -26,7 +26,12 @@ public sealed class GetUserUseCase(IUserRepository userRepository) : IGetUserUse
             user.Status,
             user.ProfileId,
             user.ProfileName,
+            user.ProfileScope,
+            user.ProfileIsFixed,
             user.CreatedAt,
+            user.InvitedAt,
+            user.InviteExpiresAt,
+            user.InviteExpired,
             user.BrokerageMemberships
                 .Select(membership => new UserMembershipResponse(
                     membership.Id,
@@ -34,7 +39,9 @@ public sealed class GetUserUseCase(IUserRepository userRepository) : IGetUserUse
                     membership.ScopeDocumentNumber,
                     membership.ScopeName,
                     membership.ProfileId,
-                    membership.ProfileName))
+                    membership.ProfileName,
+                    membership.ProfileScope,
+                    membership.ProfileIsFixed))
                 .ToList(),
             user.PolicyHolderMemberships
                 .Select(membership => new UserMembershipResponse(
@@ -43,7 +50,9 @@ public sealed class GetUserUseCase(IUserRepository userRepository) : IGetUserUse
                     membership.ScopeDocumentNumber,
                     membership.ScopeName,
                     membership.ProfileId,
-                    membership.ProfileName))
+                    membership.ProfileName,
+                    membership.ProfileScope,
+                    membership.ProfileIsFixed))
                 .ToList());
     }
 }

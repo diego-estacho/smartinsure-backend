@@ -17,6 +17,21 @@ public sealed record ListUsersRequest
 
     public string? Search { get; set; }
 
-    /// <summary>Situação do Usuário pelo nome estável do contrato (Pending/Active/Inactive).</summary>
+    /// <summary>Situação do Usuário: Active/Inactive/Pending/Expired (Pending/Expired recortam o Convite).</summary>
     public string? Status { get; set; }
+
+    /// <summary>Filtro avançado (§4): Perfil de acesso.</summary>
+    public Guid? ProfileId { get; set; }
+
+    /// <summary>Filtro avançado (§4): Escopo do Perfil (System/Brokerage/PolicyHolder).</summary>
+    public string? Scope { get; set; }
+
+    /// <summary>Filtro avançado (§4): Vínculo (Corretora/Tomador).</summary>
+    public Guid? LinkId { get; set; }
+
+    /// <summary>Filtro avançado (§4): data de cadastro a partir de.</summary>
+    public DateTime? RegisteredFrom { get; set; }
+
+    /// <summary>Filtro avançado (§4): data de cadastro até.</summary>
+    public DateTime? RegisteredTo { get; set; }
 }

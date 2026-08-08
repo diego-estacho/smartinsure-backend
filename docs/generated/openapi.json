@@ -2598,6 +2598,39 @@
         }
       }
     },
+    "/api/v1/quotations/{id}": {
+      "get": {
+        "tags": [
+          "QuotationBookEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotationDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/v1/quotation-groups": {
       "post": {
         "tags": [
@@ -2950,6 +2983,45 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "profileId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "linkId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "registeredFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "registeredTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
           }
         ],
         "responses": {
@@ -2958,7 +3030,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedResponseOfUserListItemResponse"
+                  "$ref": "#/components/schemas/ListUsersResponse"
                 }
               }
             }
@@ -5630,7 +5702,12 @@
           "status",
           "profileId",
           "profileName",
+          "profileScope",
+          "profileIsFixed",
           "createdAt",
+          "invitedAt",
+          "inviteExpiresAt",
+          "inviteExpired",
           "brokerageMemberships",
           "policyHolderMemberships"
         ],
@@ -5662,9 +5739,35 @@
               "string"
             ]
           },
+          "profileScope": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "profileIsFixed": {
+            "type": "boolean"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "invitedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "inviteExpiresAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "inviteExpired": {
+            "type": "boolean"
           },
           "brokerageMemberships": {
             "type": "array",
@@ -6287,6 +6390,51 @@
           }
         }
       },
+      "ListUsersResponse": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "counts"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserListItemResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/UserStatusCountsResponse"
+          }
+        }
+      },
       "MapInsurerResponse": {
         "required": [
           "insurerId",
@@ -6704,55 +6852,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProfileListItemResponse"
-            }
-          },
-          "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          },
-          "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int64"
-          }
-        }
-      },
-      "PagedResponseOfUserListItemResponse": {
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "totalCount"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserListItemResponse"
             }
           },
           "page": {
@@ -7589,6 +7688,168 @@
           }
         }
       },
+      "QuotationDetailCoverageResponse": {
+        "required": [
+          "name",
+          "status",
+          "sentName"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "sentName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuotationDetailResponse": {
+        "required": [
+          "quotationId",
+          "number",
+          "policyHolderName",
+          "policyHolderDocumentNumber",
+          "insuredName",
+          "insuredDocumentNumber",
+          "insurerId",
+          "insurerName",
+          "insurerLogoUrl",
+          "modalityId",
+          "modalityName",
+          "insuredAmount",
+          "premium",
+          "commissionPercentage",
+          "commissionValue",
+          "coverageStartDate",
+          "coverageEndDate",
+          "createdAt",
+          "result",
+          "requiresCcg",
+          "ccgSigned",
+          "additionalCoverages",
+          "timeline"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "policyHolderName": {
+            "type": "string"
+          },
+          "policyHolderDocumentNumber": {
+            "type": "string"
+          },
+          "insuredName": {
+            "type": "string"
+          },
+          "insuredDocumentNumber": {
+            "type": "string"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "insurerLogoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityName": {
+            "type": "string"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "premium": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionPercentage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionValue": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result": {
+            "type": "string"
+          },
+          "requiresCcg": {
+            "type": "boolean"
+          },
+          "ccgSigned": {
+            "type": "boolean"
+          },
+          "additionalCoverages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationDetailCoverageResponse"
+            }
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationTimelineEventResponse"
+            }
+          }
+        }
+      },
       "QuotationGroupPersonAddressResponse": {
         "required": [
           "zipCode",
@@ -7996,6 +8257,22 @@
           },
           "value": {
             "type": "string"
+          }
+        }
+      },
+      "QuotationTimelineEventResponse": {
+        "required": [
+          "type",
+          "occurredAt"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -8938,7 +9215,11 @@
           "email",
           "status",
           "profileName",
-          "createdAt"
+          "profileScope",
+          "profileIsFixed",
+          "link",
+          "createdAt",
+          "inviteExpired"
         ],
         "type": "object",
         "properties": {
@@ -8961,9 +9242,27 @@
               "string"
             ]
           },
+          "profileScope": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "profileIsFixed": {
+            "type": "boolean"
+          },
+          "link": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "inviteExpired": {
+            "type": "boolean"
           }
         }
       },
@@ -8974,7 +9273,9 @@
           "scopeDocumentNumber",
           "scopeName",
           "profileId",
-          "profileName"
+          "profileName",
+          "profileScope",
+          "profileIsFixed"
         ],
         "type": "object",
         "properties": {
@@ -8998,6 +9299,12 @@
           },
           "profileName": {
             "type": "string"
+          },
+          "profileScope": {
+            "type": "string"
+          },
+          "profileIsFixed": {
+            "type": "boolean"
           }
         }
       },
@@ -9026,6 +9333,58 @@
           },
           "isActive": {
             "type": "boolean"
+          }
+        }
+      },
+      "UserStatusCountsResponse": {
+        "required": [
+          "all",
+          "active",
+          "pending",
+          "expired",
+          "inactive"
+        ],
+        "type": "object",
+        "properties": {
+          "all": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "active": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "pending": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "expired": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "inactive": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
           }
         }
       }

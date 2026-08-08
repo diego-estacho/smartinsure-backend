@@ -49,13 +49,18 @@ public sealed class GetCurrentUserContextUseCaseTests
                 "Active",
                 systemProfileName is null ? null : Guid.NewGuid(),
                 systemProfileName,
+                systemProfileName is null ? null : "System",
+                systemProfileName is not null,
                 DateTime.UtcNow,
+                null,
+                null,
+                false,
                 brokerages,
                 policyHolders));
     }
 
     private static UserMembershipDto Membership(Guid scopeId, string name, string profileName)
-        => new(Guid.NewGuid(), scopeId, "12345678000190", name, Guid.NewGuid(), profileName);
+        => new(Guid.NewGuid(), scopeId, "12345678000190", name, Guid.NewGuid(), profileName, "Brokerage", false);
 
     [Fact]
     public async Task Execute_DeveRetornarVinculosComOPerfilDeCadaEscopo()
