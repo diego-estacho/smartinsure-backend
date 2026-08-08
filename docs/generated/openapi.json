@@ -5699,6 +5699,7 @@
           "id",
           "name",
           "email",
+          "documentNumber",
           "status",
           "profileId",
           "profileName",
@@ -5722,6 +5723,12 @@
           },
           "email": {
             "type": "string"
+          },
+          "documentNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "status": {
             "type": "string"
@@ -6068,6 +6075,7 @@
         "required": [
           "name",
           "email",
+          "documentNumber",
           "profileId"
         ],
         "type": "object",
@@ -6076,6 +6084,9 @@
             "type": "string"
           },
           "email": {
+            "type": "string"
+          },
+          "documentNumber": {
             "type": "string"
           },
           "profileId": {
@@ -6126,6 +6137,7 @@
         "required": [
           "name",
           "email",
+          "documentNumber",
           "policyHolderId"
         ],
         "type": "object",
@@ -6134,6 +6146,9 @@
             "type": "string"
           },
           "email": {
+            "type": "string"
+          },
+          "documentNumber": {
             "type": "string"
           },
           "policyHolderId": {
@@ -6175,6 +6190,7 @@
         "required": [
           "name",
           "email",
+          "documentNumber",
           "profileId"
         ],
         "type": "object",
@@ -6183,6 +6199,9 @@
             "type": "string"
           },
           "email": {
+            "type": "string"
+          },
+          "documentNumber": {
             "type": "string"
           },
           "profileId": {

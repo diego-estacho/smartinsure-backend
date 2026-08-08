@@ -20,9 +20,16 @@ public sealed class UserMapping : IEntityTypeConfiguration<User>
             .HasMaxLength(320)
             .IsRequired();
 
+        // RN-082: CPF (somente dígitos), único por índice filtrado — pré-RN-082 fica NULL (não colide).
+        builder.Property(user => user.DocumentNumber)
+            .HasMaxLength(11);
+
         // RN-001: e-mail único na plataforma e identidade única no provedor.
         builder.HasIndex(user => user.Email).IsUnique();
         builder.HasIndex(user => user.ExternalIdentity).IsUnique();
+        builder.HasIndex(user => user.DocumentNumber)
+            .IsUnique()
+            .HasFilter("[DocumentNumber] IS NOT NULL");
 
         builder.Property(user => user.ExternalIdentity)
             .HasMaxLength(100)

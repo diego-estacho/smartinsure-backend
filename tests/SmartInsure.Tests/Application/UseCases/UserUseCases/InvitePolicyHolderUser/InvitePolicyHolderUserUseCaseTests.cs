@@ -46,7 +46,7 @@ public sealed class InvitePolicyHolderUserUseCaseTests
         => _profileRepository.GetByIdAsync(profile.Id, Arg.Any<CancellationToken>()).Returns(profile);
 
     private InvitePolicyHolderUserRequest Request(Guid profileId)
-        => new(Identity, _policyHolderId, "Novo Tomador", "usuario@tomador.com.br", profileId);
+        => new(Identity, _policyHolderId, "Novo Tomador", "usuario@tomador.com.br", "52998224725", profileId);
 
     [Fact]
     public async Task Execute_DeveConvidarComVinculoNoTomadorAtivo_QuandoPerfilFixoTomador()

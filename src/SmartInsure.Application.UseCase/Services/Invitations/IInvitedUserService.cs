@@ -21,11 +21,13 @@ public interface IInvitedUserService
 /// </summary>
 /// <param name="Name">Nome do convidado.</param>
 /// <param name="Email">E-mail do convidado (chave de unicidade na plataforma e no provedor).</param>
+/// <param name="DocumentNumber">CPF do convidado (RN-082), somente dígitos.</param>
 /// <param name="BrokerageMemberships">Vínculos de Corretora a criar: Corretora × Perfil.</param>
 /// <param name="PolicyHolderMemberships">Vínculos de Tomador a criar: Tomador × Perfil.</param>
 public sealed record InviteUserCommand(
     string Name,
     string Email,
+    string DocumentNumber,
     IReadOnlyCollection<ScopeMembership> BrokerageMemberships,
     IReadOnlyCollection<ScopeMembership> PolicyHolderMemberships);
 

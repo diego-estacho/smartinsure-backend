@@ -123,6 +123,7 @@ public sealed class UsersEndpoint : CarterModule
                 currentUser.ActiveBrokerageId,
                 body.Name,
                 body.Email,
+                body.DocumentNumber,
                 body.PolicyHolderId),
             validator,
             response => Results.Created($"/api/v1/users/{response.Id}", response));
@@ -143,6 +144,7 @@ public sealed class UsersEndpoint : CarterModule
                 currentUser.ActiveBrokerageId,
                 body.Name,
                 body.Email,
+                body.DocumentNumber,
                 body.ProfileId),
             validator,
             response => Results.Created($"/api/v1/users/{response.Id}", response));
@@ -163,6 +165,7 @@ public sealed class UsersEndpoint : CarterModule
                 currentUser.ActivePolicyHolderId,
                 body.Name,
                 body.Email,
+                body.DocumentNumber,
                 body.ProfileId),
             validator,
             response => Results.Created($"/api/v1/users/{response.Id}", response));
@@ -299,10 +302,11 @@ public sealed record SetUserProfileBody(string? Profile);
 public sealed record InvitePolicyHolderAdministratorBody(
     string Name,
     string Email,
+    string DocumentNumber,
     Guid PolicyHolderId);
 
 /// <summary>RN-069: corpo da criação de Usuário na Corretora ativa.</summary>
-public sealed record InviteBrokerageUserBody(string Name, string Email, Guid ProfileId);
+public sealed record InviteBrokerageUserBody(string Name, string Email, string DocumentNumber, Guid ProfileId);
 
 /// <summary>RN-070: corpo da criação de Usuário no Tomador ativo (o Tomador vem do acesso).</summary>
-public sealed record InvitePolicyHolderUserBody(string Name, string Email, Guid ProfileId);
+public sealed record InvitePolicyHolderUserBody(string Name, string Email, string DocumentNumber, Guid ProfileId);

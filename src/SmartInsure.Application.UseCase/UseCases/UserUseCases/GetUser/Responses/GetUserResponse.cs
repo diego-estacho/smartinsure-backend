@@ -9,6 +9,7 @@ public sealed record GetUserResponse(
     Guid Id,
     string Name,
     string Email,
+    string? DocumentNumber,
     string Status,
     Guid? ProfileId,
     string? ProfileName,

@@ -23,6 +23,7 @@ public sealed class GetUserUseCase(IUserRepository userRepository) : IGetUserUse
             user.Id,
             user.Name,
             user.Email,
+            user.DocumentNumber,
             user.Status,
             user.ProfileId,
             user.ProfileName,

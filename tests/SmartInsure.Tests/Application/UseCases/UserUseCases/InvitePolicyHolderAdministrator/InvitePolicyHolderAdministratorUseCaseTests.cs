@@ -65,7 +65,7 @@ public sealed class InvitePolicyHolderAdministratorUseCaseTests
     }
 
     private InvitePolicyHolderAdministratorRequest Request()
-        => new(ExternalIdentity, _brokerageId, "Novo TA", "ta@tomador.com.br", _policyHolderId);
+        => new(ExternalIdentity, _brokerageId, "Novo TA", "ta@tomador.com.br", "52998224725", _policyHolderId);
 
     [Fact]
     public async Task Execute_DeveConvidarComVinculoDeTomador_QuandoHaNomeacaoVigenteNaCorretoraAtiva()

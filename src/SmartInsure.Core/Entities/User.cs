@@ -18,6 +18,12 @@ public sealed class User : EntityBase
 
     public string Email { get; private set; } = string.Empty;
 
+    /// <summary>
+    /// RN-082: CPF do Usuário (somente dígitos), identifica a pessoa — imutável. Nulo apenas para
+    /// Usuários pré-existentes à RN-082; os fluxos de convite exigem CPF válido (11 dígitos).
+    /// </summary>
+    public string? DocumentNumber { get; private set; }
+
     public string ExternalIdentity { get; private set; } = string.Empty;
 
     public EUserStatus Status { get; private set; }
@@ -27,7 +33,7 @@ public sealed class User : EntityBase
 
     public Profile? Profile { get; private set; }
 
-    public static User Create(string name, string email, string externalIdentity)
+    public static User Create(string name, string email, string externalIdentity, string? documentNumber = null)
     {
         if (string.IsNullOrWhiteSpace(externalIdentity))
         {
@@ -39,9 +45,28 @@ public sealed class User : EntityBase
         {
             Name = name.Trim(),
             Email = email.Trim().ToLowerInvariant(),
+            DocumentNumber = NormalizeDocumentNumber(documentNumber),
             ExternalIdentity = externalIdentity,
             Status = EUserStatus.Pending,
         };
+    }
+
+    /// <summary>RN-082: guarda o CPF só em dígitos; quando informado, exige exatamente 11.</summary>
+    private static string? NormalizeDocumentNumber(string? documentNumber)
+    {
+        if (string.IsNullOrWhiteSpace(documentNumber))
+        {
+            return null;
+        }
+
+        var digits = new string([.. documentNumber.Where(char.IsDigit)]);
+
+        if (digits.Length != 11)
+        {
+            throw new BusinessRuleException("O CPF do usuário deve conter 11 dígitos.");
+        }
+
+        return digits;
     }
 
     /// <summary>RN-002: ativação ao concluir o primeiro acesso com senha própria definida.</summary>

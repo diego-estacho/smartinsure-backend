@@ -57,6 +57,7 @@ public sealed class InvitePolicyHolderUserUseCase(
             new InviteUserCommand(
                 request.Name,
                 request.Email,
+                request.DocumentNumber,
                 BrokerageMemberships: [],
                 PolicyHolderMemberships: [new ScopeMembership(actor.ScopeId, profile.Id)]),
             cancellationToken);

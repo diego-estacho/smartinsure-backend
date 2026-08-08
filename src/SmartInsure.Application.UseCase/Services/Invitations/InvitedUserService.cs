@@ -51,7 +51,7 @@ public sealed class InvitedUserService(
 
         try
         {
-            user = User.Create(command.Name, email, externalIdentity);
+            user = User.Create(command.Name, email, externalIdentity, command.DocumentNumber);
             await userRepository.AddAsync(user, cancellationToken);
 
             var (invitation, token) = Invitation.Create(user.Id, invitationOptions.Value.LinkExpiryDays);

@@ -8,10 +8,12 @@ namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.InviteBrokerageU
 /// <param name="ActiveBrokerageId">Corretora ativa do solicitante, lida do acesso.</param>
 /// <param name="Name">Nome do convidado.</param>
 /// <param name="Email">E-mail do convidado.</param>
+/// <param name="DocumentNumber">CPF do convidado (RN-082).</param>
 /// <param name="ProfileId">Perfil a conceder, dentre os oferecidos para a Corretora ativa (RN-072).</param>
 public sealed record InviteBrokerageUserRequest(
     string ExternalIdentity,
     Guid? ActiveBrokerageId,
     string Name,
     string Email,
+    string DocumentNumber,
     Guid ProfileId);

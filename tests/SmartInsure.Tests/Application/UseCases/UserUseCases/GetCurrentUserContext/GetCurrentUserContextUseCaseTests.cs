@@ -46,6 +46,7 @@ public sealed class GetCurrentUserContextUseCaseTests
                 UserId,
                 "Maria Silva",
                 "maria@corretora.com.br",
+                null,
                 "Active",
                 systemProfileName is null ? null : Guid.NewGuid(),
                 systemProfileName,

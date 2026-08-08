@@ -3,8 +3,10 @@
 ## RN-001 — Criação de Usuário
 
 > Revisão proposta em 2026-07-23 (grill-rn, jornada Perfis e Permissões / [OPEN-06](../open-decisions.md)): a senha inicial padrão dá lugar ao primeiro acesso por Convite (RN-065). Aguardando ratificação da PO — o texto abaixo já reflete a proposta.
+>
+> Revisão 2026-08-07 (redesenho da tela de Usuários, decisão do dono do produto): os fluxos de convite que criam Usuário para operar em Corretora ou Tomador (RN-068/RN-069/RN-070) passam a informar também o **CPF** do convidado — ver RN-082. O convite de Corretor Administrador (RN-066) não coleta CPF nesta fase.
 
-**Descrição.** A criação de Usuário é feita pelos fluxos de criação/convite da jornada Perfis e Permissões (RN-066, RN-068 a RN-071), informando nome e e-mail. O Usuário nasce com identidade registrada no provedor de identidade e na situação Pendente, sem senha própria — o primeiro acesso ocorre por Convite (RN-065).
+**Descrição.** A criação de Usuário é feita pelos fluxos de criação/convite da jornada Perfis e Permissões (RN-066, RN-068 a RN-071), informando nome e e-mail (e o CPF, nos fluxos do §8 — RN-082). O Usuário nasce com identidade registrada no provedor de identidade e na situação Pendente, sem senha própria — o primeiro acesso ocorre por Convite (RN-065).
 
 **Pré-condições.** Solicitante autenticado e autorizado a criar Usuário no Escopo em questão (RN-066, RN-068 a RN-071); e-mail informado não cadastrado na plataforma nem no provedor de identidade.
 
@@ -55,3 +57,15 @@
 **Critério de aceitação.** Ao conceder o Perfil a um Usuário, ele passa a poder executar as operações exclusivas do Perfil; ao revogar, deixa de poder executá-las imediatamente. Concessão ou revogação solicitada por Usuário sem o Perfil é recusada por falta de permissão.
 
 **Casos limite.** Conceder o Perfil a quem já o tem, ou revogar de quem não o tem: solicitação recusada com indicação clara de que o Usuário já está na condição pedida. Revogação que deixaria a plataforma sem nenhum Administrador do Sistema: recusada. Usuário destinatário inexistente: recusada com indicação clara.
+
+## RN-082 — CPF do Usuário
+
+> Proposta em 2026-08-07 (redesenho da tela de Usuários, decisão do dono do produto). Autorizado a ajustar; aguardando ratificação da PO.
+
+**Descrição.** O Usuário criado pelos fluxos de convite destinados a operar em Corretora ou Tomador (RN-068/RN-069/RN-070) informa também o seu CPF, que identifica a pessoa por trás do acesso. O CPF é único na plataforma e imutável — se está errado, é outro cadastro. O convite de Corretor Administrador (RN-066) não coleta CPF nesta fase, e Usuários criados antes desta regra permanecem sem CPF.
+
+**Pré-condições.** Fluxo de convite de Corretora/Tomador (RN-068/RN-069/RN-070) com CPF informado.
+
+**Critério de aceitação.** Nesses fluxos o CPF é obrigatório e validado na forma (11 dígitos com dígitos verificadores corretos), guardado somente em dígitos. Dois Usuários não têm o mesmo CPF. O CPF não é alterável depois de criado (a correção é um novo cadastro). Usuário sem CPF (Corretor Administrador ou anterior à regra) é válido e não colide no critério de unicidade. A busca da listagem de Usuários passa a encontrar por CPF.
+
+**Casos limite.** CPF ausente ou inválido nesses fluxos: convite recusado. CPF já usado por outro Usuário: recusado. CPF informado com máscara: aceito e normalizado para dígitos. Convite de Corretor Administrador (RN-066): segue sem CPF por decisão de produto do redesenho.

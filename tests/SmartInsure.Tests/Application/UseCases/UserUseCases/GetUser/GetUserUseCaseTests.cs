@@ -27,7 +27,7 @@ public sealed class GetUserUseCaseTests
             Guid.NewGuid(), "PolicyHolderAdministrator", "PolicyHolder", true);
         _userRepository.GetDetailsByIdAsync(userId, CancellationToken.None)
             .Returns(new UserDetailsDto(
-                userId, "Ana", "ana@exemplo.com", "Active", null, null, null, false, DateTime.UtcNow,
+                userId, "Ana", "ana@exemplo.com", "52998224725", "Active", null, null, null, false, DateTime.UtcNow,
                 null, null, false, [brokerageMembership], [policyHolderMembership]));
 
         var useCase = new GetUserUseCase(_userRepository);
@@ -39,6 +39,7 @@ public sealed class GetUserUseCaseTests
         result.BrokerageMemberships[0].ProfileScope.Should().Be("Brokerage");
         result.PolicyHolderMemberships.Should().HaveCount(1);
         result.PolicyHolderMemberships[0].ScopeName.Should().Be("Tomador Beta");
+        result.DocumentNumber.Should().Be("52998224725");
     }
 
     [Fact]
@@ -48,7 +49,7 @@ public sealed class GetUserUseCaseTests
         var userId = Guid.NewGuid();
         _userRepository.GetDetailsByIdAsync(userId, CancellationToken.None)
             .Returns(new UserDetailsDto(
-                userId, "Bruno", "bruno@exemplo.com", "Pending", null, null, null, false, DateTime.UtcNow,
+                userId, "Bruno", "bruno@exemplo.com", null, "Pending", null, null, null, false, DateTime.UtcNow,
                 null, null, false, [], []));
 
         var useCase = new GetUserUseCase(_userRepository);
@@ -66,7 +67,7 @@ public sealed class GetUserUseCaseTests
         var userId = Guid.NewGuid();
         _userRepository.GetDetailsByIdAsync(userId, CancellationToken.None)
             .Returns(new UserDetailsDto(
-                userId, "Bruno", "bruno@exemplo.com", "Pending", null, null, null, false, DateTime.UtcNow,
+                userId, "Bruno", "bruno@exemplo.com", null, "Pending", null, null, null, false, DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(-3), true, [], []));
 
         var useCase = new GetUserUseCase(_userRepository);

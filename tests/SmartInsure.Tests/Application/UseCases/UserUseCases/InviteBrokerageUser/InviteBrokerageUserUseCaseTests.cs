@@ -46,7 +46,7 @@ public sealed class InviteBrokerageUserUseCaseTests
         => _profileRepository.GetByIdAsync(profile.Id, Arg.Any<CancellationToken>()).Returns(profile);
 
     private InviteBrokerageUserRequest Request(Guid profileId)
-        => new(ExternalIdentity, _brokerageId, "Novo Corretor", "corretor@corretora.com.br", profileId);
+        => new(ExternalIdentity, _brokerageId, "Novo Corretor", "corretor@corretora.com.br", "52998224725", profileId);
 
     [Fact]
     public async Task Execute_DeveConvidarComVinculoNaCorretoraAtiva_QuandoPerfilFixoCorretor()

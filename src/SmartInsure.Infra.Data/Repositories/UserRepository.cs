@@ -145,6 +145,7 @@ public sealed class UserRepository(SmartInsureDbContext context)
                 candidate.Id,
                 candidate.Name,
                 candidate.Email,
+                candidate.DocumentNumber,
                 candidate.Status,
                 candidate.ProfileId,
                 ProfileName = candidate.Profile == null ? null : candidate.Profile.Name,
@@ -180,6 +181,7 @@ public sealed class UserRepository(SmartInsureDbContext context)
             user.Id,
             user.Name,
             user.Email,
+            user.DocumentNumber,
             user.Status.ToString(),
             user.ProfileId,
             user.ProfileName,
@@ -219,6 +221,7 @@ public sealed class UserRepository(SmartInsureDbContext context)
             var searchTerm = filters.Search.Trim();
             query = query.Where(user => user.Name.Contains(searchTerm)
                 || user.Email.Contains(searchTerm)
+                || (user.DocumentNumber != null && user.DocumentNumber.Contains(searchTerm))
                 || (user.Profile != null && user.Profile.Name.Contains(searchTerm)));
         }
 

@@ -8,10 +8,12 @@ namespace SmartInsure.Application.UseCase.UseCases.UserUseCases.InvitePolicyHold
 /// <param name="ActiveBrokerageId">Corretora ativa do solicitante, lida do acesso.</param>
 /// <param name="Name">Nome do convidado.</param>
 /// <param name="Email">E-mail do convidado.</param>
+/// <param name="DocumentNumber">CPF do convidado (RN-082).</param>
 /// <param name="PolicyHolderId">Tomador que o convidado vai administrar.</param>
 public sealed record InvitePolicyHolderAdministratorRequest(
     string ExternalIdentity,
     Guid? ActiveBrokerageId,
     string Name,
     string Email,
+    string DocumentNumber,
     Guid PolicyHolderId);

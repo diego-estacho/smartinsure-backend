@@ -9,4 +9,5 @@ public sealed record InvitePolicyHolderUserRequest(
     Guid? ActivePolicyHolderId,
     string Name,
     string Email,
+    string DocumentNumber,
     Guid ProfileId);

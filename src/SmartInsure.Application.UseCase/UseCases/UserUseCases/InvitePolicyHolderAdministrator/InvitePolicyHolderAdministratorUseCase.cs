@@ -61,6 +61,7 @@ public sealed class InvitePolicyHolderAdministratorUseCase(
             new InviteUserCommand(
                 request.Name,
                 request.Email,
+                request.DocumentNumber,
                 BrokerageMemberships: [],
                 PolicyHolderMemberships:
                 [
