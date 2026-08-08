@@ -2394,6 +2394,14 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "migrateToProfileId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -2594,6 +2602,39 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/quotations/{id}": {
+      "get": {
+        "tags": [
+          "QuotationBookEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotationDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -5493,7 +5534,11 @@
           "isFixed",
           "brokerageId",
           "policyHolderId",
-          "permissions"
+          "permissions",
+          "description",
+          "createdAt",
+          "linkedUsers",
+          "linkedUserCount"
         ],
         "type": "object",
         "properties": {
@@ -5529,6 +5574,30 @@
             "items": {
               "$ref": "#/components/schemas/ProfilePermissionResponse"
             }
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "linkedUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfileLinkedUserResponse"
+            }
+          },
+          "linkedUserCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -6863,7 +6932,9 @@
           "id",
           "code",
           "description",
-          "isSystem"
+          "isSystem",
+          "area",
+          "dependsOn"
         ],
         "type": "object",
         "properties": {
@@ -6882,6 +6953,18 @@
           },
           "isSystem": {
             "type": "boolean"
+          },
+          "area": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dependsOn": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -7286,6 +7369,26 @@
           }
         }
       },
+      "ProfileLinkedUserResponse": {
+        "required": [
+          "id",
+          "name",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
       "ProfileListItemResponse": {
         "required": [
           "id",
@@ -7294,7 +7397,11 @@
           "isFixed",
           "brokerageId",
           "policyHolderId",
-          "permissionCount"
+          "permissionCount",
+          "description",
+          "createdAt",
+          "userCount",
+          "areaCount"
         ],
         "type": "object",
         "properties": {
@@ -7326,6 +7433,32 @@
             "format": "uuid"
           },
           "permissionCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "areaCount": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -7585,6 +7718,168 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/QuotationTermInput"
+            }
+          }
+        }
+      },
+      "QuotationDetailCoverageResponse": {
+        "required": [
+          "name",
+          "status",
+          "sentName"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "sentName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "QuotationDetailResponse": {
+        "required": [
+          "quotationId",
+          "number",
+          "policyHolderName",
+          "policyHolderDocumentNumber",
+          "insuredName",
+          "insuredDocumentNumber",
+          "insurerId",
+          "insurerName",
+          "insurerLogoUrl",
+          "modalityId",
+          "modalityName",
+          "insuredAmount",
+          "premium",
+          "commissionPercentage",
+          "commissionValue",
+          "coverageStartDate",
+          "coverageEndDate",
+          "createdAt",
+          "result",
+          "requiresCcg",
+          "ccgSigned",
+          "additionalCoverages",
+          "timeline"
+        ],
+        "type": "object",
+        "properties": {
+          "quotationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "policyHolderName": {
+            "type": "string"
+          },
+          "policyHolderDocumentNumber": {
+            "type": "string"
+          },
+          "insuredName": {
+            "type": "string"
+          },
+          "insuredDocumentNumber": {
+            "type": "string"
+          },
+          "insurerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "insurerName": {
+            "type": "string"
+          },
+          "insurerLogoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "modalityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modalityName": {
+            "type": "string"
+          },
+          "insuredAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "premium": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionPercentage": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "commissionValue": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "coverageStartDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "coverageEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result": {
+            "type": "string"
+          },
+          "requiresCcg": {
+            "type": "boolean"
+          },
+          "ccgSigned": {
+            "type": "boolean"
+          },
+          "additionalCoverages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationDetailCoverageResponse"
+            }
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuotationTimelineEventResponse"
             }
           }
         }
@@ -7999,6 +8294,22 @@
           }
         }
       },
+      "QuotationTimelineEventResponse": {
+        "required": [
+          "type",
+          "occurredAt"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "ReassignImportedModalityBody": {
         "required": [
           "modalityId"
@@ -8179,6 +8490,12 @@
             "items": {
               "type": "string"
             }
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

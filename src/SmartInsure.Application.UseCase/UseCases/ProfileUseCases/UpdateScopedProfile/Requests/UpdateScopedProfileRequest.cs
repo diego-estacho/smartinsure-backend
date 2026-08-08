@@ -10,4 +10,5 @@ public sealed record UpdateScopedProfileRequest(
     Guid? ActivePolicyHolderId,
     Guid ProfileId,
     string Name,
-    IReadOnlyCollection<string> PermissionCodes);
+    IReadOnlyCollection<string> PermissionCodes,
+    string? Description = null);

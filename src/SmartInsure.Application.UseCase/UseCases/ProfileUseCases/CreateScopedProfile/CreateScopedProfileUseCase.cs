@@ -43,8 +43,8 @@ public sealed class CreateScopedProfileUseCase(
         var permissions = await ResolvePermissionsAsync(request.PermissionCodes, cancellationToken);
 
         var profile = scope.Scope == EProfileScope.Brokerage
-            ? Profile.CreateForBrokerage(request.Name, scope.OwnerId)
-            : Profile.CreateForPolicyHolder(request.Name, scope.OwnerId);
+            ? Profile.CreateForBrokerage(request.Name, scope.OwnerId, request.Description)
+            : Profile.CreateForPolicyHolder(request.Name, scope.OwnerId, request.Description);
 
         foreach (var permission in permissions)
         {

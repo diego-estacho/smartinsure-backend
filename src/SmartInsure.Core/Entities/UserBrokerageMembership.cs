@@ -23,4 +23,7 @@ public sealed class UserBrokerageMembership : EntityBase
             BrokerageId = brokerageId,
             ProfileId = profileId,
         };
+
+    /// <summary>RN-074/RN-075: migra o Vínculo para outro Perfil do mesmo Escopo (Corretora inalterada).</summary>
+    public void Reassign(Guid newProfileId) => ProfileId = newProfileId;
 }

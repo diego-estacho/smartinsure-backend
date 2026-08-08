@@ -20,7 +20,12 @@ public sealed class ListPermissionsUseCase(IPermissionRepository permissionRepos
 
         return permissions
             .Select(permission => new PermissionResponse(
-                permission.Id, permission.Code, permission.Description, permission.IsSystem))
+                permission.Id,
+                permission.Code,
+                permission.Description,
+                permission.IsSystem,
+                permission.Area,
+                permission.DependsOn))
             .ToList();
     }
 }

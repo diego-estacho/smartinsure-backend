@@ -23,4 +23,7 @@ public sealed class UserPolicyHolderMembership : EntityBase
             PolicyHolderId = policyHolderId,
             ProfileId = profileId,
         };
+
+    /// <summary>RN-074/RN-075: migra o Vínculo para outro Perfil do mesmo Escopo (Tomador inalterado).</summary>
+    public void Reassign(Guid newProfileId) => ProfileId = newProfileId;
 }

@@ -14,6 +14,8 @@
 
 ## RN-063 — Catálogo fixo de Permissões
 
+> **Ampliação PROPOSTA em 2026-08-07 (jornada Perfis de acesso, exec-plan 0019 — aguardando ratificação da PO).** Cada Permissão do catálogo passa a declarar, além do código, uma **Área** (agrupamento por domínio, para exibição e para os níveis Sem acesso · Consultar · Operar) e, quando for uma ação de escrita, a **Permissão de leitura da qual depende** (`DependsOn`). Marcar uma ação liga automaticamente a leitura de que ela depende; desmarcar a leitura derruba, em cascata, tudo que depende dela. É metadado do catálogo (semeado por migration), não editável por tela. A **derivação do nível** e a **cascata na UI** são apresentação (front); a **autorização efetiva** segue sendo por código de Permissão no servidor. A tabela de Área/`DependsOn` dos 28 códigos v1 está no fim desta seção. Não amplia o conjunto de códigos: `policies.issue` (emitir apólice) já existe (RN-513); aprovar/cancelar Cotação, Apólices, Relatórios, convite de Corretor Administrador e troca de Perfil de Usuário continuam **fora** do catálogo até a funcionalidade nascer.
+
 **Descrição.** As Permissões que compõem os Perfis vêm de um catálogo fixo da plataforma: cada funcionalidade declara as Permissões que ela exige. Ninguém cria Permissão pela tela — o catálogo é definido pela própria plataforma; ao editar um Perfil, o administrador apenas marca ou desmarca Permissões desse catálogo.
 
 **Pré-condições.** Funcionalidade que exige controle de acesso declarou sua Permissão no catálogo.
@@ -48,6 +50,43 @@ catálogo quando nascer. Código no formato `dominio.acao`, em inglês (ADR-058)
 O catálogo é semeado por migration (Flyway, repositório dedicado) e nunca editado por tela (RN-063).
 A marcação inicial nos Perfis fixos é decisão do Administrador do Sistema (RN-073) — o seed cria as
 Permissões, não as distribui.
+
+### Área e dependência dos códigos v1 — PROPOSTA (2026-08-07)
+
+Mapeamento dos 28 códigos v1 para **Área** (chave estável, em inglês; o rótulo em pt-BR é texto de UI e mora no front) e **`DependsOn`** (o código de leitura de que a ação depende; leitura tem `—`). Aguardando ratificação da PO — em especial os itens marcados *(confirmar)*.
+
+| Código | Área | `DependsOn` | Nota |
+|---|---|---|---|
+| `quotation-groups.view` | `quotations` | — | |
+| `quotation-groups.create` | `quotations` | `quotation-groups.view` | |
+| `quotation-groups.edit` | `quotations` | `quotation-groups.view` | |
+| `policies.issue` | `quotations` | `quotation-groups.view` | Gera a apólice e o boleto na seguradora. *(confirmar: o handoff previa um passo "aprovar" que ainda não existe)* |
+| `credit-inquiries.view` | `credit-inquiries` | — | |
+| `credit-inquiries.create` | `credit-inquiries` | `credit-inquiries.view` | Cada solicitação tem custo por consulta. |
+| `policy-holders.view` | `policy-holders` | — | |
+| `policy-holders.create` | `policy-holders` | `policy-holders.view` | |
+| `policy-holders.edit` | `policy-holders` | `policy-holders.view` | |
+| `policy-holder-appointments.manage` | `policy-holders` | `policy-holders.view` | |
+| `brokerages.view` | `brokerages` | — | |
+| `brokerages.create` | `brokerages` | `brokerages.view` | |
+| `brokerages.edit` | `brokerages` | `brokerages.view` | |
+| `brokerages.change-status` | `brokerages` | `brokerages.view` | |
+| `insurer-enablements.manage` | `brokerages` | `brokerages.view` | |
+| `insurers.view` | `catalog` | — | |
+| `modalities.view` | `catalog` | — | |
+| `modalities.edit` | `catalog` | `modalities.view` | |
+| `modality-map.manage` | `catalog` | `modalities.view` | |
+| `additional-coverages.view` | `catalog` | — | |
+| `additional-coverages.edit` | `catalog` | `additional-coverages.view` | |
+| `additional-coverage-map.manage` | `catalog` | `additional-coverages.view` | |
+| `imports.run` | `catalog` | `insurers.view` | *(confirmar a dependência: importação x consulta de seguradoras)* |
+| `users.view` | `users-access` | — | |
+| `users.create` | `users-access` | `users.view` | |
+| `users.change-activation` | `users-access` | `users.view` | |
+| `profiles.view` | `users-access` | — | |
+| `profiles.manage` | `users-access` | `profiles.view` | Permite conceder qualquer permissão a outras pessoas. |
+
+Seis áreas em v1: `quotations`, `credit-inquiries`, `policy-holders`, `brokerages`, `catalog`, `users-access`. As áreas `policies` (Apólices) e `platform` (Administração da plataforma) do handoff **nascem vazias** — sem código declarado — e passam a aparecer quando a funcionalidade correspondente declarar Permissão. Uma área pode ter mais de uma leitura-raiz (ex.: `catalog` tem `insurers.view`, `modalities.view` e `additional-coverages.view`): o nível **Consultar** marca todas as leituras da área; **Operar**, todas as Permissões; qualquer conjunto intermediário é **Personalizado**. A área `platform` só é oferecida a Perfis de Escopo Sistema (segue o "Escopo típico" do catálogo).
 
 ## RN-064 — Vínculos do Usuário com Corretoras e Tomadores e o Escopo ativo
 
@@ -157,6 +196,8 @@ Na **gestão de Perfis** (a tela que lista Perfis para administrar), o Administr
 
 ## RN-074 — Edição e remoção de Perfil customizado
 
+> **Revisão PROPOSTA em 2026-08-07 (jornada Perfis de acesso, exec-plan 0019 — aguardando ratificação da PO).** A remoção de Perfil customizado **em uso** deixa de ser uma recusa e passa a exigir a **migração dos Usuários** para outro Perfil do **mesmo Escopo**, escolhido no ato: reatribui-se cada Usuário vinculado (RN-075) e só então o Perfil é excluído, tudo numa única operação atômica. Sem Perfil-destino informado quando há Usuários, a operação é recusada com indicação de que é preciso escolher para onde migrar (nunca deixa Usuário sem Perfil no Escopo — RN-062/RN-075). Perfil sem nenhum Usuário é excluído de imediato. Perfil fixo nunca chega a este fluxo (RN-073). Isto substitui a recusa genérica "em uso" descrita abaixo.
+
 **Descrição.** O Perfil customizado é editado e removido dentro do seu Escopo: os de Corretora, pelo Corretor Administrador da Corretora à qual pertencem; os de Tomador, pelo Tomador Administrador do Tomador ao qual pertencem. A remoção é bloqueada enquanto o Perfil tiver Usuários.
 
 **Pré-condições.** Solicitante autenticado com o Perfil administrador do Escopo do Perfil (Corretor Administrador da Corretora, ou Tomador Administrador do Tomador).
@@ -184,3 +225,15 @@ Na **gestão de Perfis** (a tela que lista Perfis para administrar), o Administr
 **Critério de aceitação.** Ao inativar, o Usuário passa à situação Inativo e qualquer acesso é recusado (as sessões vigentes seguem a política de encerramento — RN-006); ao reativar, volta à situação anterior à inativação e pode acessar novamente. Ação sobre Usuário fora do Escopo do solicitante é recusada por falta de permissão.
 
 **Casos limite.** Inativar Usuário já Inativo, ou reativar Usuário já ativo: recusado com indicação clara. Inativação que deixaria uma Corretora ou Tomador sem nenhum administrador: recusada. Situação Inativo depende da ratificação do status pela PO ([OPEN-01](../open-decisions.md)).
+
+## RN-082 — Descrição do Perfil
+
+> PROPOSTA em 2026-08-07 (jornada Perfis de acesso, exec-plan 0019 — aguardando ratificação da PO). ID provisório: sequência global do catálogo, sujeito a renumeração por colisão ([OPEN-24](../open-decisions.md)).
+
+**Descrição.** Além do nome, o Perfil pode ter uma **Descrição** livre e opcional — uma frase que explica para que serve o Perfil. Ela aparece na listagem de Perfis e no momento de escolher o Perfil de um Usuário, ajudando a distinguir Perfis de nomes parecidos. Não participa de autorização nem de unicidade (o nome único por Escopo segue como está — RN-069/RN-070).
+
+**Pré-condições.** Perfil sendo criado ou editado por quem administra o Escopo (RN-069/RN-070/RN-074); para Perfil fixo, a Descrição, como o nome, é imutável por tela (RN-073).
+
+**Critério de aceitação.** Ao criar ou editar um Perfil customizado, o administrador pode informar ou alterar a Descrição, que passa a ser exibida na listagem e na seleção de Perfil do Usuário. Perfil sem Descrição é válido — a ausência simplesmente não exibe a linha de apoio. A Descrição não altera nenhuma decisão de acesso.
+
+**Casos limite.** Descrição vazia ou só espaços: tratada como ausente. Comprimento máximo alinhado ao do catálogo (proposta: 500 caracteres, como a descrição de Permissão). Perfil fixo: Descrição não editável por tela (a alteração de Perfil fixo é só de Permissões — RN-073).

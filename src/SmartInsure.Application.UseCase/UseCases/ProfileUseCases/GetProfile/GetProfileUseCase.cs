@@ -42,7 +42,13 @@ public sealed class GetProfileUseCase(
                     permission.Code,
                     permission.Description,
                     permission.IsSystem))
-                .ToList());
+                .ToList(),
+            profile.Description,
+            profile.CreatedAt,
+            (profile.LinkedUsers ?? [])
+                .Select(user => new ProfileLinkedUserResponse(user.Id, user.Name, user.Email))
+                .ToList(),
+            profile.LinkedUserCount);
     }
 
     private async Task EnsureVisibleAsync(

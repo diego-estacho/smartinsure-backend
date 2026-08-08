@@ -54,11 +54,38 @@ public sealed class DeleteScopedProfileUseCase(
 
         if (usersWithProfile > 0)
         {
-            throw new ConflictException(
-                "O perfil está em uso por usuários e não pode ser removido. Mova os usuários para outro perfil antes.");
+            // RN-074/RN-075: perfil em uso não é erro — exige o Perfil-destino (mesmo Escopo e dono)
+            // para onde os Usuários migram antes da remoção, tudo numa só transação (o commit abaixo).
+            if (request.MigrateToProfileId is not { } targetProfileId)
+            {
+                throw new ConflictException(
+                    "O perfil está em uso. Escolha para qual perfil migrar os usuários antes de removê-lo.");
+            }
+
+            if (targetProfileId == profile.Id)
+            {
+                throw new BusinessRuleException(
+                    "O perfil de destino da migração deve ser diferente do perfil removido.");
+            }
+
+            var target = await profileRepository.GetTrackedByIdAsync(targetProfileId, cancellationToken)
+                ?? throw new NotFoundException("Perfil de destino da migração não encontrado.");
+
+            var targetOwner = target.Scope == EProfileScope.Brokerage
+                ? target.BrokerageId
+                : target.PolicyHolderId;
+
+            if (target.Scope != profile.Scope || targetOwner != owner)
+            {
+                throw new BusinessRuleException(
+                    "O perfil de destino precisa ser do mesmo escopo do perfil removido.");
+            }
+
+            await profileRepository.ReassignMembershipsAsync(
+                profile.Id, target.Id, profile.Scope, cancellationToken);
         }
 
-        profileRepository.Remove(profile);
+        profileRepository.RemoveWithPermissions(profile);
         await unitOfWork.CommitAsync(cancellationToken);
 
         return Unit.Value;

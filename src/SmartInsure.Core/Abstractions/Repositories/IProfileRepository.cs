@@ -41,10 +41,34 @@ public interface IProfileRepository : IRepository<Profile>
     Task<Profile?> GetTrackedByIdAsync(Guid profileId, CancellationToken cancellationToken);
 
     /// <summary>
+    /// RN-074: remove o Perfil e seus ProfilePermissions (FKs Restrict, sem cascade — os filhos vão
+    /// antes do pai). Não persiste: o commit fica com o caso de uso.
+    /// </summary>
+    void RemoveWithPermissions(Profile profile);
+
+    /// <summary>
     /// RN-074: quantos Usuários usam este Perfil — soma Vínculos de Corretora, de Tomador e o
     /// Perfil de Escopo Sistema. Remoção é recusada enquanto houver Usuário.
     /// </summary>
     Task<int> CountUsersByProfileAsync(Guid profileId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-074: uso de um conjunto de Perfis para a listagem — nº de Usuários e nº de Áreas tocadas
+    /// por Perfil, em poucas consultas (evita N+1). Ids ausentes retornam 0/0.
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, ProfileUsageDto>> GetUsageAsync(
+        IReadOnlyCollection<Guid> profileIds,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-074/RN-075: migra os Vínculos de Usuário de um Perfil para outro do mesmo Escopo, sem
+    /// persistir — deixa as entidades rastreadas para o commit do caso de uso, junto da remoção.
+    /// </summary>
+    Task ReassignMembershipsAsync(
+        Guid fromProfileId,
+        Guid toProfileId,
+        EProfileScope scope,
+        CancellationToken cancellationToken);
 
     /// <summary>Perfil pela chave natural (nome) — usado para resolver o Perfil a conceder (RN-012).</summary>
     Task<Profile?> GetByNameAsync(string name, CancellationToken cancellationToken);

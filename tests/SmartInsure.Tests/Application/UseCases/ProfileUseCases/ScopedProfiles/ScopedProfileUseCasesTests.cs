@@ -190,7 +190,7 @@ public sealed class ScopedProfileUseCasesTests
             new DeleteScopedProfileRequest(Identity, _brokerageId, null, profile.Id),
             CancellationToken.None);
 
-        _profileRepository.Received(1).Remove(profile);
+        _profileRepository.Received(1).RemoveWithPermissions(profile);
         await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
@@ -209,7 +209,7 @@ public sealed class ScopedProfileUseCasesTests
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ConflictException>();
-        _profileRepository.DidNotReceiveWithAnyArgs().Remove(default!);
+        _profileRepository.DidNotReceiveWithAnyArgs().RemoveWithPermissions(default!);
     }
 
     [Fact]
@@ -224,5 +224,52 @@ public sealed class ScopedProfileUseCasesTests
             CancellationToken.None);
 
         await act.Should().ThrowAsync<BusinessRuleException>();
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-074")]
+    public async Task Delete_ComUsuarios_DeveMigrarParaODestinoEExcluir()
+    {
+        var profile = Profile.CreateForBrokerage("Operador", _brokerageId);
+        var destino = Profile.CreateForBrokerage("Operador Pleno", _brokerageId);
+        _profileRepository.GetTrackedByIdAsync(profile.Id, Arg.Any<CancellationToken>())
+            .Returns(profile);
+        _profileRepository.GetTrackedByIdAsync(destino.Id, Arg.Any<CancellationToken>())
+            .Returns(destino);
+        _profileRepository.CountUsersByProfileAsync(profile.Id, Arg.Any<CancellationToken>())
+            .Returns(3);
+
+        await DeleteUseCase().ExecuteAsync(
+            new DeleteScopedProfileRequest(Identity, _brokerageId, null, profile.Id, destino.Id),
+            CancellationToken.None);
+
+        await _profileRepository.Received(1).ReassignMembershipsAsync(
+            profile.Id, destino.Id, EProfileScope.Brokerage, Arg.Any<CancellationToken>());
+        _profileRepository.Received(1).RemoveWithPermissions(profile);
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    [Trait("RuleId", "RN-074")]
+    public async Task Delete_ComUsuarios_DeveRecusarDestinoDeOutroDono()
+    {
+        var profile = Profile.CreateForBrokerage("Operador", _brokerageId);
+        var destinoDeOutraCorretora = Profile.CreateForBrokerage("Operador", Guid.NewGuid());
+        _profileRepository.GetTrackedByIdAsync(profile.Id, Arg.Any<CancellationToken>())
+            .Returns(profile);
+        _profileRepository.GetTrackedByIdAsync(destinoDeOutraCorretora.Id, Arg.Any<CancellationToken>())
+            .Returns(destinoDeOutraCorretora);
+        _profileRepository.CountUsersByProfileAsync(profile.Id, Arg.Any<CancellationToken>())
+            .Returns(2);
+
+        var act = async () => await DeleteUseCase().ExecuteAsync(
+            new DeleteScopedProfileRequest(
+                Identity, _brokerageId, null, profile.Id, destinoDeOutraCorretora.Id),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<BusinessRuleException>();
+        await _profileRepository.DidNotReceiveWithAnyArgs()
+            .ReassignMembershipsAsync(default, default, default, default);
+        _profileRepository.DidNotReceiveWithAnyArgs().RemoveWithPermissions(default!);
     }
 }
