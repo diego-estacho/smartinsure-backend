@@ -3066,6 +3066,44 @@
             }
           }
         }
+      },
+      "put": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditUserBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditUserResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/users/invitations/accept": {
@@ -3160,6 +3198,46 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SetUserProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/scope-profile": {
+      "put": {
+        "tags": [
+          "UsersEndpoint"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeUserScopeProfileBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeUserScopeProfileResponse"
                 }
               }
             }
@@ -4142,6 +4220,49 @@
           }
         }
       },
+      "ChangeUserScopeProfileBody": {
+        "required": [
+          "scopeId",
+          "profileId"
+        ],
+        "type": "object",
+        "properties": {
+          "scopeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "ChangeUserScopeProfileResponse": {
+        "required": [
+          "userId",
+          "scopeId",
+          "profileId",
+          "profileName"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "scopeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileName": {
+            "type": "string"
+          }
+        }
+      },
       "CreateAdditionalCoverageResponse": {
         "required": [
           "id",
@@ -5064,6 +5185,48 @@
               "string"
             ],
             "format": "double"
+          }
+        }
+      },
+      "EditUserBody": {
+        "required": [
+          "name",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "EditUserResponse": {
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
           }
         }
       },

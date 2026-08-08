@@ -23,4 +23,7 @@ public sealed class UserBrokerageMembership : EntityBase
             BrokerageId = brokerageId,
             ProfileId = profileId,
         };
+
+    /// <summary>RN-075: troca o Perfil do Usuário nesta Corretora (por outro do mesmo Escopo).</summary>
+    public void ChangeProfile(Guid profileId) => ProfileId = profileId;
 }

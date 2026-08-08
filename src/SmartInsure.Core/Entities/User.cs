@@ -97,6 +97,37 @@ public sealed class User : EntityBase
         Status = EUserStatus.Active;
     }
 
+    /// <summary>RN-202: corrige o nome de cadastro; o histórico do Usuário é preservado.</summary>
+    public void Rename(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new BusinessRuleException("O nome do usuário é obrigatório.");
+        }
+
+        Name = name.Trim();
+    }
+
+    /// <summary>
+    /// RN-202: corrige o e-mail SÓ enquanto Pendente — antes do primeiro acesso não há credencial;
+    /// depois o e-mail é a credencial de acesso e não se altera por edição.
+    /// </summary>
+    public void ChangeEmail(string email)
+    {
+        if (Status != EUserStatus.Pending)
+        {
+            throw new ConflictException(
+                "O e-mail só pode ser corrigido enquanto o usuário está pendente.");
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new BusinessRuleException("O e-mail do usuário é obrigatório.");
+        }
+
+        Email = email.Trim().ToLowerInvariant();
+    }
+
     /// <summary>RN-012: concessão do Perfil (conceder o mesmo Perfil de novo é conflito).</summary>
     public void GrantProfile(Profile profile)
     {

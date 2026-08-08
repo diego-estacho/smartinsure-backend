@@ -69,3 +69,15 @@
 **Critério de aceitação.** Nesses fluxos o CPF é obrigatório e validado na forma (11 dígitos com dígitos verificadores corretos), guardado somente em dígitos. Dois Usuários não têm o mesmo CPF. O CPF não é alterável depois de criado (a correção é um novo cadastro). Usuário sem CPF (Corretor Administrador ou anterior à regra) é válido e não colide no critério de unicidade. A busca da listagem de Usuários passa a encontrar por CPF.
 
 **Casos limite.** CPF ausente ou inválido nesses fluxos: convite recusado. CPF já usado por outro Usuário: recusado. CPF informado com máscara: aceito e normalizado para dígitos. Convite de Corretor Administrador (RN-066): segue sem CPF por decisão de produto do redesenho.
+
+## RN-202 — Edição de Usuário
+
+> Proposta em 2026-08-08 (redesenho da tela de Usuários, decisão do dono do produto; faixa 200 escolhida para não colidir com a numeração da jornada Perfis). Autorizado a ajustar; aguardando ratificação da PO.
+
+**Descrição.** O nome de cadastro do Usuário pode ser corrigido a qualquer momento, preservando o histórico. O e-mail — credencial de acesso (RN-005) — só pode ser corrigido enquanto o Usuário está Pendente (antes do primeiro acesso, quando ainda não há credencial): a correção atualiza a identidade no provedor e reenvia o Convite para o novo endereço (RN-065). O CPF (RN-082) é imutável. A troca de Perfil segue as regras próprias (RN-012 no Escopo Sistema; RN-075 no vínculo de Corretora/Tomador).
+
+**Pré-condições.** Solicitante autorizado a gerenciar o Usuário; para corrigir o e-mail, Usuário na situação Pendente.
+
+**Critério de aceitação.** Ao salvar, o nome é atualizado. Informando um novo e-mail para um Usuário Pendente: verifica-se a unicidade (plataforma e provedor de identidade), a identidade tem o e-mail atualizado, o Usuário permanece Pendente e recebe um novo Convite no novo endereço (o link anterior deixa de valer). Corrigir o e-mail de um Usuário Ativo ou Inativo é recusado.
+
+**Casos limite.** E-mail igual ao atual: só o nome muda. Novo e-mail já usado por outro Usuário ou identidade: recusado. Alterar o e-mail de Usuário não-Pendente: recusado, orientando inativar e convidar o novo endereço. CPF não é alterável (RN-082).

@@ -32,4 +32,11 @@ public interface IIdentityProvider
     /// </summary>
     Task SetPasswordAsync(
         string externalIdentity, string newPassword, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// RN-202: atualiza o e-mail da identidade. Só faz sentido antes do primeiro acesso (Usuário
+    /// Pendente), quando o e-mail ainda não é a credencial efetiva de acesso.
+    /// </summary>
+    Task UpdateEmailAsync(
+        string externalIdentity, string newEmail, CancellationToken cancellationToken);
 }

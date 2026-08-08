@@ -32,6 +32,18 @@ public interface ICasdoorApi
         CancellationToken cancellationToken);
 
     /// <summary>
+    /// RN-202: atualiza campos da identidade. <c>id</c> é <c>owner/name</c> (não o UUID) e
+    /// <c>columns</c> restringe quais campos gravar — usamos <c>email</c> para trocar só o e-mail
+    /// (o e-mail é coluna normal; a ressalva do <c>update-user</c> é específica de <c>password</c>).
+    /// </summary>
+    [Post("/api/update-user")]
+    Task<CasdoorResponse<object>> UpdateUserAsync(
+        [AliasAs("id")] string id,
+        [AliasAs("columns")] string columns,
+        [Body] CasdoorUser user,
+        CancellationToken cancellationToken);
+
+    /// <summary>
     /// RN-065: define a senha da identidade. Endpoint dedicado do Casdoor — <c>update-user</c> com
     /// <c>password</c> no corpo responde <c>ok</c> mas não grava a credencial (nem com
     /// <c>columns=password</c>), então o grant seguinte falharia. Este endpoint também zera

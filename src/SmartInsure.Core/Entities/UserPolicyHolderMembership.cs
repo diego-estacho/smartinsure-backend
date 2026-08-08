@@ -23,4 +23,7 @@ public sealed class UserPolicyHolderMembership : EntityBase
             PolicyHolderId = policyHolderId,
             ProfileId = profileId,
         };
+
+    /// <summary>RN-075: troca o Perfil do Usuário neste Tomador (por outro do mesmo Escopo).</summary>
+    public void ChangeProfile(Guid profileId) => ProfileId = profileId;
 }

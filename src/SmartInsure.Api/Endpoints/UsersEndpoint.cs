@@ -34,6 +34,12 @@ using SmartInsure.Application.UseCase.UseCases.UserUseCases.ResendInvitation.Res
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile.Interfaces;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile.Requests;
 using SmartInsure.Application.UseCase.UseCases.UserUseCases.SetUserProfile.Responses;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.EditUser.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.EditUser.Requests;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.EditUser.Responses;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ChangeUserScopeProfile.Interfaces;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ChangeUserScopeProfile.Requests;
+using SmartInsure.Application.UseCase.UseCases.UserUseCases.ChangeUserScopeProfile.Responses;
 using SmartInsure.Core.Abstractions.Services;
 using SmartInsure.Core.Constants;
 
@@ -73,6 +79,16 @@ public sealed class UsersEndpoint : CarterModule
         app.MapPut("/{id:guid}/profile", SetProfileAsync)
             .RequireAuthorization(Policies.SystemAdministrator)
             .Produces<SetUserProfileResponse>(StatusCodes.Status200OK);
+
+        // RN-202: edição de Usuário (nome sempre; e-mail só Pendente — §9).
+        app.MapPut("/{id:guid}", EditAsync)
+            .RequireAuthorization(Policies.SystemAdministrator)
+            .Produces<EditUserResponse>(StatusCodes.Status200OK);
+
+        // RN-075: troca do Perfil do Usuário dentro de um Escopo (Corretora/Tomador).
+        app.MapPut("/{id:guid}/scope-profile", ChangeScopeProfileAsync)
+            .RequireAuthorization(Policies.SystemAdministrator)
+            .Produces<ChangeUserScopeProfileResponse>(StatusCodes.Status200OK);
 
         // RN-066: somente o Administrador do Sistema convida Corretor Administrador.
         app.MapPost("/brokerage-administrators", InviteBrokerageAdministratorAsync)
@@ -294,9 +310,43 @@ public sealed class UsersEndpoint : CarterModule
             useCase,
             new SetUserProfileRequest(id, body.Profile),
             validator);
+
+    /// <summary>RN-202: edita nome (sempre) e e-mail (só Pendente — §9).</summary>
+    private static async Task<IResult> EditAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        IEditUserUseCase useCase,
+        IValidator<EditUserRequest> validator,
+        Guid id,
+        EditUserBody body)
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new EditUserRequest(id, body.Name, body.Email),
+            validator);
+
+    /// <summary>RN-075: troca o Perfil do Usuário no Escopo (Corretora/Tomador) informado.</summary>
+    private static async Task<IResult> ChangeScopeProfileAsync(
+        HttpContext httpContext,
+        RequestHandler handler,
+        IChangeUserScopeProfileUseCase useCase,
+        IValidator<ChangeUserScopeProfileRequest> validator,
+        Guid id,
+        ChangeUserScopeProfileBody body)
+        => await handler.TryHandleAsync(
+            httpContext,
+            useCase,
+            new ChangeUserScopeProfileRequest(id, body.ScopeId, body.ProfileId),
+            validator);
 }
 
 public sealed record SetUserProfileBody(string? Profile);
+
+/// <summary>RN-202: corpo da edição de Usuário (nome sempre; e-mail só Pendente).</summary>
+public sealed record EditUserBody(string Name, string? Email);
+
+/// <summary>RN-075: corpo da troca de Perfil no Escopo (Corretora/Tomador).</summary>
+public sealed record ChangeUserScopeProfileBody(Guid ScopeId, Guid ProfileId);
 
 /// <summary>RN-068: corpo do convite de Tomador Administrador (a Corretora ativa vem do acesso).</summary>
 public sealed record InvitePolicyHolderAdministratorBody(

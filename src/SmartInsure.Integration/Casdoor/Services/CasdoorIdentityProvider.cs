@@ -169,4 +169,34 @@ public sealed partial class CasdoorIdentityProvider(
                 $"Provedor de identidade recusou atualizar a senha: {response.Msg}");
         }
     }
+
+    /// <summary>
+    /// RN-202: troca o e-mail da identidade. O <c>update-user</c> endereça por <c>owner/name</c>
+    /// (não pelo UUID) e grava só a coluna <c>email</c> (columns=email).
+    /// </summary>
+    public async Task UpdateEmailAsync(
+        string externalIdentity, string newEmail, CancellationToken cancellationToken)
+    {
+        var user = await api.GetUserAsync(externalIdentity, cancellationToken);
+
+        if (user.Data is null)
+        {
+            throw new InvalidOperationException(
+                $"Identidade {externalIdentity} não encontrada no provedor.");
+        }
+
+        var id = $"{user.Data.Owner}/{user.Data.Name}";
+
+        var response = await api.UpdateUserAsync(
+            id,
+            "email",
+            user.Data with { Email = newEmail, Password = null },
+            cancellationToken);
+
+        if (!response.IsOk)
+        {
+            throw new InvalidOperationException(
+                $"Provedor de identidade recusou atualizar o e-mail: {response.Msg}");
+        }
+    }
 }
